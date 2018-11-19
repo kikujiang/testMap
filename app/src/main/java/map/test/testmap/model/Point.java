@@ -1,4 +1,4 @@
-package map.test.testmap;
+package map.test.testmap.model;
 
 /**
  * 点对象

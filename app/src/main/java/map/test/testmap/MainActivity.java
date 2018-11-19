@@ -1,13 +1,22 @@
 package map.test.testmap;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -33,7 +42,14 @@ import com.amap.api.maps.model.animation.AlphaAnimation;
 import com.amap.api.maps.model.animation.Animation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import map.test.testmap.model.OnInfoListener;
+import map.test.testmap.model.Point;
+import map.test.testmap.utils.OkHttpClientManager;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -60,17 +76,79 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        initToolBar();
         mMapView = (MapView) findViewById(R.id.map);
         btnCheck = (Button) findViewById(R.id.check);
         btnCollect = (Button) findViewById(R.id.collect);
         btnEdit = (Button) findViewById(R.id.edit);
         mMapView.onCreate(savedInstanceState);// 此方法必须重写
 
-        initMap();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            int checkPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
+            if (checkPermission != PackageManager.PERMISSION_GRANTED) {
+                //没有获取权限，发起申请
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+
+            } else {
+                //doing everything what you want
+                initMap();
+            }
+        }
 
         btnCheck.setOnClickListener(this);
         btnCollect.setOnClickListener(this);
         btnEdit.setOnClickListener(this);
+    }
+
+    private void initToolBar(){
+        Toolbar toolbar = (Toolbar) findViewById(R.id.id_toolbar);
+
+        // App Logo
+//        toolbar.setLogo(R.mipmap.ic_launcher);
+        // Title
+        toolbar.setTitle("信息采集工具");
+        // Sub Title
+//        toolbar.setSubtitle("Sub title");
+
+        setSupportActionBar(toolbar);
+        //Navigation Icon
+//        toolbar.setNavigationIcon(R.drawable.ic_toc_white_24dp);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.collect:
+                dhPopupView();
+                break;
+            case R.id.reLocate:
+                break;
+            case R.id.refresh:
+                String url = "http://10.206.2.29:8088/SystemTestPlatform/platform/mobileTest/index.do";
+                Map<String,String> data = new HashMap<>();
+                data.put("act","getResUrl");
+                OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
+                    @Override
+                    public void success(Response responseMapBean) {
+                        Log.d(TAG,"success: "+responseMapBean.body().toString());
+                    }
+
+                    @Override
+                    public void fail(Exception e) {
+                        Log.d(TAG,"fail: "+e.getMessage());
+                    }
+                });
+                break;
+                default:
+                    break;
+        }
+        return true;
     }
 
     private void initMap(){
@@ -251,7 +329,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Spinner spinnerType = null;
 
     private void dhPopupView() {
-        View popupView = getLayoutInflater().inflate(R.layout.popup_list, null);
+        View popupView = getLayoutInflater().inflate(R.layout.popup_list2, null);
 
         // : 2016/5/17 创建PopupWindow对象，指定宽度和高度
 //        window = new PopupWindow(popupView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -311,5 +389,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void initSpinner(Spinner spinner,String[] data){
         ArrayAdapter<String> adapter=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_multiple_choice,data);
         spinner.setAdapter(adapter);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        //通过请求码进行筛选
+        switch (requestCode) {
+            case 1:
+                //条件符合说明获取运行时权限成功
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    initMap();
+                } else {
+                    //用户拒绝获取权限，则Toast出一句话提醒用户
+                    Toast.makeText(this, "应用未开启定位权限，请开启后重试", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            default:
+                break;
+        }
     }
 }
