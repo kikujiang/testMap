@@ -2,14 +2,32 @@ package map.test.testmap.model;
 
 /**
  * 点对象
+ * {
+ * 	"name": "reteter",
+ * 	"tagNo": "reterterr",
+ * 	"location_lat": 31.386173,
+ * 	"location_long": 120.513498,
+ * 	"type": 1,
+ * 	"createTime": "Nov 16, 2018 7:32:01 PM",
+ * 	"createUser": {
+ * 		"level": 0,
+ * 		"id": 1
+ *        },
+ * 	"remark": "rtretreter",
+ * 	"id": 4
+ * }
  */
 public class Point {
 
     private String name;
+    private String tagNo;
+    private double location_lat;
+    private double location_long;
     private int type;
-    private String other;
-    private double longitude;
-    private double latitude;
+    private String createTime;
+    private User createUser;
+    private String remark;
+    private int id;
 
     public String getName() {
         return name;
@@ -19,6 +37,29 @@ public class Point {
         this.name = name;
     }
 
+    public String getTagNo() {
+        return tagNo;
+    }
+
+    public void setTagNo(String tagNo) {
+        this.tagNo = tagNo;
+    }
+
+    public double getLocation_lat() {
+        return location_lat;
+    }
+
+    public void setLocation_lat(double location_lat) {
+        this.location_lat = location_lat;
+    }
+
+    public double getLocation_long() {
+        return location_long;
+    }
+
+    public void setLocation_long(double location_long) {
+        this.location_long = location_long;
+    }
 
     public int getType() {
         return type;
@@ -28,27 +69,40 @@ public class Point {
         this.type = type;
     }
 
-    public String getOther() {
-        return other;
+    public String getCreateTime() {
+        return createTime;
     }
 
-    public void setOther(String other) {
-        this.other = other;
+    public void setCreateTime(String createTime) {
+        this.createTime = createTime;
     }
 
-    public double getLongitude() {
-        return longitude;
+    public User getCreateUser() {
+        return createUser;
     }
 
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
+    public void setCreateUser(User createUser) {
+        this.createUser = createUser;
     }
 
-    public double getLatitude() {
-        return latitude;
+    public String getRemark() {
+        return remark;
     }
 
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    @Override
+    public String toString() {
+        return "id is:"+ id+"name is:" + name;
     }
 }

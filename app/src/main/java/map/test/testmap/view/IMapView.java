@@ -14,4 +14,5 @@ public interface IMapView {
 
     void showLoading();
     void cancelLoading();
+
 }
