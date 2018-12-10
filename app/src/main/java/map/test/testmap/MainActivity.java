@@ -30,6 +30,10 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.amap.api.location.AMapLocation;
+import com.amap.api.location.AMapLocationClient;
+import com.amap.api.location.AMapLocationClientOption;
+import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.CameraUpdateFactory;
 import com.amap.api.maps.MapView;
@@ -43,6 +47,8 @@ import com.amap.api.maps.model.animation.AlphaAnimation;
 import com.amap.api.maps.model.animation.Animation;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
+import org.json.JSONObject;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -85,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final int MSG_END = 100001;
     public static final int MSG_MSG_ERROR = 100002;
     public static final int MSG_LOGIN_END = 100003;
+    public static final int MSG_LOGIN_FAILED = 100008;
     public static final int MSG_GET_ALL_POINT_END = 100004;
     public static final int MSG_GET_ALL_LINE_END = 100005;
     public static final int MSG_SAVE_SINGLE_POINT_END = 100006;
@@ -102,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     progressBar.setVisibility(View.VISIBLE);
                     break;
                 case MSG_LOGIN_END:
+                    getPointType();
                     getALLPoint();
                     break;
                 case MSG_GET_ALL_POINT_END:
@@ -151,6 +159,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d(TAG, "错误消息为:" + message);
                     Toast.makeText(MainActivity.this,"服务器响应失败，请稍后重试！",Toast.LENGTH_LONG).show();
                     break;
+                case MSG_LOGIN_FAILED:
+                    String loginError = (String) msg.obj;
+                    Log.d(TAG, "登录错误消息为:" + loginError);
+                    Toast.makeText(MainActivity.this,loginError,Toast.LENGTH_LONG).show();
+                    break;
                 case MSG_END:
                     progressBar.setVisibility(View.GONE);
                     break;
@@ -173,7 +186,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void run() {
                 mHandler.sendEmptyMessage(MSG_START);
-                getPointType();
                 getLoginInfo();
                 mHandler.sendEmptyMessage(MSG_END);
             }
@@ -189,7 +201,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             } else {
                 //doing everything what you want
                 initMap();
-                getInfoFromServer();
+//                getInfoFromServer();
             }
         }
     }
@@ -198,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 获取登录相关信息
      */
     private void getLoginInfo(){
-       final String url = Constants.URL + Constants.TAG_LOGIN;
+       final String url = Constants.TEST_URL + Constants.TAG_LOGIN;
        Log.d(TAG, "请求登录接口======地址为：" + url );
        final Map<String,String> data = new HashMap<>();
 
@@ -207,9 +219,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void success(Response responseMapBean) {
                 try{
                     String result = responseMapBean.body().string();
-                    user = new Gson().fromJson(result,User.class);
-                    Log.d(TAG, "收到消息为："+ result+"\n 用户账号为：" + user.getUserAccount());
-                    mHandler.sendEmptyMessage(MSG_LOGIN_END);
+                    Log.d(TAG, "登录返回消息为：" + result);
+                    if(result.contains("result")){
+                        JSONObject object = new JSONObject(result);
+                        Message currentMsg = Message.obtain();
+                        currentMsg.what = MSG_LOGIN_FAILED;
+                        currentMsg.obj = object.getString("desc");
+                        mHandler.sendMessage(currentMsg);
+                    }else{
+                        user = new Gson().fromJson(result,User.class);
+                        Log.d(TAG, "收到消息为："+ result+"\n 用户账号为：" + user.getUserAccount());
+                        mHandler.sendEmptyMessage(MSG_LOGIN_END);
+                    }
+
                 }catch (Exception e){
                     sendErrorMsg(e);
                 }
@@ -235,7 +257,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void getALLPoint(){
         Log.d(TAG, "请求获取所有点信息接口");
-        final String url = Constants.URL + Constants.TAG_GET_ALL_POINT;
+        final String url = Constants.TEST_URL + Constants.TAG_GET_ALL_POINT;
         final Map<String,String> data = new HashMap<>();
         aMap.clear();
         OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
@@ -263,7 +285,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void getALLLine(){
         Log.d(TAG, "请求获取所有线接口");
-        final String url = Constants.URL + Constants.TAG_GET_ALL_LINE;
+        final String url = Constants.TEST_URL + Constants.TAG_GET_ALL_LINE;
         final Map<String,String> data = new HashMap<>();
 
         OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
@@ -292,7 +314,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void getPointType(){
         Log.d(TAG, "请求获取点类型接口");
-        final String url = Constants.URL + Constants.TAG_GET_POINT_TYPE;
+        final String url = Constants.TEST_URL + Constants.TAG_GET_POINT_TYPE;
         final Map<String,String> data = new HashMap<>();
 
         OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
@@ -348,7 +370,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.refresh:
-                getInfoFromServer();
+//                getInfoFromServer();
                 break;
                 default:
         }
@@ -362,6 +384,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         aMap.setMapType(AMap.MAP_TYPE_NORMAL);
         aMap.moveCamera(CameraUpdateFactory.zoomTo(15));
+        AMap.OnPolylineClickListener l = new AMap.OnPolylineClickListener() {
+            @Override
+            public void onPolylineClick(Polyline polyline) {
+                Log.d(TAG, "onPolylineClick: ");
+            }
+        };
+        aMap.setOnPolylineClickListener(l);
         AMap.OnInfoWindowClickListener listener = new AMap.OnInfoWindowClickListener() {
 
             @Override
@@ -409,10 +438,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         locate();
     }
 
+    //声明AMapLocationClientOption对象
+    public AMapLocationClientOption mLocationOption = null;
+
+    //声明AMapLocationClient类对象
+    public AMapLocationClient mLocationClient = null;
+    //声明定位回调监听器
+
+
+
+//    private void initLocationInfo(){
+//        //初始化AMapLocationClientOption对象
+//        mLocationOption = new AMapLocationClientOption();
+//        AMapLocationListener mLocationListener = new AMapLocationListener(){
+//            @Override
+//            public void onLocationChanged(AMapLocation aMapLocation) {
+//                Log.d(TAG, "initLocationInfo onLocationChanged: called");
+//            }
+//        };
+//        //初始化定位
+//        mLocationClient = new AMapLocationClient(getApplicationContext());
+//        //设置定位回调监听
+//        mLocationClient.setLocationListener(mLocationListener);
+//        mLocationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
+//        mLocationOption.setOnceLocationLatest(true);
+//        /**
+//         * 设置定位场景，目前支持三种场景（签到、出行、运动，默认无场景）
+//         */
+//        mLocationOption.setLocationPurpose(AMapLocationClientOption.AMapLocationPurpose.SignIn);
+//        if(null != mLocationClient){
+//            mLocationClient.setLocationOption(mLocationOption);
+//            //设置场景模式后最好调用一次stop，再调用start以保证场景模式生效
+//            mLocationClient.stopLocation();
+//            mLocationClient.startLocation();
+//        }
+//    }
+
     private void locate(){
+
         MyLocationStyle myLocationStyle = new MyLocationStyle();//初始化定位蓝点样式类myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE);//连续定位、且将视角移动到地图中心点，定位点依照设备方向旋转，并且会跟随设备移动。（1秒1次定位）如果不设置myLocationType，默认也会执行此种模式。
         myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATE);
-        myLocationStyle.interval(2000); //设置连续定位模式下的定位间隔，只在连续定位模式下生效，单次定位模式下不会生效。单位为毫秒。
+//        myLocationStyle.interval(2000); //设置连续定位模式下的定位间隔，只在连续定位模式下生效，单次定位模式下不会生效。单位为毫秒。
         myLocationStyle.showMyLocation(true);
         aMap.setMyLocationStyle(myLocationStyle);//设置定位蓝点的Style
         aMap.getUiSettings().setMyLocationButtonEnabled(true);//设置默认定位按钮是否显示，非必需设置。
@@ -503,7 +569,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void savePoint(Point currentPoint){
         Log.d(TAG, "请求保存点接口");
-        final String url = Constants.URL + Constants.TAG_SAVE_SINGLE_POINT;
+        final String url = Constants.TEST_URL + Constants.TAG_SAVE_SINGLE_POINT;
         final Map<String,String> data = new HashMap<>();
         data.put("id",currentPoint.getId()+"");
         data.put("name",currentPoint.getName());
@@ -538,7 +604,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void getSinglePoint(String pointId){
         Log.d(TAG, "请求获取某个点接口");
-        final String url = Constants.URL + Constants.TAG_GET_SINGLE_POINT;
+        final String url = Constants.TEST_URL + Constants.TAG_GET_SINGLE_POINT;
         final Map<String,String> data = new HashMap<>();
         data.put("id",pointId);
         Log.d(TAG, "getSinglePoint data is:" + data.toString());
@@ -571,7 +637,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             latLngs.add(start);
             latLngs.add(end);
             Polyline line = aMap.addPolyline(new PolylineOptions().
-                    addAll(latLngs).setDottedLine(true).width(5).color(Color.argb(255, 255, 0, 0)));
+                    addAll(latLngs).setDottedLine(true).width(20).color(Color.argb(255, 255, 0, 0)));
             line.setVisible(true);
         }
     }
@@ -729,7 +795,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //条件符合说明获取运行时权限成功
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     initMap();
-                    getInfoFromServer();
+//                    getInfoFromServer();
                 } else {
                     //用户拒绝获取权限，则Toast出一句话提醒用户
                     Toast.makeText(this, "应用未开启定位权限，请开启后重试", Toast.LENGTH_SHORT).show();
