@@ -28,6 +28,7 @@ import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.amap.api.location.AMapLocation;
@@ -76,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Toolbar toolbar;
 
     private Location currentLocation = null;
+    private TextView tvLocation = null;
 
     private int currentTypeIndex = 0;
     private int currentType = 0;
@@ -341,6 +343,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mMapView = (MapView) findViewById(R.id.map);
         toolbar = (Toolbar) findViewById(R.id.id_toolbar);
         progressBar = (ProgressBar)findViewById(R.id.progress);
+        tvLocation = (TextView) findViewById(R.id.tv_show_location);
 
         initToolBar();
     }
@@ -371,6 +374,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.refresh:
 //                getInfoFromServer();
+                if(null != mLocationClient){
+                    //设置场景模式后最好调用一次stop，再调用start以保证场景模式生效
+                    mLocationClient.stopLocation();
+                    mLocationClient.startLocation();
+                }
                 break;
                 default:
         }
@@ -445,40 +453,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public AMapLocationClient mLocationClient = null;
     //声明定位回调监听器
 
-
-
-//    private void initLocationInfo(){
-//        //初始化AMapLocationClientOption对象
-//        mLocationOption = new AMapLocationClientOption();
-//        AMapLocationListener mLocationListener = new AMapLocationListener(){
-//            @Override
-//            public void onLocationChanged(AMapLocation aMapLocation) {
-//                Log.d(TAG, "initLocationInfo onLocationChanged: called");
-//            }
-//        };
-//        //初始化定位
-//        mLocationClient = new AMapLocationClient(getApplicationContext());
-//        //设置定位回调监听
-//        mLocationClient.setLocationListener(mLocationListener);
-//        mLocationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
-//        mLocationOption.setOnceLocationLatest(true);
-//        /**
-//         * 设置定位场景，目前支持三种场景（签到、出行、运动，默认无场景）
-//         */
-//        mLocationOption.setLocationPurpose(AMapLocationClientOption.AMapLocationPurpose.SignIn);
-//        if(null != mLocationClient){
-//            mLocationClient.setLocationOption(mLocationOption);
-//            //设置场景模式后最好调用一次stop，再调用start以保证场景模式生效
-//            mLocationClient.stopLocation();
-//            mLocationClient.startLocation();
-//        }
-//    }
+    private void initLocationInfo(){
+        //初始化AMapLocationClientOption对象
+        mLocationOption = new AMapLocationClientOption();
+        AMapLocationListener mLocationListener = new AMapLocationListener(){
+            @Override
+            public void onLocationChanged(AMapLocation aMapLocation) {
+                Log.d(TAG, "initLocationInfo onLocationChanged: called:"+ aMapLocation.toString());
+                tvLocation.setText(aMapLocation.getLongitude()+","+aMapLocation.getLatitude());
+            }
+        };
+        //初始化定位
+        mLocationClient = new AMapLocationClient(getApplicationContext());
+        //设置定位回调监听
+        mLocationClient.setLocationListener(mLocationListener);
+        mLocationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
+        mLocationOption.setOnceLocationLatest(true);
+        /**
+         * 设置定位场景，目前支持三种场景（签到、出行、运动，默认无场景）
+         */
+        mLocationOption.setLocationPurpose(AMapLocationClientOption.AMapLocationPurpose.SignIn);
+        mLocationClient.setLocationOption(mLocationOption);
+    }
 
     private void locate(){
-
+        initLocationInfo();
         MyLocationStyle myLocationStyle = new MyLocationStyle();//初始化定位蓝点样式类myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE);//连续定位、且将视角移动到地图中心点，定位点依照设备方向旋转，并且会跟随设备移动。（1秒1次定位）如果不设置myLocationType，默认也会执行此种模式。
         myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATE);
-//        myLocationStyle.interval(2000); //设置连续定位模式下的定位间隔，只在连续定位模式下生效，单次定位模式下不会生效。单位为毫秒。
         myLocationStyle.showMyLocation(true);
         aMap.setMyLocationStyle(myLocationStyle);//设置定位蓝点的Style
         aMap.getUiSettings().setMyLocationButtonEnabled(true);//设置默认定位按钮是否显示，非必需设置。
@@ -488,6 +489,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onMyLocationChange(Location location) {
                 Log.d("map", "onMyLocationChange: "+ location.toString());
+                tvLocation.setText(location.getLongitude()+","+location.getLatitude());
                 currentLocation = location;
             }
         });
@@ -498,12 +500,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onDestroy();
         //在activity执行onDestroy时执行mMapView.onDestroy()，销毁地图
         mMapView.onDestroy();
+        mLocationClient.onDestroy();
     }
     @Override
     protected void onResume() {
         super.onResume();
         //在activity执行onResume时执行mMapView.onResume ()，重新绘制加载地图
         mMapView.onResume();
+
     }
     @Override
     protected void onPause() {
