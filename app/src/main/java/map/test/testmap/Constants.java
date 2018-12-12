@@ -2,8 +2,8 @@ package map.test.testmap;
 
 public class Constants {
 
-//    public static final String TEST_URL = "http://172.19.26.52:8080/em";
-    public static final String TEST_URL = "http://119.3.71.206";
+    public static final String TEST_URL = "http://172.19.26.52:8080/em";
+    public static final String URL = "http://119.3.71.206";
 
     /**
      * 登陆

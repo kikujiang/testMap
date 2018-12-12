@@ -37,6 +37,7 @@ import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.CameraUpdateFactory;
+import com.amap.api.maps.LocationSource;
 import com.amap.api.maps.MapView;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.Marker;
@@ -76,11 +77,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private Toolbar toolbar;
 
-    private Location currentLocation = null;
+    private AMapLocation currentLocation = null;
     private TextView tvLocation = null;
 
-    private int currentTypeIndex = 0;
     private int currentType = 0;
+    private int currentTypeIndex = 0;
 
     private List<Point> pointList = null;
     private List<Line> lineList = null;
@@ -175,15 +176,52 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "=========================onCreate called!=========================");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        initControl();
+        mMapView = (MapView) findViewById(R.id.map);
         mMapView.onCreate(savedInstanceState);
         checkLocationPermission();
+    }
 
+    private void checkLocationPermission(){
+        Log.d(TAG, "=========================checkLocationPermission called!=========================");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            int checkPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
+            if (checkPermission != PackageManager.PERMISSION_GRANTED) {
+                //没有获取权限，发起申请
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+            } else {
+                //doing everything what you want
+                initial();
+            }
+        }else{
+            initial();
+        }
+    }
+
+    private void initial(){
+        Log.d(TAG, "=========================initial called!=========================");
+        initControl();
+        initMap();
+        refreshLocation();
+        getInfoFromServer();
+    }
+
+    /**
+     * 定位操作
+     */
+    private void refreshLocation(){
+        mLocationClient.stopLocation();
+        mLocationClient.startLocation();
+    }
+
+    private void clearMap(){
+        aMap.clear();
     }
 
     private void getInfoFromServer(){
+        Log.d(TAG, "=========================getInfoFromServer called!=========================");
         new Thread(){
             @Override
             public void run() {
@@ -192,20 +230,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mHandler.sendEmptyMessage(MSG_END);
             }
         }.start();
-    }
-
-    private void checkLocationPermission(){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            int checkPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
-            if (checkPermission != PackageManager.PERMISSION_GRANTED) {
-                //没有获取权限，发起申请
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
-            } else {
-                //doing everything what you want
-                initMap();
-//                getInfoFromServer();
-            }
-        }
     }
 
     /**
@@ -340,11 +364,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initControl(){
-        mMapView = (MapView) findViewById(R.id.map);
+        Log.d(TAG, "=========================initControl called!=========================");
         toolbar = (Toolbar) findViewById(R.id.id_toolbar);
         progressBar = (ProgressBar)findViewById(R.id.progress);
         tvLocation = (TextView) findViewById(R.id.tv_show_location);
 
+        progressBar.setVisibility(View.GONE);
         initToolBar();
     }
 
@@ -364,7 +389,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (item.getItemId()){
             case R.id.collect:
                 isAdd = true;
-                locate();
                 currentPoint = null;
                 if(pointTypeList != null){
                     showBottomDialog();
@@ -373,12 +397,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.refresh:
-//                getInfoFromServer();
-                if(null != mLocationClient){
-                    //设置场景模式后最好调用一次stop，再调用start以保证场景模式生效
-                    mLocationClient.stopLocation();
-                    mLocationClient.startLocation();
-                }
+                getInfoFromServer();
+                break;
+            case R.id.reLocate:
+                refreshLocation();
+                break;
+            case R.id.clear:
+                clearMap();
                 break;
                 default:
         }
@@ -386,6 +411,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initMap(){
+        Log.d(TAG, "=========================initMap called!=========================");
         if (aMap == null) {
             aMap = mMapView.getMap();
         }
@@ -398,6 +424,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.d(TAG, "onPolylineClick: ");
             }
         };
+
         aMap.setOnPolylineClickListener(l);
         AMap.OnInfoWindowClickListener listener = new AMap.OnInfoWindowClickListener() {
 
@@ -443,7 +470,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         };
         // 绑定 Marker 被点击事件
         aMap.setOnMarkerClickListener(markerClickListener);
-        locate();
+        initLocationInfo();
     }
 
     //声明AMapLocationClientOption对象
@@ -454,6 +481,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //声明定位回调监听器
 
     private void initLocationInfo(){
+        Log.d(TAG, "=========================initLocationInfo called!=========================");
         //初始化AMapLocationClientOption对象
         mLocationOption = new AMapLocationClientOption();
         AMapLocationListener mLocationListener = new AMapLocationListener(){
@@ -461,6 +489,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onLocationChanged(AMapLocation aMapLocation) {
                 Log.d(TAG, "initLocationInfo onLocationChanged: called:"+ aMapLocation.toString());
                 tvLocation.setText(aMapLocation.getLongitude()+","+aMapLocation.getLatitude());
+                currentLocation = aMapLocation;
+                locate();
             }
         };
         //初始化定位
@@ -477,9 +507,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void locate(){
-        initLocationInfo();
+
         MyLocationStyle myLocationStyle = new MyLocationStyle();//初始化定位蓝点样式类myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE);//连续定位、且将视角移动到地图中心点，定位点依照设备方向旋转，并且会跟随设备移动。（1秒1次定位）如果不设置myLocationType，默认也会执行此种模式。
         myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATE);
+//        myLocationStyle.anchor((float)currentLocation.getLatitude(),(float)currentLocation.getLongitude());
+        myLocationStyle.anchor(0.0f,1.0f);
         myLocationStyle.showMyLocation(true);
         aMap.setMyLocationStyle(myLocationStyle);//设置定位蓝点的Style
         aMap.getUiSettings().setMyLocationButtonEnabled(true);//设置默认定位按钮是否显示，非必需设置。
@@ -490,7 +522,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onMyLocationChange(Location location) {
                 Log.d("map", "onMyLocationChange: "+ location.toString());
                 tvLocation.setText(location.getLongitude()+","+location.getLatitude());
-                currentLocation = location;
+
             }
         });
     }
@@ -551,7 +583,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 int radioId = radioLocate.getCheckedRadioButtonId();
                 if(radioId == R.id.radio_locate_yes) {
-                    locate();
+                    //
                     currentPoint.setLocation_lat(currentLocation.getLatitude());
                     currentPoint.setLocation_long(currentLocation.getLongitude());
                 }
@@ -798,12 +830,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case 1:
                 //条件符合说明获取运行时权限成功
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    initMap();
-//                    getInfoFromServer();
+                    initial();
                 } else {
                     //用户拒绝获取权限，则Toast出一句话提醒用户
                     Toast.makeText(this, "应用未开启定位权限，请开启后重试", Toast.LENGTH_SHORT).show();
-                    mHandler.sendEmptyMessage(MSG_END);
                 }
                 break;
             default:

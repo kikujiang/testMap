@@ -3,6 +3,8 @@
     <string name="collect">采集</string>
     <string name="reLocate">重定位</string>
     <string name="refresh">刷新</string>
+    <string name="locate">当前位置</string>
+    <string name="clear">清除数据</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

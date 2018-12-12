@@ -17,13 +17,16 @@
         android:background="@color/colorPrimary"/>
 
     <ProgressBar
-        android:visibility="gone"
         android:id="@+id/progress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         style="@android:style/Widget.Holo.Light.ProgressBar.Large.Inverse"
         android:indeterminate="true" />
 
+    <TextView
+        android:id="@+id/tv_show_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
     <com.amap.api.maps.MapView
         android:id="@+id/map"
