@@ -24,6 +24,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -562,9 +563,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String name = etName.getText().toString();
                 String remark = etOther.getText().toString();
 
+                String longitudeStr = etLongitude.getText().toString();
+                String latitudeStr = etLatitude.getText().toString();
+
                 if(TextUtils.isEmpty(name)){
                     Toast.makeText(MainActivity.this,"名称不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
                     return;
+                }
+
+                double latitude = 0d;
+                double longitude = 0d;
+
+                if(TextUtils.isEmpty(longitudeStr) && TextUtils.isEmpty(latitudeStr)){
+                    latitude = Double.valueOf(latitudeStr);
+                    longitude = Double.valueOf(longitudeStr);
+                }else{
+                    latitude = currentLocation.getLatitude();
+                    longitude = currentLocation.getLongitude();
                 }
 
                 if(currentPoint == null){
@@ -574,8 +589,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     currentPoint.setType(currentType);
                     currentPoint.setTagNo("");
                     currentPoint.setRemark(remark);
-                    currentPoint.setLocation_lat(currentLocation.getLatitude());
-                    currentPoint.setLocation_long(currentLocation.getLongitude());
+                    currentPoint.setLocation_lat(latitude);
+                    currentPoint.setLocation_long(longitude);
                 }else{
                     currentPoint.setName(name);
                     currentPoint.setType(currentType);
@@ -583,7 +598,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 int radioId = radioLocate.getCheckedRadioButtonId();
                 if(radioId == R.id.radio_locate_yes) {
-                    //
+                    refreshLocation();
                     currentPoint.setLocation_lat(currentLocation.getLatitude());
                     currentPoint.setLocation_long(currentLocation.getLongitude());
                 }
@@ -595,9 +610,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     dialog.dismiss();
                 }
                 break;
+            case R.id.locate:
+                refreshLocation();
+                if(currentLocation != null){
+                    etLatitude.setText(String.valueOf(currentLocation.getLatitude()));
+                    etLongitude.setText(String.valueOf(currentLocation.getLongitude()));
+                }
+                break;
                 default:
         }
     }
+
+    private EditText etLatitude = null;
+    private EditText etLongitude = null;
 
     /**
      * 参数 id=标记点ID(如新增则为0), name=名称,tagNo=编号,location_lat=纬度,location_long=经度,type=类型,remark=备注
@@ -731,7 +756,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Toast.makeText(this,"采集点操作成功！",Toast.LENGTH_LONG).show();
     }
-
     private BottomSheetDialog dialog = null;
 
     private EditText etName = null;
@@ -740,6 +764,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private RadioGroup radioLocate = null;
     private RadioButton radioNo = null;
     private  Button confirmBtn = null;
+    private LinearLayout reLocateLayout = null;
+    private LinearLayout locateLayout = null;
+    private Button locateBtn = null;
 
     private void showBottomDialog() {
         View view = getLayoutInflater().inflate(R.layout.popup_list2, null);
@@ -755,6 +782,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             etOther = view.findViewById(R.id.edit_other);
             radioLocate = view.findViewById(R.id.radio_locate);
             radioNo = view.findViewById(R.id.radio_locate_no);
+
+            reLocateLayout = view.findViewById(R.id.layout_relocate);
+            locateLayout = view.findViewById(R.id.layout_locate);
+            etLatitude = view.findViewById(R.id.edit_latitude);
+            etLongitude = view.findViewById(R.id.edit_longitude);
+            locateBtn = view.findViewById(R.id.locate);
 
             spinnerType = view.findViewById(R.id.spinner_type);
             confirmBtn = view.findViewById(R.id.confirm);
@@ -784,14 +817,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             });
 
             confirmBtn.setOnClickListener(this);
+            locateBtn.setOnClickListener(this);
             cancelBtn.setOnClickListener(this);
 
         }
 
         if (isAdd){
             confirmBtn.setText("添加");
+            reLocateLayout.setVisibility(View.GONE);
+            locateLayout.setVisibility(View.VISIBLE);
         }else{
             confirmBtn.setText("修改");
+            locateLayout.setVisibility(View.GONE);
+            reLocateLayout.setVisibility(View.VISIBLE);
         }
 
         radioNo.setChecked(true);
@@ -813,6 +851,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             spinnerType.setSelection(0);
             etName.setText("");
             etOther.setText("");
+            etLatitude.setText("");
+            etLongitude.setText("");
         }
         dialog.show();
     }
