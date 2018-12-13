@@ -1,13 +1,9 @@
 package map.test.testmap.utils;
 
-import android.util.Log;
-
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import map.test.testmap.model.OnInfoListener;
 import okhttp3.Call;

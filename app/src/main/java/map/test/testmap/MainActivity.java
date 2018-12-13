@@ -63,18 +63,20 @@ import org.json.JSONObject;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import map.test.testmap.model.Image;
 import map.test.testmap.model.Line;
+import map.test.testmap.model.LineType;
 import map.test.testmap.model.OnInfoListener;
+import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.Point;
 import map.test.testmap.model.PointType;
 import map.test.testmap.model.ResponsePoint;
 import map.test.testmap.model.User;
 import map.test.testmap.utils.Common;
+import map.test.testmap.utils.HttpUtils;
 import map.test.testmap.utils.MyViewPagerAdapter;
 import map.test.testmap.utils.OkHttpClientManager;
 import okhttp3.Response;
@@ -98,8 +100,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private List<Point> pointList = null;
     private List<Line> lineList = null;
     private Point currentPoint = null;
-    private Point currentLine = null;
+    private Line currentLine = null;
     private List<PointType> pointTypeList = null;
+    private List<LineType> lineTypeList = null;
     private User user = null;
     private ProgressBar progressBar =null;
 
@@ -112,6 +115,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final int MSG_GET_ALL_LINE_END = 100005;
     public static final int MSG_SAVE_SINGLE_POINT_END = 100006;
     public static final int MSG_GET_SINGLE_POINT_END = 100007;
+    public static final int MSG_GET_SINGLE_LINE_END = 100008;
     public static final int REQUEST_CODE_TAKE_PICTURE = 0;
     public final static int REQUEST_CODE_GALLERY = 1;
 
@@ -132,6 +136,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     break;
                 case MSG_LOGIN_END:
                     getPointType();
+                    getLineType();
                     getALLPoint();
                     break;
                 case MSG_GET_ALL_POINT_END:
@@ -262,36 +267,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 获取登录相关信息
      */
     private void getLoginInfo(){
-       final String url = Constants.TEST_URL + Constants.TAG_LOGIN;
-       Log.d(TAG, "请求登录接口======地址为：" + url );
-       final Map<String,String> data = new HashMap<>();
-
-        OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
+       Log.d(TAG, "请求登录接口======");
+        HttpUtils.getInstance().getLoginInfo(new OnResponseListener() {
             @Override
-            public void success(Response responseMapBean) {
-                try{
-                    String result = responseMapBean.body().string();
-                    Log.d(TAG, "登录返回消息为：" + result);
-                    if(result.contains("result")){
-                        JSONObject object = new JSONObject(result);
-                        Message currentMsg = Message.obtain();
-                        currentMsg.what = MSG_LOGIN_FAILED;
-                        currentMsg.obj = object.getString("desc");
-                        mHandler.sendMessage(currentMsg);
-                    }else{
-                        user = new Gson().fromJson(result,User.class);
-                        Log.d(TAG, "收到消息为："+ result+"\n 用户账号为：" + user.getUserAccount());
-                        mHandler.sendEmptyMessage(MSG_LOGIN_END);
+            public void success(final retrofit2.Response responseMapBean) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        User currentUser = (User) responseMapBean.body();
+                        Log.d(TAG, "收到消息为："+ currentUser.toString());
+                        getPointType();
+                        getLineType();
+                        getALLPoint();
                     }
-
-                }catch (Exception e){
-                    sendErrorMsg(e);
-                }
+                });
             }
 
             @Override
-            public void fail(Exception e) {
-                sendErrorMsg(e);
+            public void fail(Throwable e) {
+                Log.d(TAG, "fail message is:" + e.getMessage());
             }
         });
 
@@ -389,6 +383,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
+    private void getLineType(){
+        Log.d(TAG, "请求获取线类型接口");
+        final String url = Constants.TEST_URL + Constants.TAG_GET_LINE_TYPE;
+        final Map<String,String> data = new HashMap<>();
+
+        OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
+            @Override
+            public void success(Response responseMapBean) {
+                try{
+                    String result = responseMapBean.body().string();
+                    Type type = new TypeToken<List<LineType>>(){}.getType();
+                    lineTypeList = new Gson().fromJson(result,type);
+                    Log.d(TAG, "收到消息为："+ result+"\n 当前标记点类型数量是：" + lineTypeList.size());
+                }catch (Exception e){
+                    sendErrorMsg(e);
+                }
+            }
+
+            @Override
+            public void fail(Exception e) {
+                sendErrorMsg(e);
+            }
+        });
+    }
+
     private void initControl(){
         Log.d(TAG, "=========================initControl called!=========================");
         toolbar = (Toolbar) findViewById(R.id.id_toolbar);
@@ -419,7 +438,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 isAdd = true;
                 currentPoint = null;
                 if(pointTypeList != null){
-                    showBottomDialog();
+                    showPointBottomDialog();
                 }else{
                     Toast.makeText(MainActivity.this,"与服务器连接失败，点击刷新重试！",Toast.LENGTH_LONG).show();
                 }
@@ -450,6 +469,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onPolylineClick(Polyline polyline) {
                 Log.d(TAG, "onPolylineClick: ");
+                double startLat = polyline.getPoints().get(0).latitude;
+                double startLng = polyline.getPoints().get(0).longitude;
+                double endLat = polyline.getPoints().get(1).latitude;
+                double endLng = polyline.getPoints().get(1).longitude;
+
+                for (Line cur: lineList) {
+                    if (cur.getTag_begin_location_lat() == startLat &&
+                            cur.getTag_begin_location_long() == startLng &&
+                            cur.getTag_end_location_lat() == endLat &&
+                            cur.getTag_end_location_long() == endLng){
+                        currentLine = cur;
+                    }
+                }
+
+                if(currentLine != null){
+                    Log.d(TAG, "onPolylineClick: "+currentLine.getName());
+                    showLineBottomDialog();
+                }else {
+                    Toast.makeText(MainActivity.this,"当前线路信息异常，请重新刷新！",Toast.LENGTH_LONG).show();
+                }
             }
         };
 
@@ -466,11 +505,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     for (Point current:pointList) {
                         if(current.getLocation_lat() == lat && current.getLocation_long() == lng){
                             currentPoint = current;
-                            showBottomDialog();
                         }
                     }
-                }else{
-                    showBottomDialog();
+                }
+
+                if(currentPoint != null){
+                    showPointBottomDialog();
+                } else{
+                    Toast.makeText(MainActivity.this,"当前点信息异常，请重新刷新！",Toast.LENGTH_LONG).show();
                 }
 
             }
@@ -789,6 +831,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    private void getSingleLine(String lineId){
+        Log.d(TAG, "请求获取某个点接口");
+        final String url = Constants.TEST_URL + Constants.TAG_GET_SINGLE_LINE;
+        final Map<String,String> data = new HashMap<>();
+        data.put("id",lineId);
+        Log.d(TAG, "getSingleLine data is:" + data.toString());
+        OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
+            @Override
+            public void success(Response responseMapBean) {
+                try{
+                    String result = responseMapBean.body().string();
+                    currentLine = new Gson().fromJson(result,Line.class);
+
+                    Log.d(TAG, "收到消息为："+ result);
+                    mHandler.sendEmptyMessage(MSG_GET_SINGLE_LINE_END);
+                }catch (Exception e){
+                    sendErrorMsg(e);
+                }
+            }
+
+            @Override
+            public void fail(Exception e) {
+                sendErrorMsg(e);
+            }
+        });
+    }
+
     private void showAllPoint(){
         for (Point current: pointList) {
             LatLng latLng = new LatLng(current.getLocation_lat(),current.getLocation_long());
@@ -890,7 +959,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private void showBottomDialog() {
+    private void showPointBottomDialog() {
         View view = getLayoutInflater().inflate(R.layout.popup_list2, null);
         if(dialog == null ){
 
@@ -982,6 +1051,95 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void initSpinner(Spinner spinner,String[] data){
         ArrayAdapter<String> adapter=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_multiple_choice,data);
         spinner.setAdapter(adapter);
+    }
+
+    private void showLineBottomDialog() {
+        View view = getLayoutInflater().inflate(R.layout.popup_line, null);
+        if(dialog == null ){
+
+            dialog = new BottomSheetDialog(this);
+
+            dialog.setContentView(view);
+            dialog.setCancelable(true);
+            dialog.setCanceledOnTouchOutside(false);
+//
+//            etName = view.findViewById(R.id.edit_name);
+//            etOther = view.findViewById(R.id.edit_other);
+//
+//            etLatitude = view.findViewById(R.id.edit_latitude);
+//            etLongitude = view.findViewById(R.id.edit_longitude);
+//            locateBtn = view.findViewById(R.id.locate);
+//            takePicBtn = view.findViewById(R.id.btn_take_pic);
+//            choosePicBtn = view.findViewById(R.id.btn_pick_pic);
+//
+//            spinnerType = view.findViewById(R.id.spinner_type);
+//            confirmBtn = view.findViewById(R.id.confirm);
+//
+//            tvEmpty = view.findViewById(R.id.empty_text);
+//            Button cancelBtn = view.findViewById(R.id.cancel);
+//            pager = view.findViewById(R.id.viewPager);
+//
+//            String[] typeData =new String[pointTypeList.size()];
+//
+//            for (int i=0;i<pointTypeList.size();i++){
+//                typeData[i] = pointTypeList.get(i).getOptionText();
+//            }
+//            currentType = 0;
+//            initSpinner(spinnerType,typeData);
+//
+//            spinnerType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+//                @Override
+//                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+//                    Log.i(TAG, "类型选择当前的选择序号为：" + i);
+//                    currentTypeIndex = i;
+//                    currentType = pointTypeList.get(i).getOptionValue();
+//                }
+//
+//                @Override
+//                public void onNothingSelected(AdapterView<?> adapterView) {
+//                    Log.i(TAG, "类型选择当前的选择序号为：0");
+//                    currentTypeIndex = 0;
+//                }
+//            });
+//
+//            confirmBtn.setOnClickListener(this);
+//            locateBtn.setOnClickListener(this);
+//            takePicBtn.setOnClickListener(this);
+//            choosePicBtn.setOnClickListener(this);
+//            cancelBtn.setOnClickListener(this);
+        }
+//
+//        if (isAdd){
+//            confirmBtn.setText("添加");
+//        }else{
+//            confirmBtn.setText("修改");
+//        }
+//
+//        if(currentPoint != null){
+//            currentType = currentPoint.getType();
+//            int index = 0;
+//            for (PointType item:pointTypeList
+//                    ) {
+//                if(item.getOptionValue() == currentType){
+//                    break;
+//                }
+//                index++;
+//            }
+//
+//            spinnerType.setSelection(index);
+//            etName.setText(currentPoint.getName());
+//            etOther.setText(currentPoint.getRemark());
+//            etLatitude.setText(String.valueOf(currentPoint.getLocation_lat()));
+//            etLongitude.setText(String.valueOf(currentPoint.getLocation_long()));
+//        }else{
+//            spinnerType.setSelection(0);
+//            etName.setText("");
+//            etOther.setText("");
+//            etLatitude.setText("");
+//            etLongitude.setText("");
+//        }
+//        showPager();
+        dialog.show();
     }
 
     @Override

@@ -56,4 +56,9 @@ public class User {
     public void setId(int id) {
         this.id = id;
     }
+
+    @Override
+    public String toString() {
+        return "id:" + id+",level is:" + level + ",username is:" + username+",userAccount is:" +userAccount;
+    }
 }
