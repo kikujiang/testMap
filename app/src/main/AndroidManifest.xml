@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="map.test.testmap">
 
+    <!--用于进行拍照-->
+    <uses-permission android:name="android.permission.CAMERA" />
     <!--用于进行网络定位-->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"></uses-permission>
     <!--用于访问GPS定位-->
@@ -35,7 +37,9 @@
             android:name="com.amap.api.v2.apikey"
             android:value="19ae8bd363284131a445e0c4f0f1467e"/>
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

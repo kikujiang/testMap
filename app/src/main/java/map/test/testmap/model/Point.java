@@ -1,5 +1,7 @@
 package map.test.testmap.model;
 
+import java.util.List;
+
 /**
  * 点对象
  * {
@@ -28,6 +30,7 @@ public class Point {
     private User createUser;
     private String remark;
     private int id;
+    private List<Image> imageList;
 
     public String getName() {
         return name;
@@ -99,6 +102,14 @@ public class Point {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public List<Image> getImages() {
+        return imageList;
+    }
+
+    public void setImages(List<Image> imageList) {
+        this.imageList = imageList;
     }
 
     @Override

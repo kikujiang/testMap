@@ -1,17 +1,23 @@
 package map.test.testmap;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetDialog;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -19,15 +25,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,7 +43,6 @@ import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.CameraUpdateFactory;
-import com.amap.api.maps.LocationSource;
 import com.amap.api.maps.MapView;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.Marker;
@@ -48,6 +52,9 @@ import com.amap.api.maps.model.Polyline;
 import com.amap.api.maps.model.PolylineOptions;
 import com.amap.api.maps.model.animation.AlphaAnimation;
 import com.amap.api.maps.model.animation.Animation;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -56,15 +63,19 @@ import org.json.JSONObject;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import map.test.testmap.model.Image;
 import map.test.testmap.model.Line;
 import map.test.testmap.model.OnInfoListener;
 import map.test.testmap.model.Point;
 import map.test.testmap.model.PointType;
 import map.test.testmap.model.ResponsePoint;
 import map.test.testmap.model.User;
+import map.test.testmap.utils.Common;
+import map.test.testmap.utils.MyViewPagerAdapter;
 import map.test.testmap.utils.OkHttpClientManager;
 import okhttp3.Response;
 
@@ -87,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private List<Point> pointList = null;
     private List<Line> lineList = null;
     private Point currentPoint = null;
+    private Point currentLine = null;
     private List<PointType> pointTypeList = null;
     private User user = null;
     private ProgressBar progressBar =null;
@@ -100,10 +112,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final int MSG_GET_ALL_LINE_END = 100005;
     public static final int MSG_SAVE_SINGLE_POINT_END = 100006;
     public static final int MSG_GET_SINGLE_POINT_END = 100007;
+    public static final int REQUEST_CODE_TAKE_PICTURE = 0;
+    public final static int REQUEST_CODE_GALLERY = 1;
 
     private Marker currentMarker = null;
 
     private boolean isAdd = false;
+    private String showMsg= "";
+
+    private List<String> imageLocalPath = null;
+    private List<String> imageRemotePath = null;
 
     private Handler mHandler = new Handler(){
         @Override
@@ -156,6 +174,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         pointList.add(currentPoint);
                     }
 
+                    clearImageData();
+                    if(currentPoint.getImages() != null){
+                        Log.d(TAG, "handleMessage: "+ currentPoint.getImages().size());
+                        configRemoteData(currentPoint.getImages());
+                    }
                     addMarker(currentPoint);
                     break;
                 case MSG_MSG_ERROR:
@@ -188,10 +211,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void checkLocationPermission(){
         Log.d(TAG, "=========================checkLocationPermission called!=========================");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            int checkPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
-            if (checkPermission != PackageManager.PERMISSION_GRANTED) {
+            int checkPermission1 = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
+            int checkPermission2 = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            int checkPermission3 = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+            if (checkPermission1 != PackageManager.PERMISSION_GRANTED && checkPermission2 != PackageManager.PERMISSION_GRANTED && checkPermission3 != PackageManager.PERMISSION_GRANTED) {
                 //没有获取权限，发起申请
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA}, 1);
             } else {
                 //doing everything what you want
                 initial();
@@ -372,6 +397,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         progressBar.setVisibility(View.GONE);
         initToolBar();
+        initImageData();
     }
 
     private void initToolBar(){
@@ -389,6 +415,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.collect:
+                clearImageData();
                 isAdd = true;
                 currentPoint = null;
                 if(pointTypeList != null){
@@ -456,7 +483,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             // 返回 true 则表示接口已响应事件，否则返回false
             @Override
             public boolean onMarkerClick(Marker marker) {
-//                marker.setMarkerOptions(marker.getOptions().set);
                 currentMarker = marker;
                 double lat = currentMarker.getPosition().latitude;
                 double lng = currentMarker.getPosition().longitude;
@@ -465,6 +491,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         currentPoint = current;
                     }
                 }
+                getSinglePoint(currentPoint.getId()+"");
                 currentMarker.showInfoWindow();
                 return false;
             }
@@ -489,9 +516,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onLocationChanged(AMapLocation aMapLocation) {
                 Log.d(TAG, "initLocationInfo onLocationChanged: called:"+ aMapLocation.toString());
-                tvLocation.setText(aMapLocation.getLongitude()+","+aMapLocation.getLatitude());
-                currentLocation = aMapLocation;
-                locate();
+                if (aMapLocation.getErrorCode() == 0) {
+                    //可在其中解析amapLocation获取相应内容。
+                    showMsg = "当前经度："+aMapLocation.getLongitude()+"，纬度："+aMapLocation.getLatitude();
+                    tvLocation.setText(showMsg);
+                    currentLocation = aMapLocation;
+                    locate();
+                }else {
+                    //定位失败时，可通过ErrCode（错误码）信息来确定失败的原因，errInfo是错误信息，详见错误码表。
+                    Toast.makeText(MainActivity.this,"定位失败,原因是："+aMapLocation.getErrorInfo()+"。请重新尝试！",Toast.LENGTH_LONG).show();
+                    Log.e("Error","location Error, ErrCode:"
+                            + aMapLocation.getErrorCode() + ", errInfo:"
+                            + aMapLocation.getErrorInfo());
+                }
             }
         };
         //初始化定位
@@ -515,21 +552,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        myLocationStyle.anchor(0.0f,0.5f);
         myLocationStyle.showMyLocation(true);
         aMap.setMyLocationStyle(myLocationStyle);//设置定位蓝点的Style
-        aMap.getUiSettings().setMyLocationButtonEnabled(true);//设置默认定位按钮是否显示，非必需设置。
+//        aMap.getUiSettings().setMyLocationButtonEnabled(true);//设置默认定位按钮是否显示，非必需设置。
         aMap.setMyLocationEnabled(true);// 设置为true表示启动显示定位蓝点，false表示隐藏定位蓝点并不进行定位，默认是false。
         aMap.showIndoorMap(true);
         aMap.setOnMyLocationChangeListener(new AMap.OnMyLocationChangeListener() {
             @Override
             public void onMyLocationChange(Location location) {
                 Log.d("map", "onMyLocationChange: "+ location.toString());
-                tvLocation.setText(location.getLongitude()+","+location.getLatitude());
-
+                showMsg = "当前经度："+location.getLongitude()+"，纬度："+location.getLatitude();
+                tvLocation.setText(showMsg);
             }
         });
     }
 
     @Override
     protected void onDestroy() {
+        Log.d(TAG, "==============================onDestroy: ");
         super.onDestroy();
         //在activity执行onDestroy时执行mMapView.onDestroy()，销毁地图
         mMapView.onDestroy();
@@ -537,6 +575,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     @Override
     protected void onResume() {
+        Log.d(TAG, "==============================onResume: ");
         super.onResume();
         //在activity执行onResume时执行mMapView.onResume ()，重新绘制加载地图
         mMapView.onResume();
@@ -544,6 +583,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     @Override
     protected void onPause() {
+        Log.d(TAG, "==============================onPause: ");
         super.onPause();
         //在activity执行onPause时执行mMapView.onPause ()，暂停地图的绘制
         mMapView.onPause();
@@ -559,28 +599,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.confirm:
-
+                //判断名称
                 String name = etName.getText().toString();
-                String remark = etOther.getText().toString();
-
-                String longitudeStr = etLongitude.getText().toString();
-                String latitudeStr = etLatitude.getText().toString();
-
                 if(TextUtils.isEmpty(name)){
                     Toast.makeText(MainActivity.this,"名称不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
                     return;
                 }
 
-                double latitude = 0d;
-                double longitude = 0d;
-
-                if(TextUtils.isEmpty(longitudeStr) && TextUtils.isEmpty(latitudeStr)){
-                    latitude = Double.valueOf(latitudeStr);
-                    longitude = Double.valueOf(longitudeStr);
-                }else{
-                    latitude = currentLocation.getLatitude();
-                    longitude = currentLocation.getLongitude();
+                //判断经度
+                String longitudeStr = etLongitude.getText().toString();
+                if(TextUtils.isEmpty(longitudeStr)){
+                    Toast.makeText(MainActivity.this,"经度不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+                    return;
                 }
+
+                //判断纬度
+                String latitudeStr = etLatitude.getText().toString();
+                if(TextUtils.isEmpty(latitudeStr)){
+                    Toast.makeText(MainActivity.this,"纬度不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                String remark = etOther.getText().toString();
+                double latitude = Double.valueOf(latitudeStr);
+                double longitude = Double.valueOf(longitudeStr);
 
                 if(currentPoint == null){
                     currentPoint = new Point();
@@ -595,12 +637,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     currentPoint.setName(name);
                     currentPoint.setType(currentType);
                     currentPoint.setRemark(remark);
-                }
-                int radioId = radioLocate.getCheckedRadioButtonId();
-                if(radioId == R.id.radio_locate_yes) {
-                    refreshLocation();
-                    currentPoint.setLocation_lat(currentLocation.getLatitude());
-                    currentPoint.setLocation_long(currentLocation.getLongitude());
                 }
 
                 savePoint(currentPoint);
@@ -617,8 +653,57 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     etLongitude.setText(String.valueOf(currentLocation.getLongitude()));
                 }
                 break;
+            case R.id.btn_take_pic:
+                takePic();
+                break;
+            case R.id.btn_pick_pic:
+                choosePhoto();
+                break;
                 default:
         }
+    }
+
+    private void initImageData(){
+        imageRemotePath = new ArrayList<>();
+        imageViews = new ArrayList<>();
+        imageLocalPath = new ArrayList<>();
+    }
+
+    private void clearImageData(){
+
+        imageRemotePath.clear();
+        imageViews.clear();
+        imageLocalPath.clear();
+        initImageData();
+        adapter = null;
+    }
+
+    private void configRemoteData(List<Image> images){
+        for (Image cur: images) {
+            ImageView current = new ImageView(MainActivity.this);
+            Glide.with(this).applyDefaultRequestOptions(new RequestOptions().placeholder(R.drawable.loading).diskCacheStrategy(DiskCacheStrategy.NONE).override(200,200)).load(cur.getPath()).into(current);
+            imageViews.add(current);
+        }
+        Log.d(TAG, "configRemoteData: "+ imageViews.size());
+    }
+
+    /**
+     * 调用本地相机拍照功能
+     */
+    private void takePic(){
+        // 跳转到系统的拍照界面
+        Intent intentToTakePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(intentToTakePhoto, REQUEST_CODE_TAKE_PICTURE);
+    }
+
+    /**
+     * 调用本地相册选择图片功能
+     */
+    private void choosePhoto(){
+        Intent intentToPickPic = new Intent(Intent.ACTION_PICK, null);
+        // 如果限制上传到服务器的图片类型时可以直接写如："image/jpeg 、 image/png等的类型" 所有类型则写 "image/*"
+        intentToPickPic.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/jpeg");
+        startActivityForResult(intentToPickPic, REQUEST_CODE_GALLERY);
     }
 
     private EditText etLatitude = null;
@@ -640,7 +725,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         data.put("type",currentPoint.getType()+"");
         data.put("remark",currentPoint.getRemark());
         Log.d(TAG, "savePoint data is:" + data.toString());
-        OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
+        OkHttpClientManager.getInstance().sendFileToServer(url, imageLocalPath, data, new OnInfoListener() {
             @Override
             public void success(Response responseMapBean) {
                 try{
@@ -675,6 +760,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 try{
                     String result = responseMapBean.body().string();
                     currentPoint = new Gson().fromJson(result,Point.class);
+
                     Log.d(TAG, "收到消息为："+ result);
                     mHandler.sendEmptyMessage(MSG_GET_SINGLE_POINT_END);
                 }catch (Exception e){
@@ -728,9 +814,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             marker.setAnimation(animation);
             marker.startAnimation();
-//            marker.showInfoWindow();
-
-//            Toast.makeText(this,"采集点添加成功！",Toast.LENGTH_LONG).show();
         }
     }
 
@@ -754,19 +837,58 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         currentMarker = aMap.addMarker(markerOption);
         currentMarker.showInfoWindow();
 
-        Toast.makeText(this,"采集点操作成功！",Toast.LENGTH_LONG).show();
+//        Toast.makeText(this,"采集点操作成功！",Toast.LENGTH_LONG).show();
     }
     private BottomSheetDialog dialog = null;
 
     private EditText etName = null;
     private EditText etOther = null;
     private Spinner spinnerType = null;
-    private RadioGroup radioLocate = null;
-    private RadioButton radioNo = null;
     private  Button confirmBtn = null;
-    private LinearLayout reLocateLayout = null;
-    private LinearLayout locateLayout = null;
     private Button locateBtn = null;
+    private Button takePicBtn = null;
+    private Button choosePicBtn = null;
+    private ViewPager pager = null;
+    private TextView tvEmpty = null;
+    private List<ImageView> imageViews = new ArrayList<>();
+    private int pagerWidth;
+    private String mTempPhotoPath;
+    // 照片所在的Uri地址
+    private Uri imageUri;
+
+    private void showPager(){
+
+        if (imageViews.size() < 1){
+            pager.setVisibility(View.GONE);
+            tvEmpty.setVisibility(View.VISIBLE);
+            return;
+        }else{
+            pager.setVisibility(View.VISIBLE);
+            tvEmpty.setVisibility(View.GONE);
+        }
+
+        configPager();
+    }
+
+    private MyViewPagerAdapter adapter = null;
+    private void configPager(){
+
+        if(adapter == null){
+            pagerWidth = (int) (getResources().getDisplayMetrics().widthPixels);
+            ViewGroup.LayoutParams lp = pager.getLayoutParams();
+            if (lp == null) {
+                lp = new ViewGroup.LayoutParams(pagerWidth, ViewGroup.LayoutParams.MATCH_PARENT);
+            } else {
+                lp.width = pagerWidth;
+            }
+            pager.setLayoutParams(lp);
+            adapter = new MyViewPagerAdapter(imageViews);
+            pager.setAdapter(adapter);
+        }else {
+            adapter.notifyDataSetChanged();
+        }
+
+    }
 
     private void showBottomDialog() {
         View view = getLayoutInflater().inflate(R.layout.popup_list2, null);
@@ -780,18 +902,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             etName = view.findViewById(R.id.edit_name);
             etOther = view.findViewById(R.id.edit_other);
-            radioLocate = view.findViewById(R.id.radio_locate);
-            radioNo = view.findViewById(R.id.radio_locate_no);
 
-            reLocateLayout = view.findViewById(R.id.layout_relocate);
-            locateLayout = view.findViewById(R.id.layout_locate);
             etLatitude = view.findViewById(R.id.edit_latitude);
             etLongitude = view.findViewById(R.id.edit_longitude);
             locateBtn = view.findViewById(R.id.locate);
+            takePicBtn = view.findViewById(R.id.btn_take_pic);
+            choosePicBtn = view.findViewById(R.id.btn_pick_pic);
 
             spinnerType = view.findViewById(R.id.spinner_type);
             confirmBtn = view.findViewById(R.id.confirm);
+
+            tvEmpty = view.findViewById(R.id.empty_text);
             Button cancelBtn = view.findViewById(R.id.cancel);
+            pager = view.findViewById(R.id.viewPager);
 
             String[] typeData =new String[pointTypeList.size()];
 
@@ -818,21 +941,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             confirmBtn.setOnClickListener(this);
             locateBtn.setOnClickListener(this);
+            takePicBtn.setOnClickListener(this);
+            choosePicBtn.setOnClickListener(this);
             cancelBtn.setOnClickListener(this);
-
         }
 
         if (isAdd){
             confirmBtn.setText("添加");
-            reLocateLayout.setVisibility(View.GONE);
-            locateLayout.setVisibility(View.VISIBLE);
         }else{
             confirmBtn.setText("修改");
-            locateLayout.setVisibility(View.GONE);
-            reLocateLayout.setVisibility(View.VISIBLE);
         }
 
-        radioNo.setChecked(true);
         if(currentPoint != null){
             currentType = currentPoint.getType();
             int index = 0;
@@ -847,6 +966,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             spinnerType.setSelection(index);
             etName.setText(currentPoint.getName());
             etOther.setText(currentPoint.getRemark());
+            etLatitude.setText(String.valueOf(currentPoint.getLocation_lat()));
+            etLongitude.setText(String.valueOf(currentPoint.getLocation_long()));
         }else{
             spinnerType.setSelection(0);
             etName.setText("");
@@ -854,12 +975,54 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             etLatitude.setText("");
             etLongitude.setText("");
         }
+        showPager();
         dialog.show();
     }
 
     private void initSpinner(Spinner spinner,String[] data){
         ArrayAdapter<String> adapter=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_multiple_choice,data);
         spinner.setAdapter(adapter);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if ( resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case REQUEST_CODE_TAKE_PICTURE:
+
+                    Bitmap bm = (Bitmap) data.getExtras().get("data");
+                    if(bm != null){
+                        String path = Common.getInstance().saveBitmap(MainActivity.this,bm);
+                        Log.d(TAG, "onActivityResult: path is" + path);
+                        imageLocalPath.add(path);
+                        ImageView cur = new ImageView(MainActivity.this);
+                        cur.setImageBitmap(bm);
+                        imageViews.add(0,cur);
+                        showPager();
+                    }
+                    break;
+                case REQUEST_CODE_GALLERY:
+                    try {
+                        //该uri是上一个Activity返回的
+                        imageUri = data.getData();
+                        if(imageUri!=null) {
+                            Bitmap bit = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri));
+                            String path = Common.getInstance().saveBitmap(MainActivity.this,bit);
+                            Log.d(TAG, "onActivityResult: path is" + path);
+                            imageLocalPath.add(path);
+                            ImageView choose = new ImageView(MainActivity.this);
+                            choose.setImageBitmap(bit);
+                            imageViews.add(0,choose);
+                            showPager();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                    default:
+            }
+        }
+
     }
 
     @Override

@@ -45,6 +45,80 @@
                     android:layout_height="match_parent" />
             </LinearLayout>
             <LinearLayout
+                android:id="@+id/layout_locate"
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:padding="5dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:text="经度："
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+                <EditText
+                    android:id="@+id/edit_longitude"
+                    android:layout_weight="1"
+                    android:textSize="12sp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+                <TextView
+                    android:text="纬度："
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+                <EditText
+                    android:id="@+id/edit_latitude"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="5dp"
+                    android:textSize="12sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+                <Button
+                    android:id="@+id/locate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:text="定位"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Button
+                    android:id="@+id/btn_take_pic"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="拍照"/>
+                <Button
+                    android:id="@+id/btn_pick_pic"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:text="选择图片"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layerType="software"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/empty_text"
+                    android:text="@string/noPic"
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+                <android.support.v4.view.ViewPager
+                    android:id="@+id/viewPager"
+                    android:layout_width="wrap_content"
+                    android:layout_height="200dp"
+                    android:clipChildren="false"/>
+            </LinearLayout>
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_weight="1"
                 android:padding="5dp"
@@ -60,73 +134,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
             </LinearLayout>
-            <LinearLayout
-                android:id="@+id/layout_locate"
-                android:layout_width="match_parent"
-                android:orientation="horizontal"
-                android:padding="5dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content">
-                <TextView
-                    android:text="经度："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
-                <EditText
-                    android:id="@+id/edit_latitude"
-                    android:layout_weight="1"
-                    android:textSize="12sp"
-                    android:layout_marginLeft="5dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
-                <TextView
-                    android:text="纬度："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
-                <EditText
-                    android:id="@+id/edit_longitude"
-                    android:layout_weight="1"
-                    android:layout_marginLeft="5dp"
-                    android:textSize="12sp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
-                <Button
-                    android:id="@+id/locate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="5dp"
-                    android:text="定位"/>
-            </LinearLayout>
-            <LinearLayout
-                android:id="@+id/layout_relocate"
-                android:layout_width="match_parent"
-                android:layout_weight="1"
-                android:padding="5dp"
-                android:layout_height="wrap_content">
-                <TextView
-                    android:text="重新定位："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
-                <RadioGroup
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/radio_locate"
-                    android:orientation="horizontal">
-                    <RadioButton
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="是"
-                        android:id="@+id/radio_locate_yes"/>
-                    <RadioButton
-                        android:checked="true"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="否"
-                        android:id="@+id/radio_locate_no"/>
-                </RadioGroup>
-            </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_weight="1"

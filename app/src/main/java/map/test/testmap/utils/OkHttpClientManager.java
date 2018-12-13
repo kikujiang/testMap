@@ -1,14 +1,20 @@
 package map.test.testmap.utils;
 
+import android.util.Log;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import map.test.testmap.model.OnInfoListener;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -17,6 +23,7 @@ import okhttp3.Response;
 public class OkHttpClientManager {
 
     private static final String TAG = "OkHttpClientManager";
+    public static final MediaType MEDIA_TYPE_JPG = MediaType.parse("image/jpg");
     private static volatile OkHttpClientManager manager = null;
     private OkHttpClient client = null;
 
@@ -43,6 +50,43 @@ public class OkHttpClientManager {
         RequestBody requestBody = builder.build();
         //3.创建Request对象，设置URL地址，将RequestBody作为post方法的参数传入
         Request request = new Request.Builder().url(url).post(requestBody).build();
+        //4.创建一个call对象,参数就是Request请求对象
+        Call call = client.newCall(request);
+        //5.请求加入调度,重写回调方法
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                listener.fail(e);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                listener.success(response);
+            }
+        });
+    }
+
+    public void sendFileToServer(String url, List<String> pathList, Map<String,String> data, final OnInfoListener listener){
+
+        if(pathList == null || pathList.size() < 1){
+            post(url,data,listener);
+            return;
+        }
+
+        MultipartBody.Builder builder = new MultipartBody.Builder();
+        builder.setType(MultipartBody.FORM);
+        for (Map.Entry<String,String> item: data.entrySet()) {
+            builder.addFormDataPart(item.getKey(),item.getValue());
+        }
+
+        for (String path: pathList) {
+            File file = new File(path);
+            builder.addFormDataPart("images", file.getName(),
+                    RequestBody.create(MEDIA_TYPE_JPG, file));
+        }
+
+        //3.创建Request对象，设置URL地址，将RequestBody作为post方法的参数传入
+        Request request = new Request.Builder().url(url).post(builder.build()).build();
         //4.创建一个call对象,参数就是Request请求对象
         Call call = client.newCall(request);
         //5.请求加入调度,重写回调方法
