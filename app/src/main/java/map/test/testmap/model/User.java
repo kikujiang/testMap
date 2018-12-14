@@ -16,6 +16,9 @@ public class User {
     private String password;
     private int level;
     private int id;
+    private String phone;
+    private String email;
+    private String reqUri;
 
     public String getUsername() {
         return username;
@@ -60,5 +63,29 @@ public class User {
     @Override
     public String toString() {
         return "id:" + id+",level is:" + level + ",username is:" + username+",userAccount is:" +userAccount;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getReqUri() {
+        return reqUri;
+    }
+
+    public void setReqUri(String reqUri) {
+        this.reqUri = reqUri;
     }
 }

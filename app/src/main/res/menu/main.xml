@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    >
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/search"
+        android:icon="@drawable/ic_action_action_search"
+        android:orderInCategory="100"
+        android:title="@string/search"
+        app:showAsAction="always" />
     <item
         android:id="@+id/collect"
         android:title="@string/collect"/>
-
     <item
         android:id="@+id/refresh"
         android:title="@string/refresh"/>
-
     <item
         android:id="@+id/reLocate"
         android:title="@string/locate"/>
     <item
         android:id="@+id/clear"
         android:title="@string/clear"/>
-
 
 </menu>

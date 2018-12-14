@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">电力地理信息</string>
     <string name="collect">采集</string>
+    <string name="search">查询</string>
     <string name="reLocate">重定位</string>
     <string name="refresh">刷新</string>
     <string name="noPic">当前无图片</string>

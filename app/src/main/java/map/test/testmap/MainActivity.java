@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetDialog;
 import android.support.v4.app.ActivityCompat;
@@ -57,8 +58,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
-import org.json.JSONObject;
+import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -97,12 +97,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private int currentType = 0;
     private int currentTypeIndex = 0;
 
+    private int currentLineType = 0;
+
     private List<Point> pointList = null;
     private List<Line> lineList = null;
     private Point currentPoint = null;
     private Line currentLine = null;
+    private String currentSearch = "";
     private List<PointType> pointTypeList = null;
     private List<LineType> lineTypeList = null;
+    private List<Marker> markerList = null;
     private User user = null;
     private ProgressBar progressBar =null;
 
@@ -110,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final int MSG_END = 100001;
     public static final int MSG_MSG_ERROR = 100002;
     public static final int MSG_LOGIN_END = 100003;
-    public static final int MSG_LOGIN_FAILED = 100008;
+    public static final int MSG_LOGIN_FAILED = 100010;
     public static final int MSG_GET_ALL_POINT_END = 100004;
     public static final int MSG_GET_ALL_LINE_END = 100005;
     public static final int MSG_SAVE_SINGLE_POINT_END = 100006;
@@ -126,6 +130,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private List<String> imageLocalPath = null;
     private List<String> imageRemotePath = null;
+
+    private List<String> searchData = null;
+    private HashMap<String,Object> searchDataMarkerMap = null;
 
     private Handler mHandler = new Handler(){
         @Override
@@ -165,8 +172,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }else{
                         Toast.makeText(MainActivity.this,"保存失败，原因是：" + responsePoint.getDesc(),Toast.LENGTH_LONG).show();
                     }
-                    if (dialog != null){
-                        dialog.dismiss();
+                    if (pointDialog != null){
+                        pointDialog.dismiss();
                     }
 
                     break;
@@ -198,6 +205,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     break;
                 case MSG_END:
                     progressBar.setVisibility(View.GONE);
+                    break;
+                case MSG_GET_SINGLE_LINE_END:
+                    if(currentLine != null){
+                        Log.d(TAG, "onPolylineClick: "+currentLine.getName());
+                        showLineBottomDialog();
+                    }else {
+                        Toast.makeText(MainActivity.this,"当前线路信息异常，请重新刷新！",Toast.LENGTH_LONG).show();
+                    }
                     break;
             }
         }
@@ -275,10 +290,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void run() {
                         User currentUser = (User) responseMapBean.body();
-                        Log.d(TAG, "收到消息为："+ currentUser.toString());
-                        getPointType();
-                        getLineType();
-                        getALLPoint();
+                        if(currentUser == null){
+                            Toast.makeText(MainActivity.this,"登录失败",Toast.LENGTH_LONG).show();
+                        }else{
+                            Log.d(TAG, "收到消息为："+ currentUser.toString());
+                            getPointType();
+                            getLineType();
+                            getALLPoint();
+                        }
                     }
                 });
             }
@@ -413,11 +432,55 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         toolbar = (Toolbar) findViewById(R.id.id_toolbar);
         progressBar = (ProgressBar)findViewById(R.id.progress);
         tvLocation = (TextView) findViewById(R.id.tv_show_location);
+        searchView = (MaterialSearchView) findViewById(R.id.search_view);
 
         progressBar.setVisibility(View.GONE);
         initToolBar();
+        initSearchView();
         initImageData();
     }
+
+    private void initSearchView(){
+        searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Log.d(TAG, "onQueryTextSubmit: "+query);
+                if(query.contains(",")){
+                    currentSearch = query;
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                searchView.setVisibility(View.VISIBLE);
+                return false;
+            }
+        });
+
+        searchView.setOnSearchViewListener(new MaterialSearchView.SearchViewListener() {
+            @Override
+            public void onSearchViewShown() {
+                //Do some magic
+                Log.d(TAG, "onSearchViewShown: ");
+                currentSearch = "";
+            }
+
+            @Override
+            public void onSearchViewClosed() {
+                Log.d(TAG, "onSearchViewClosed: ");
+                if(!"".equals(currentSearch)){
+                    Marker curMarker = (Marker) searchDataMarkerMap.get(currentSearch);
+                    String currentId = currentSearch.split(",")[1];
+                    getSinglePoint(currentId);
+                    curMarker.showInfoWindow();
+                    aMap.moveCamera(CameraUpdateFactory.newLatLng(curMarker.getPosition()));
+                }
+            }
+        });
+    }
+
+    private MaterialSearchView searchView = null;
 
     private void initToolBar(){
         toolbar.setTitle("电力地理信息");
@@ -427,6 +490,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main,menu);
+        MenuItem item = menu.findItem(R.id.search);
+        searchView.setMenuItem(item);
         return true;
     }
 
@@ -483,12 +548,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 }
 
-                if(currentLine != null){
-                    Log.d(TAG, "onPolylineClick: "+currentLine.getName());
-                    showLineBottomDialog();
-                }else {
-                    Toast.makeText(MainActivity.this,"当前线路信息异常，请重新刷新！",Toast.LENGTH_LONG).show();
-                }
+                getSingleLine(currentLine.getId()+"");
             }
         };
 
@@ -497,11 +557,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void onInfoWindowClick(Marker currentMaker) {
+                Log.d(TAG, "onInfoWindowClick: hahahaahahahah" + currentPoint);
                 isAdd = false;
-                double lat = currentMarker.getPosition().latitude;
-                double lng = currentMarker.getPosition().longitude;
 
                 if(currentPoint == null){
+                    double lat = currentMarker.getPosition().latitude;
+                    double lng = currentMarker.getPosition().longitude;
                     for (Point current:pointList) {
                         if(current.getLocation_lat() == lat && current.getLocation_long() == lng){
                             currentPoint = current;
@@ -684,8 +745,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 savePoint(currentPoint);
                 break;
             case R.id.cancel:
-                if(dialog != null){
-                    dialog.dismiss();
+                if(pointDialog != null){
+                    pointDialog.dismiss();
                 }
                 break;
             case R.id.locate:
@@ -700,6 +761,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.btn_pick_pic:
                 choosePhoto();
+                break;
+            case R.id.btn_ok:
+                if(lineDialog != null){
+                    lineDialog.dismiss();
+                }
                 break;
                 default:
         }
@@ -859,7 +925,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void showAllPoint(){
+
+        if(markerList == null){
+            markerList = new ArrayList<>();
+        }else{
+            markerList.clear();
+        }
+
+        if (searchData == null){
+            searchData = new ArrayList<>();
+            searchDataMarkerMap = new HashMap<>();
+        }else{
+            searchData.clear();
+            searchDataMarkerMap.clear();
+        }
+
         for (Point current: pointList) {
+            String cur = current.getName() + "," +current.getId();
+            searchData.add(cur);
             LatLng latLng = new LatLng(current.getLocation_lat(),current.getLocation_long());
             MarkerOptions markerOption = new MarkerOptions();
             markerOption.position(latLng);
@@ -875,7 +958,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             markerOption.draggable(true);//设置Marker可拖动
             // 将Marker设置为贴地显示，可以双指下拉地图查看效果
             markerOption.setFlat(true);//设置marker平贴地图效果
-            final Marker marker = aMap.addMarker(markerOption);
+            Marker marker = aMap.addMarker(markerOption);
             Animation animation = new AlphaAnimation(0,1);
             long duration = 1000L;
             animation.setDuration(duration);
@@ -883,7 +966,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             marker.setAnimation(animation);
             marker.startAnimation();
+            searchDataMarkerMap.put(cur,marker);
+            markerList.add(marker);
         }
+
+        String[] sData = new String[searchData.size()];
+
+        searchData.toArray(sData);
+        searchView.setSuggestions(sData);
     }
 
     private void addMarker(Point currentPoint){
@@ -908,7 +998,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 //        Toast.makeText(this,"采集点操作成功！",Toast.LENGTH_LONG).show();
     }
-    private BottomSheetDialog dialog = null;
+    private BottomSheetDialog pointDialog = null;
+    private BottomSheetDialog lineDialog = null;
 
     private EditText etName = null;
     private EditText etOther = null;
@@ -961,13 +1052,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void showPointBottomDialog() {
         View view = getLayoutInflater().inflate(R.layout.popup_list2, null);
-        if(dialog == null ){
+        if(pointDialog == null ){
 
-            dialog = new BottomSheetDialog(this);
+            pointDialog = new BottomSheetDialog(this);
 
-            dialog.setContentView(view);
-            dialog.setCancelable(true);
-            dialog.setCanceledOnTouchOutside(false);
+            pointDialog.setContentView(view);
+            pointDialog.setCancelable(true);
+            pointDialog.setCanceledOnTouchOutside(false);
 
             etName = view.findViewById(R.id.edit_name);
             etOther = view.findViewById(R.id.edit_other);
@@ -1045,7 +1136,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             etLongitude.setText("");
         }
         showPager();
-        dialog.show();
+        pointDialog.show();
     }
 
     private void initSpinner(Spinner spinner,String[] data){
@@ -1053,93 +1144,89 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         spinner.setAdapter(adapter);
     }
 
+    private EditText etLineName;
+    private EditText etLineType;
+    private EditText etLineType2;
+//    private Spinner spinnerLineType;
+    private EditText etLineNum;
+    private EditText etLineBelong;
+    private EditText etLineRemark;
+    private EditText etLineLocation;
+    private EditText etLineIsUpload;
+    private Button btnLineConfirm;
+
+
     private void showLineBottomDialog() {
         View view = getLayoutInflater().inflate(R.layout.popup_line, null);
-        if(dialog == null ){
+        if(lineDialog == null ){
 
-            dialog = new BottomSheetDialog(this);
+            lineDialog = new BottomSheetDialog(this);
 
-            dialog.setContentView(view);
-            dialog.setCancelable(true);
-            dialog.setCanceledOnTouchOutside(false);
+            lineDialog.setContentView(view);
+            lineDialog.setCancelable(true);
+            lineDialog.setCanceledOnTouchOutside(false);
 //
-//            etName = view.findViewById(R.id.edit_name);
-//            etOther = view.findViewById(R.id.edit_other);
-//
-//            etLatitude = view.findViewById(R.id.edit_latitude);
-//            etLongitude = view.findViewById(R.id.edit_longitude);
-//            locateBtn = view.findViewById(R.id.locate);
-//            takePicBtn = view.findViewById(R.id.btn_take_pic);
-//            choosePicBtn = view.findViewById(R.id.btn_pick_pic);
-//
-//            spinnerType = view.findViewById(R.id.spinner_type);
-//            confirmBtn = view.findViewById(R.id.confirm);
-//
-//            tvEmpty = view.findViewById(R.id.empty_text);
-//            Button cancelBtn = view.findViewById(R.id.cancel);
-//            pager = view.findViewById(R.id.viewPager);
-//
-//            String[] typeData =new String[pointTypeList.size()];
-//
-//            for (int i=0;i<pointTypeList.size();i++){
-//                typeData[i] = pointTypeList.get(i).getOptionText();
-//            }
-//            currentType = 0;
-//            initSpinner(spinnerType,typeData);
-//
-//            spinnerType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            etLineName = view.findViewById(R.id.et_line_name);
+            etLineNum = view.findViewById(R.id.et_line_num);
+            etLineType = view.findViewById(R.id.et_line_type);
+            etLineType2 = view.findViewById(R.id.et_line_type2);
+
+            etLineBelong = view.findViewById(R.id.et_line_belong);
+            etLongitude = view.findViewById(R.id.edit_longitude);
+            etLineRemark = view.findViewById(R.id.et_line_remark);
+            etLineLocation = view.findViewById(R.id.et_line_location);
+            etLineIsUpload = view.findViewById(R.id.et_line_upload);
+
+            Common.getInstance().setEdittextFalse(etLineName);
+            Common.getInstance().setEdittextFalse(etLineType);
+            Common.getInstance().setEdittextFalse(etLineType2);
+            Common.getInstance().setEdittextFalse(etLineNum);
+            Common.getInstance().setEdittextFalse(etLineBelong);
+            Common.getInstance().setEdittextFalse(etLineRemark);
+            Common.getInstance().setEdittextFalse(etLineLocation);
+            Common.getInstance().setEdittextFalse(etLineIsUpload);
+
+//            spinnerLineType = view.findViewById(R.id.spinner_line_type);
+            btnLineConfirm = view.findViewById(R.id.btn_ok);
+
+            String[] typeData =new String[lineTypeList.size()];
+
+            for (int i=0;i<lineTypeList.size();i++){
+                typeData[i] = lineTypeList.get(i).getOptionText();
+            }
+            currentLineType = 0;
+//            initSpinner(spinnerLineType,typeData);
+//            spinnerLineType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 //                @Override
 //                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 //                    Log.i(TAG, "类型选择当前的选择序号为：" + i);
-//                    currentTypeIndex = i;
-//                    currentType = pointTypeList.get(i).getOptionValue();
+//                    currentLineType = pointTypeList.get(i).getOptionValue();
 //                }
 //
 //                @Override
 //                public void onNothingSelected(AdapterView<?> adapterView) {
-//                    Log.i(TAG, "类型选择当前的选择序号为：0");
-//                    currentTypeIndex = 0;
+//
 //                }
 //            });
-//
-//            confirmBtn.setOnClickListener(this);
-//            locateBtn.setOnClickListener(this);
-//            takePicBtn.setOnClickListener(this);
-//            choosePicBtn.setOnClickListener(this);
-//            cancelBtn.setOnClickListener(this);
+
+            btnLineConfirm.setOnClickListener(this);
         }
-//
-//        if (isAdd){
-//            confirmBtn.setText("添加");
-//        }else{
-//            confirmBtn.setText("修改");
-//        }
-//
-//        if(currentPoint != null){
-//            currentType = currentPoint.getType();
+//            currentLineType = currentLine.getType();
 //            int index = 0;
-//            for (PointType item:pointTypeList
-//                    ) {
-//                if(item.getOptionValue() == currentType){
+//            for (LineType item:lineTypeList ) {
+//                if(item.getOptionValue() == currentLineType){
 //                    break;
 //                }
 //                index++;
-//            }
-//
-//            spinnerType.setSelection(index);
-//            etName.setText(currentPoint.getName());
-//            etOther.setText(currentPoint.getRemark());
-//            etLatitude.setText(String.valueOf(currentPoint.getLocation_lat()));
-//            etLongitude.setText(String.valueOf(currentPoint.getLocation_long()));
-//        }else{
-//            spinnerType.setSelection(0);
-//            etName.setText("");
-//            etOther.setText("");
-//            etLatitude.setText("");
-//            etLongitude.setText("");
-//        }
+//                }
+//            spinnerLineType.setSelection(index);
+            etLineName.setText(currentLine.getName());
+            etLineNum.setText(currentLine.getLineCount()+"");
+            etLineRemark.setText(currentLine.getRemark());
+            etLineType.setText(currentLine.getTypeStr());
+            etLineType2.setText(currentLine.getPosTypeStr());
 //        showPager();
-        dialog.show();
+        lineDialog.show();
     }
 
     @Override
@@ -1156,6 +1243,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         ImageView cur = new ImageView(MainActivity.this);
                         cur.setImageBitmap(bm);
                         imageViews.add(0,cur);
+                        adapter = null;
                         showPager();
                     }
                     break;
@@ -1171,16 +1259,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             ImageView choose = new ImageView(MainActivity.this);
                             choose.setImageBitmap(bit);
                             imageViews.add(0,choose);
+                            adapter = null;
                             showPager();
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                     break;
+                case MaterialSearchView.REQUEST_VOICE:
+                    ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    if (matches != null && matches.size() > 0) {
+                        String searchWrd = matches.get(0);
+                        if (!TextUtils.isEmpty(searchWrd)) {
+                            searchView.setQuery(searchWrd, false);
+                        }
+                    }
+                    break;
                     default:
             }
         }
-
     }
 
     @Override

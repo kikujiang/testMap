@@ -3,6 +3,7 @@ package map.test.testmap.utils;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
+import android.widget.EditText;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -66,5 +67,11 @@ public class Common {
         }
         String path =dirPath + File.separator+fileName;
         return path;
+    }
+
+    public void setEdittextFalse(EditText cur){
+        cur.setEnabled(false);
+        cur.setFocusable(false);
+        cur.setKeyListener(null);
     }
 }

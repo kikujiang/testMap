@@ -3,9 +3,12 @@ package map.test.testmap;
 public class Constants {
 
 //    public static final String TEST_URL = "http://172.19.26.52:8080/em";
-//    public static final String TEST_URL = "http://172.17.4.5:8080/em_test";
-    public static final String TEST_URL = "http://119.3.71.206";
-    public static final String SPLITTER = "/";
+//    public static final String TEST_URL1 = "http://172.19.26.52:8080";
+    public static final String TEST_SPLITER = "em_test";
+    public static final String TEST_URL = "http://172.17.4.5:8080/em_test";
+    public static final String TEST_URL1 = "http://172.17.4.5:8080";
+//    public static final String TEST_URL = "http://119.3.71.206";
+    public static final String SPLITTER = "/app/";
 
     /**
      * 登陆

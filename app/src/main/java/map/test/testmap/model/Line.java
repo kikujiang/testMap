@@ -34,6 +34,8 @@ public class Line {
     private double tag_end_location_lat;
     private double tag_end_location_long;
     private Point tag_end;
+    private String typeStr;
+    private String posTypeStr;
 
     public int getId() {
         return id;
@@ -145,5 +147,21 @@ public class Line {
 
     public void setTag_end(Point tag_end) {
         this.tag_end = tag_end;
+    }
+
+    public String getTypeStr() {
+        return typeStr;
+    }
+
+    public void setTypeStr(String typeStr) {
+        this.typeStr = typeStr;
+    }
+
+    public String getPosTypeStr() {
+        return posTypeStr;
+    }
+
+    public void setPosTypeStr(String posTypeStr) {
+        this.posTypeStr = posTypeStr;
     }
 }

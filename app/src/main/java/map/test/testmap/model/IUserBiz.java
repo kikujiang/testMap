@@ -6,7 +6,7 @@ import retrofit2.http.GET;
 
 public interface IUserBiz {
 
-    @GET(Constants.TAG_LOGIN)
+    @GET(Constants.TEST_SPLITER + Constants.TAG_LOGIN)
     Call<User> getLoginInfo();
 
 

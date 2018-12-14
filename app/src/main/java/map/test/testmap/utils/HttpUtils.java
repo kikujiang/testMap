@@ -18,7 +18,7 @@ public class HttpUtils {
     private IUserBiz userBiz = null;
 
     private HttpUtils(){
-        retrofit = new Retrofit.Builder().baseUrl(Constants.TEST_URL)
+        retrofit = new Retrofit.Builder().baseUrl(Constants.TEST_URL1)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         userBiz = retrofit.create(IUserBiz.class);
@@ -40,6 +40,7 @@ public class HttpUtils {
         login.enqueue(new retrofit2.Callback<User>() {
             @Override
             public void onResponse(Call<User> call, retrofit2.Response<User> response) {
+                Log.d(TAG, "onResponse: "+response.code()+","+response.message());
                 listener.success(response);
             }
 
