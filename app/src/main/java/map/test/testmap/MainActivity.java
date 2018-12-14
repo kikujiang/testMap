@@ -740,6 +740,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     currentPoint.setName(name);
                     currentPoint.setType(currentType);
                     currentPoint.setRemark(remark);
+                    currentPoint.setLocation_lat(latitude);
+                    currentPoint.setLocation_long(longitude);
                 }
 
                 savePoint(currentPoint);
