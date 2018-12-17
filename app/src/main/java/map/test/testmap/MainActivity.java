@@ -231,12 +231,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void checkLocationPermission(){
         Log.d(TAG, "=========================checkLocationPermission called!=========================");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            int checkPermission1 = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
-            int checkPermission2 = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            int checkPermission3 = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
-            if (checkPermission1 != PackageManager.PERMISSION_GRANTED && checkPermission2 != PackageManager.PERMISSION_GRANTED && checkPermission3 != PackageManager.PERMISSION_GRANTED) {
+            int checkLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
+            if (checkLocationPermission != PackageManager.PERMISSION_GRANTED) {
                 //没有获取权限，发起申请
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA}, 1);
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
             } else {
                 //doing everything what you want
                 initial();
@@ -759,7 +757,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.btn_take_pic:
-                takePic();
+                checkCameraPermission();
                 break;
             case R.id.btn_pick_pic:
                 choosePhoto();
@@ -804,6 +802,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // 跳转到系统的拍照界面
         Intent intentToTakePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         startActivityForResult(intentToTakePhoto, REQUEST_CODE_TAKE_PICTURE);
+    }
+
+    private void checkCameraPermission(){
+        Log.d(TAG, "=========================checkCameraPermission called!=========================");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            int storagePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            int cameraPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+            if (cameraPermission != PackageManager.PERMISSION_GRANTED && storagePermission != PackageManager.PERMISSION_GRANTED) {
+                //没有获取权限，发起申请
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA}, 2);
+            } else {
+                //doing everything what you want
+                takePic();
+            }
+        }else{
+            takePic();
+        }
     }
 
     /**
@@ -1293,7 +1308,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     initial();
                 } else {
                     //用户拒绝获取权限，则Toast出一句话提醒用户
-                    Toast.makeText(this, "应用未开启定位权限，请开启后重试", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "应用未开启定位权限，请开启后重试", Toast.LENGTH_LONG).show();
+                }
+                break;
+            case 2:
+                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    takePic();
+                }else {
+                    //用户拒绝获取权限，则Toast出一句话提醒用户
+                    Toast.makeText(this, "应用未开启拍照权限，请开启后重试", Toast.LENGTH_LONG).show();
                 }
                 break;
             default:

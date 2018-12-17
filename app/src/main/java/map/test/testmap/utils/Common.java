@@ -36,6 +36,7 @@ public class Common {
      */
     public String saveBitmap(Context context,Bitmap bm){
         String filePath = getFilePath(context);
+        Bitmap compressBitmap = ImageFactory.ratio(bm,1920,1080);
         Log.d(TAG, "saveBitmap: " + filePath);
         File f = new File(filePath);
         if (f.exists()) {
@@ -43,7 +44,7 @@ public class Common {
         }
         try {
             FileOutputStream out = new FileOutputStream(f);
-            bm.compress(Bitmap.CompressFormat.PNG, 90, out);
+            compressBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
             out.flush();
             out.close();
             Log.i(TAG, "已经保存");
