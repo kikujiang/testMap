@@ -150,6 +150,13 @@
                 android:text="添加"/>
 
             <Button
+                android:id="@+id/navi"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="去这里" />
+
+            <Button
                 android:id="@+id/cancel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

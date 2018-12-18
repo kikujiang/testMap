@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
@@ -23,6 +24,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -60,6 +62,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
+import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -230,6 +233,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void checkLocationPermission(){
         Log.d(TAG, "=========================checkLocationPermission called!=========================");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+            StrictMode.setVmPolicy( builder.build() );
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             int checkLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
             if (checkLocationPermission != PackageManager.PERMISSION_GRANTED) {
@@ -547,6 +554,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
 
                 getSingleLine(currentLine.getId()+"");
+                polyline.setOptions(new PolylineOptions().width(40).setDottedLine(false).color(Color.BLUE));
             }
         };
 
@@ -749,6 +757,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     pointDialog.dismiss();
                 }
                 break;
+            case R.id.navi:
+                if(currentPoint == null){
+                    Toast.makeText(MainActivity.this,"当前节点数据为空，请重新刷新！",Toast.LENGTH_LONG).show();
+                    return;
+                }
+                invokingGD(currentPoint.getLocation_lat(),currentPoint.getLocation_long());
+                break;
             case R.id.locate:
                 refreshLocation();
                 if(currentLocation != null){
@@ -787,9 +802,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void configRemoteData(List<Image> images){
-        for (Image cur: images) {
+        for (final Image cur: images) {
             ImageView current = new ImageView(MainActivity.this);
-            Glide.with(this).applyDefaultRequestOptions(new RequestOptions().placeholder(R.drawable.loading).diskCacheStrategy(DiskCacheStrategy.NONE).override(200,200)).load(cur.getPath()).into(current);
+            current.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(MainActivity.this,ImageActivity.class);
+                    intent.putExtra("http",cur.getPath());
+                    startActivity(intent);
+                }
+            });
+            Glide.with(this).applyDefaultRequestOptions(new RequestOptions().placeholder(R.drawable.loading).diskCacheStrategy(DiskCacheStrategy.NONE)).load(cur.getPath()).into(current);
             imageViews.add(current);
         }
         Log.d(TAG, "configRemoteData: "+ imageViews.size());
@@ -798,9 +821,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * 调用本地相机拍照功能
      */
+    private String currentFileName = null;
     private void takePic(){
         // 跳转到系统的拍照界面
         Intent intentToTakePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        currentFileName = Common.getInstance().getFilePath(MainActivity.this);
+        intentToTakePhoto.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(new File(currentFileName)));
         startActivityForResult(intentToTakePhoto, REQUEST_CODE_TAKE_PICTURE);
     }
 
@@ -1022,6 +1048,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private EditText etOther = null;
     private Spinner spinnerType = null;
     private  Button confirmBtn = null;
+    private  Button naviBtn = null;
     private Button locateBtn = null;
     private Button takePicBtn = null;
     private Button choosePicBtn = null;
@@ -1088,6 +1115,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             spinnerType = view.findViewById(R.id.spinner_type);
             confirmBtn = view.findViewById(R.id.confirm);
+            naviBtn = view.findViewById(R.id.navi);
 
             tvEmpty = view.findViewById(R.id.empty_text);
             Button cancelBtn = view.findViewById(R.id.cancel);
@@ -1120,6 +1148,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             locateBtn.setOnClickListener(this);
             takePicBtn.setOnClickListener(this);
             choosePicBtn.setOnClickListener(this);
+            naviBtn.setOnClickListener(this);
             cancelBtn.setOnClickListener(this);
         }
 
@@ -1246,23 +1275,78 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         lineDialog.show();
     }
 
+    //退出时的时间
+    private long mExitTime;
+    //对返回键进行监听
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+            exit();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    public void exit() {
+        if ((System.currentTimeMillis() - mExitTime) > 2000) {
+            Toast.makeText(MainActivity.this, "再按一次退出每日新闻", Toast.LENGTH_SHORT).show();
+            mExitTime = System.currentTimeMillis();
+        } else {
+            finish();
+            System.exit(0);
+        }
+    }
+
+
+    public void invokingGD(double lat, double lon){
+
+        String params = "androidamap://navi?sourceApplication=amap&lat="+lat+"&lon="+lon+ "&dev=0";
+        Log.d(TAG, "invokingGD: "+params);
+        //  com.autonavi.minimap这是高德地图的包名
+        Intent intent = new Intent("android.intent.action.VIEW",android.net.Uri.parse(params));
+        intent.setPackage("com.autonavi.minimap");
+
+        if(isInstallByread("com.autonavi.minimap")){
+            startActivity(intent);
+            Log.d(TAG, "高德地图客户端已经安装") ;
+        }else{
+            Toast.makeText(this, "没有安装高德地图客户端", Toast.LENGTH_SHORT).show();
+        }
+    }
+    /**
+     * 判断是否安装目标应用
+     * @param packageName 目标应用安装后的包名
+     * @return 是否已安装目标应用
+     */
+    private boolean isInstallByread(String packageName) {
+        return new File("/data/data/" + packageName).exists();
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if ( resultCode == RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_CODE_TAKE_PICTURE:
 
-                    Bitmap bm = (Bitmap) data.getExtras().get("data");
-                    if(bm != null){
-                        String path = Common.getInstance().saveBitmap(MainActivity.this,bm);
-                        Log.d(TAG, "onActivityResult: path is" + path);
-                        imageLocalPath.add(path);
-                        ImageView cur = new ImageView(MainActivity.this);
-                        cur.setImageBitmap(bm);
-                        imageViews.add(0,cur);
-                        adapter = null;
-                        showPager();
-                    }
+                    Bitmap originalBmp = BitmapFactory.decodeFile(currentFileName);
+                    final String oriPath = Common.getInstance().saveBitmap(MainActivity.this,originalBmp);
+                    Log.d(TAG, "onActivityResult: path is" + oriPath);
+                    imageLocalPath.add(oriPath);
+                    ImageView cur = new ImageView(MainActivity.this);
+                    cur.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(MainActivity.this,ImageActivity.class);
+                            intent.putExtra("path",oriPath);
+                            startActivity(intent);
+                        }
+                    });
+                    cur.setRotation(90);
+                    cur.setImageBitmap(originalBmp);
+                    imageViews.add(0,cur);
+                    adapter = null;
+                    showPager();
                     break;
                 case REQUEST_CODE_GALLERY:
                     try {
@@ -1270,10 +1354,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         imageUri = data.getData();
                         if(imageUri!=null) {
                             Bitmap bit = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri));
-                            String path = Common.getInstance().saveBitmap(MainActivity.this,bit);
+                            final String path = Common.getInstance().saveBitmap(MainActivity.this,bit);
                             Log.d(TAG, "onActivityResult: path is" + path);
                             imageLocalPath.add(path);
                             ImageView choose = new ImageView(MainActivity.this);
+                            choose.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    Intent intent = new Intent(MainActivity.this,ImageActivity.class);
+                                    intent.putExtra("path",path);
+                                    startActivity(intent);
+                                }
+                            });
+                            choose.setRotation(90);
                             choose.setImageBitmap(bit);
                             imageViews.add(0,choose);
                             adapter = null;

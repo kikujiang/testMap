@@ -2,6 +2,7 @@ package map.test.testmap.utils;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Environment;
 import android.util.Log;
 import android.widget.EditText;
 
@@ -55,6 +56,12 @@ public class Common {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String getOriginalPath(){
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
+        String fileName = format.format(new Date())+".jpg";
+        return Environment.getExternalStorageDirectory().toString()+File.separator+"image/"+fileName;
     }
 
     public String getFilePath(Context context){

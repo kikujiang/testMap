@@ -10,6 +10,7 @@ import java.io.IOException;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 
 /**
  * Image compress factory class
@@ -127,9 +128,41 @@ public class ImageFactory {
         //重新读入图片，注意此时已经把options.inJustDecodeBounds 设回false了
         is = new ByteArrayInputStream(os.toByteArray());
         bitmap = BitmapFactory.decodeStream(is, null, newOpts);
+
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+
+        if(width > height){
+            bitmap =  rotateBitmap(bitmap,90);
+        }
         //压缩好比例大小后再进行质量压缩
 //	    return compress(bitmap, maxSize); // 这里再进行质量压缩的意义不大，反而耗资源，删除
         return bitmap;
+    }
+
+
+    /**
+     * 选择变换
+     *
+     * @param origin 原图
+     * @param alpha  旋转角度，可正可负
+     * @return 旋转后的图片
+     */
+    private static Bitmap rotateBitmap(Bitmap origin, float alpha) {
+        if (origin == null) {
+            return null;
+        }
+        int width = origin.getWidth();
+        int height = origin.getHeight();
+        Matrix matrix = new Matrix();
+        matrix.setRotate(alpha);
+        // 围绕原地进行旋转
+        Bitmap newBM = Bitmap.createBitmap(origin, 0, 0, width, height, matrix, false);
+        if (newBM.equals(origin)) {
+            return newBM;
+        }
+        origin.recycle();
+        return newBM;
     }
 
     /**

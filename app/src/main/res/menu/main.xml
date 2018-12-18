@@ -20,5 +20,8 @@
     <item
         android:id="@+id/clear"
         android:title="@string/clear"/>
+    <item
+        android:id="@+id/exit"
+        android:title="@string/exit"/>
 
 </menu>
