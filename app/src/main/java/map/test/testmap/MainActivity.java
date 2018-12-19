@@ -1,12 +1,15 @@
 package map.test.testmap;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -44,6 +47,8 @@ import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
+import com.amap.api.location.CoordinateConverter;
+import com.amap.api.location.DPoint;
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.CameraUpdateFactory;
 import com.amap.api.maps.MapView;
@@ -82,6 +87,7 @@ import map.test.testmap.utils.Common;
 import map.test.testmap.utils.HttpUtils;
 import map.test.testmap.utils.MyViewPagerAdapter;
 import map.test.testmap.utils.OkHttpClientManager;
+import map.test.testmap.utils.PreferencesUtils;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
@@ -251,6 +257,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+
+
     private void initial(){
         Log.d(TAG, "=========================initial called!=========================");
         initControl();
@@ -271,6 +279,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         aMap.clear();
     }
 
+//    private void getInfoFromServer(){
+//        Log.d(TAG, "=========================getInfoFromServer called!=========================");
+//        getPointType();
+//        getLineType();
+//        getALLPoint();
+//    }
+
     private void getInfoFromServer(){
         Log.d(TAG, "=========================getInfoFromServer called!=========================");
         new Thread(){
@@ -287,7 +302,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 获取登录相关信息
      */
     private void getLoginInfo(){
-       Log.d(TAG, "请求登录接口======");
+        Log.d(TAG, "请求登录接口======");
         HttpUtils.getInstance().getLoginInfo(new OnResponseListener() {
             @Override
             public void success(final retrofit2.Response responseMapBean) {
@@ -514,6 +529,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.refresh:
+                clearMap();
                 getInfoFromServer();
                 break;
             case R.id.reLocate:
@@ -521,6 +537,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.clear:
                 clearMap();
+                break;
+            case R.id.exit:
+                PreferencesUtils.clear(MainActivity.this);
+                Intent loginIntent = new Intent(MainActivity.this,LoginActivity.class);
+                startActivity(loginIntent);
+                finish();
                 break;
                 default:
         }
@@ -833,9 +855,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void checkCameraPermission(){
         Log.d(TAG, "=========================checkCameraPermission called!=========================");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Log.d(TAG, "=========================checkCameraPermission called!111111111111111111111111=========================");
             int storagePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
             int cameraPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
-            if (cameraPermission != PackageManager.PERMISSION_GRANTED && storagePermission != PackageManager.PERMISSION_GRANTED) {
+            if (cameraPermission != PackageManager.PERMISSION_GRANTED || storagePermission != PackageManager.PERMISSION_GRANTED) {
                 //没有获取权限，发起申请
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA}, 2);
             } else {
@@ -1154,8 +1177,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (isAdd){
             confirmBtn.setText("添加");
+            naviBtn.setVisibility(View.GONE);
         }else{
             confirmBtn.setText("修改");
+            naviBtn.setVisibility(View.VISIBLE);
         }
 
         if(currentPoint != null){
@@ -1298,7 +1323,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-
     public void invokingGD(double lat, double lon){
 
         String params = "androidamap://navi?sourceApplication=amap&lat="+lat+"&lon="+lon+ "&dev=0";
@@ -1390,6 +1414,63 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    /**
+     * 获取原生gps信息，代码放 MainActivity 里就可以
+     */
+//    public void getGPSInfo() {
+//        LocationManager mManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+//                != PackageManager.PERMISSION_GRANTED
+//                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+//                != PackageManager.PERMISSION_GRANTED) {
+//            return;
+//        }
+//        Location mLocation = mManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+//
+//        updateGPSInfo(mLocation);
+//
+//        mManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 8, new LocationListener() {
+//            @Override
+//            public void onLocationChanged(Location location) {
+//                updateGPSInfo(mLocation);//位置变化时，更新位置信息
+//            }
+//
+//            @Override
+//            public void onStatusChanged(String provider, int status, Bundle extras) {
+//
+//            }
+//
+//            @Override
+//            public void onProviderEnabled(String provider) {
+//                // 当GPS LocationProvider可用时，更新位置
+//                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+//                        != PackageManager.PERMISSION_GRANTED
+//                        && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+//                        != PackageManager.PERMISSION_GRANTED) {
+//                    return;
+//                }
+//                updateGPSInfo(mManager.getLastKnownLocation(provider));
+//            }
+//
+//            @Override
+//            public void onProviderDisabled(String provider) {
+//
+//            }
+//        });
+//    }
+
+
+    /**
+     * 更新经纬度信息
+     * @param
+     */
+//    public void updateGPSInfo(Location location) {
+//        if (location != null) {
+//            mLat = location.getLatitude();
+//            mLng = location.getLongitude();
+//        }
+//    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -1405,7 +1486,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case 2:
-                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+
+                int length = grantResults.length;
+                boolean isOk = false;
+                for (int i = 0; i < length; i++) {
+                    int permission = grantResults[i];
+                    if(permission == PackageManager.PERMISSION_GRANTED){
+                        isOk = true;
+                    }else{
+                        isOk = false;
+                        break;
+                    }
+                }
+
+                if(isOk){
                     takePic();
                 }else {
                     //用户拒绝获取权限，则Toast出一句话提醒用户

@@ -19,9 +19,11 @@
         android:title="@string/locate"/>
     <item
         android:id="@+id/clear"
+        android:visible="false"
         android:title="@string/clear"/>
     <item
         android:id="@+id/exit"
+        android:visible="false"
         android:title="@string/exit"/>
 
 </menu>

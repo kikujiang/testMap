@@ -2,11 +2,14 @@ package map.test.testmap.utils;
 
 import android.util.Log;
 
+import java.io.IOException;
+
 import map.test.testmap.Constants;
 import map.test.testmap.model.IUserBiz;
 import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.User;
 import retrofit2.Call;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -50,5 +53,20 @@ public class HttpUtils {
             }
         });
 
+    }
+
+    /**
+     * 单线程获取登录信息
+     * @return
+     */
+    public Response<User> getLoginInfo(){
+        Call<User> login = userBiz.getLoginInfo();
+        Response<User> user = null;
+        try{
+            user = login.execute();
+        }catch (IOException e){
+
+        }
+        return user;
     }
 }

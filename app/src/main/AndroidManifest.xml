@@ -57,8 +57,9 @@
         <service android:name="com.amap.api.location.APSService" />
 
         <activity
-            android:name=".LoginActivity"
-            android:label="@string/title_activity_login" />
+            android:name=".LoginActivity" >
+
+        </activity>
         <activity android:name=".ImageActivity"/>
     </application>
 
