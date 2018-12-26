@@ -18,7 +18,6 @@ public class User {
     private int id;
     private String phone;
     private String email;
-    private String reqUri;
 
     public String getUsername() {
         return username;
@@ -79,13 +78,5 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getReqUri() {
-        return reqUri;
-    }
-
-    public void setReqUri(String reqUri) {
-        this.reqUri = reqUri;
     }
 }

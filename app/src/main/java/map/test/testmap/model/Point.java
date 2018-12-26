@@ -26,6 +26,10 @@ public class Point {
     private double location_lat;
     private double location_long;
     private int type;
+    private String ceTypeStr;
+    private String leTypeStr;
+    private int ce_type;
+    private int le_type;
     private String createTime;
     private User createUser;
     private String remark;
@@ -110,6 +114,38 @@ public class Point {
 
     public void setImages(List<Image> imageList) {
         this.imageList = imageList;
+    }
+
+    public String getCeTypeStr() {
+        return ceTypeStr;
+    }
+
+    public void setCeTypeStr(String ceTypeStr) {
+        this.ceTypeStr = ceTypeStr;
+    }
+
+    public String getLeTypeStr() {
+        return leTypeStr;
+    }
+
+    public void setLeTypeStr(String leTypeStr) {
+        this.leTypeStr = leTypeStr;
+    }
+
+    public int getCe_type() {
+        return ce_type;
+    }
+
+    public void setCe_type(int ce_type) {
+        this.ce_type = ce_type;
+    }
+
+    public int getLe_type() {
+        return le_type;
+    }
+
+    public void setLe_type(int le_type) {
+        this.le_type = le_type;
     }
 
     @Override

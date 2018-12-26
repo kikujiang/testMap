@@ -77,9 +77,15 @@ public class Common {
         return path;
     }
 
-    public void setEdittextFalse(EditText cur){
-        cur.setEnabled(false);
+    public void setEditTextFalse(EditText cur){
+        cur.setFocusableInTouchMode(false);
         cur.setFocusable(false);
-        cur.setKeyListener(null);
+    }
+
+    public void setEditTextTrue(EditText cur){
+        cur.setFocusableInTouchMode(true);
+        cur.setFocusable(true);
+        cur.requestFocus();
+
     }
 }

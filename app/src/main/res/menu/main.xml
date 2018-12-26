@@ -23,7 +23,6 @@
         android:title="@string/clear"/>
     <item
         android:id="@+id/exit"
-        android:visible="false"
         android:title="@string/exit"/>
 
 </menu>

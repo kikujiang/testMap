@@ -69,26 +69,34 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import map.test.testmap.model.DataType;
 import map.test.testmap.model.Image;
 import map.test.testmap.model.Line;
-import map.test.testmap.model.LineType;
 import map.test.testmap.model.OnInfoListener;
 import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.Point;
-import map.test.testmap.model.PointType;
+import map.test.testmap.model.ResponseBean;
 import map.test.testmap.model.ResponsePoint;
-import map.test.testmap.model.User;
+import map.test.testmap.model.UserPermission;
+import map.test.testmap.model.UserPermissionDetail;
 import map.test.testmap.utils.Common;
 import map.test.testmap.utils.HttpUtils;
 import map.test.testmap.utils.MyViewPagerAdapter;
 import map.test.testmap.utils.OkHttpClientManager;
-import map.test.testmap.utils.PreferencesUtils;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
     private static final String TAG = "map";
-    
+    public static final int CURRENT_TYPE_POINT = 1;
+    public static final int CURRENT_TYPE_POINT_TERMINAL = 2;
+    public static final int CURRENT_TYPE_POINT_LINE = 3;
+
+    private boolean isPointAdd = false;
+    private boolean isPointRead = false;
+    private boolean isPointWrite = false;
+    private boolean isLineRead = false;
+
     private MapView mMapView;
 
     private AMap aMap;
@@ -99,8 +107,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView tvLocation = null;
 
     private int currentType = 0;
-    private int currentTypeIndex = 0;
-
+    private int currentTerminalType = 0;
     private int currentLineType = 0;
 
     private List<Point> pointList = null;
@@ -108,16 +115,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Point currentPoint = null;
     private Line currentLine = null;
     private String currentSearch = "";
-    private List<PointType> pointTypeList = null;
-    private List<LineType> lineTypeList = null;
+    private List<DataType> pointTypeList = null;
+    private List<DataType> pointTerminalTypeList = null;
+    private List<DataType> pointLineTypeList = null;
     private List<Marker> markerList = null;
-    private User user = null;
     private ProgressBar progressBar =null;
 
     public static final int MSG_START = 100000;
     public static final int MSG_END = 100001;
     public static final int MSG_MSG_ERROR = 100002;
-    public static final int MSG_LOGIN_END = 100003;
+    public static final int MSG_MSG_FAILURE = 100003;
     public static final int MSG_LOGIN_FAILED = 100010;
     public static final int MSG_GET_ALL_POINT_END = 100004;
     public static final int MSG_GET_ALL_LINE_END = 100005;
@@ -145,18 +152,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 case MSG_START:
                     progressBar.setVisibility(View.VISIBLE);
                     break;
-                case MSG_LOGIN_END:
-                    getPointType();
-                    getLineType();
-                    getALLPoint();
-                    break;
                 case MSG_GET_ALL_POINT_END:
                     if(pointList != null){
                         if(pointList.size() > 0){
                             showAllPoint();
                         }
                     }
-                    getALLLine();
                     break;
                 case MSG_GET_ALL_LINE_END:
                     if(lineList != null){
@@ -169,13 +170,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     break;
                 case MSG_SAVE_SINGLE_POINT_END:
 
-                    ResponsePoint responsePoint = (ResponsePoint) msg.obj;
-                    if(responsePoint.getResult() == 1){
-                        Toast.makeText(MainActivity.this,"保存成功！",Toast.LENGTH_LONG).show();
-                        getSinglePoint(responsePoint.getId()+"");
-                    }else{
-                        Toast.makeText(MainActivity.this,"保存失败，原因是：" + responsePoint.getDesc(),Toast.LENGTH_LONG).show();
-                    }
+                    int id = (int) msg.obj;
+                    Toast.makeText(MainActivity.this,"保存成功！",Toast.LENGTH_LONG).show();
+                    getSinglePoint(id+"");
+
                     if (pointDialog != null){
                         pointDialog.dismiss();
                     }
@@ -202,6 +200,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d(TAG, "错误消息为:" + message);
                     Toast.makeText(MainActivity.this,"服务器响应失败，请稍后重试！",Toast.LENGTH_LONG).show();
                     break;
+                case MSG_MSG_FAILURE:
+                    String failureMsg = (String) msg.obj;
+                    Log.d(TAG, "失败消息为:" + failureMsg);
+                    Toast.makeText(MainActivity.this,failureMsg,Toast.LENGTH_LONG).show();
+                    break;
                 case MSG_LOGIN_FAILED:
                     String loginError = (String) msg.obj;
                     Log.d(TAG, "登录错误消息为:" + loginError);
@@ -222,11 +225,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
 
+    private int userId = 0;
+    private boolean isExistAlready = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "=========================onCreate called!=========================");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        userId = getIntent().getIntExtra("userId",0);
+        Log.d(TAG, "=========================onCreate called!========================= user is is：" + userId);
         mMapView = (MapView) findViewById(R.id.map);
         mMapView.onCreate(savedInstanceState);
         checkLocationPermission();
@@ -256,7 +263,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 获取所有的类型信息
      */
     private void getAllType(){
-
+        getPointType();
+        getPointTerminalType();
+        getPointLineType();
     }
 
     private void initial(){
@@ -264,7 +273,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initControl();
         initMap();
         refreshLocation();
-        getInfoFromServer();
     }
 
     /**
@@ -279,57 +287,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         aMap.clear();
     }
 
-//    private void getInfoFromServer(){
-//        Log.d(TAG, "=========================getInfoFromServer called!=========================");
-//        getPointType();
-//        getLineType();
-//        getALLPoint();
-//    }
-
-    private void getInfoFromServer(){
-        Log.d(TAG, "=========================getInfoFromServer called!=========================");
-        new Thread(){
-            @Override
-            public void run() {
-                mHandler.sendEmptyMessage(MSG_START);
-                getLoginInfo();
-                mHandler.sendEmptyMessage(MSG_END);
-            }
-        }.start();
-    }
-
-    /**
-     * 获取登录相关信息
-     */
-    private void getLoginInfo(){
-        Log.d(TAG, "请求登录接口======");
-        HttpUtils.getInstance().getLoginInfo(new OnResponseListener() {
-            @Override
-            public void success(final retrofit2.Response responseMapBean) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        User currentUser = (User) responseMapBean.body();
-                        if(currentUser == null){
-                            Toast.makeText(MainActivity.this,"登录失败",Toast.LENGTH_LONG).show();
-                        }else{
-                            Log.d(TAG, "收到消息为："+ currentUser.toString());
-                            getPointType();
-                            getLineType();
-                            getALLPoint();
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void fail(Throwable e) {
-                Log.d(TAG, "fail message is:" + e.getMessage());
-            }
-        });
-
-    }
-
     private void sendErrorMsg(Exception e){
         Message msg = Message.obtain();
         msg.what = MSG_MSG_ERROR;
@@ -337,12 +294,154 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mHandler.sendMessage(msg);
     }
 
+    private void sendFailureMsg(String message){
+        Message msg = Message.obtain();
+        msg.what = MSG_MSG_FAILURE;
+        msg.obj = message;
+        mHandler.sendMessage(msg);
+    }
+
+    /**
+     * 退出app
+     */
+    private void logOut(int userId, final boolean isClearAllData){
+        Log.d(TAG, "=========================logOut called!=========================");
+        HttpUtils.getInstance().logOut(userId, new OnResponseListener() {
+            @Override
+            public void success(retrofit2.Response responseMapBean) {
+
+                if(responseMapBean == null){
+                    Toast.makeText(MainActivity.this,"访问服务器超时，请稍后重试！",Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                ResponseBean current = (ResponseBean)responseMapBean.body();
+                if(current.getResult() == Constants.RESULT_FAIL){
+                    sendFailureMsg(current.getDesc());
+                    Intent loginIntent = new Intent(MainActivity.this,LoginActivity.class);
+                    startActivity(loginIntent);
+                    finish();
+                }
+
+                if(current.getResult() == Constants.RESULT_OK){
+                    isExistAlready = true;
+                    if(isClearAllData){
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(MainActivity.this,"退出成功",Toast.LENGTH_LONG).show();
+                                Intent loginIntent = new Intent(MainActivity.this,LoginActivity.class);
+                                startActivity(loginIntent);
+                                finish();
+                            }
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void fail(Throwable e) {
+                sendFailureMsg(e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * 获取用户权限的信息
+     */
+    private void getUserPermission(int userId){
+        mHandler.sendEmptyMessage(MSG_START);
+        HttpUtils.getInstance().getUserPermission(userId, new OnResponseListener() {
+            @Override
+            public void success(retrofit2.Response responseMapBean) {
+
+                if(responseMapBean == null){
+                    Toast.makeText(MainActivity.this,"访问服务器超时，请稍后重试！",Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                ResponseBean<UserPermission> current = (ResponseBean<UserPermission>)responseMapBean.body();
+                if(current.getResult() == Constants.RESULT_FAIL){
+                    sendFailureMsg(current.getDesc());
+                }
+
+                if(current.getResult() == Constants.RESULT_OK){
+                    resetState();
+                    List<UserPermission> permissionList = current.getList();
+                    setUserPermission(permissionList);
+                    getDataFromServer();
+                }
+            }
+
+            @Override
+            public void fail(Throwable e) {
+                sendFailureMsg(e.getMessage());
+            }
+        });
+    }
+
+    private void setUserPermission(List<UserPermission> permissionList){
+        for (UserPermission cur:permissionList) {
+            if(cur.getmId() == 1200){
+                //检查点的权限
+                for (UserPermissionDetail detail: cur.getPermissions()) {
+                    switch (detail.getpId()){
+                        case 101:
+                            isPointRead = detail.isCheck();
+                            break;
+                        case 102:
+                            isPointAdd = detail.isCheck();
+                            break;
+                        case 103:
+                            isPointWrite = detail.isCheck();
+                            break;
+                    }
+                }
+            }
+
+            if(cur.getmId() == 1300){
+                //检查点的权限
+                for (UserPermissionDetail detail: cur.getPermissions()) {
+                    switch (detail.getpId()){
+                        case 101:
+                            isLineRead = detail.isCheck();
+                            break;
+                    }
+                }
+            }
+        }
+    }
+
+    private void resetState(){
+        isPointAdd = false;
+        isPointRead = false;
+        isPointWrite = false;
+        isLineRead = false;
+    }
+
+    private void getDataFromServer(){
+        if(isPointRead){
+            getAllType();
+            getALLPoint();
+        }
+
+        if(isPointAdd && pointTypeList == null){
+            getAllType();
+        }
+
+        if(isLineRead){
+            getALLLine();
+        }
+
+        mHandler.sendEmptyMessage(MSG_END);
+    }
+
     /**
      * 获取所有点的信息
      */
     private void getALLPoint(){
-        Log.d(TAG, "请求获取所有点信息接口");
         final String url = Constants.TEST_URL + Constants.TAG_GET_ALL_POINT;
+        Log.d(TAG, "请求获取所有点信息接口" + url);
         final Map<String,String> data = new HashMap<>();
         aMap.clear();
         OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
@@ -350,12 +449,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void success(Response responseMapBean) {
                 try{
                     String result = responseMapBean.body().string();
-                    Type type = new TypeToken<List<Point>>(){}.getType();
-                    pointList = new Gson().fromJson(result,type);
+                    Type type = new TypeToken<ResponseBean<Point>>(){}.getType();
 
-                    Log.d(TAG, "收到消息为："+ result+"/n 当前标记点数量是：" + pointList.size());
-                    mHandler.sendEmptyMessage(MSG_GET_ALL_POINT_END);
+                    ResponseBean<Point> currentData = new Gson().fromJson(result,type);
 
+                    if(currentData.getResult() == Constants.RESULT_FAIL){
+                        sendFailureMsg(currentData.getDesc());
+                        return;
+                    }
+
+                    if (currentData.getResult() == Constants.RESULT_OK){
+                        pointList = currentData.getList();
+                        Log.d(TAG, "收到消息为："+ result+"/n 当前标记点数量是：" + pointList.size());
+                        mHandler.sendEmptyMessage(MSG_GET_ALL_POINT_END);
+                    }
                 }catch (Exception e){
                     sendErrorMsg(e);
                 }
@@ -369,8 +476,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void getALLLine(){
-        Log.d(TAG, "请求获取所有线接口");
         final String url = Constants.TEST_URL + Constants.TAG_GET_ALL_LINE;
+        Log.d(TAG, "请求获取所有线接口" + url);
         final Map<String,String> data = new HashMap<>();
 
         OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
@@ -378,12 +485,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void success(Response responseMapBean) {
                 try{
                     String result = responseMapBean.body().string();
-                    Type type = new TypeToken<List<Line>>(){}.getType();
-                    lineList = new Gson().fromJson(result,type);
+                    Type type = new TypeToken<ResponseBean<Line>>(){}.getType();
 
-                    Log.d(TAG, "收到消息为："+ result+"\n 当前线数量是：" + lineList.size());
-                    mHandler.sendEmptyMessage(MSG_GET_ALL_LINE_END);
+                    ResponseBean<Line> currentData = new Gson().fromJson(result,type);
 
+                    if(currentData.getResult() == Constants.RESULT_FAIL){
+                        sendFailureMsg(currentData.getDesc());
+                        return;
+                    }
+
+                    if (currentData.getResult() == Constants.RESULT_OK){
+                        lineList = currentData.getList();
+                        Log.d(TAG, "收到消息为："+ result+"\n 当前线数量是：" + lineList.size());
+                        mHandler.sendEmptyMessage(MSG_GET_ALL_LINE_END);
+                    }
                 }catch (Exception e){
                     sendErrorMsg(e);
                 }
@@ -398,8 +513,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void getPointType(){
-        Log.d(TAG, "请求获取点类型接口");
         final String url = Constants.TEST_URL + Constants.TAG_GET_POINT_TYPE;
+        Log.d(TAG, "请求获取点类型接口" + url);
         final Map<String,String> data = new HashMap<>();
 
         OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
@@ -407,9 +522,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void success(Response responseMapBean) {
                 try{
                     String result = responseMapBean.body().string();
-                    Type type = new TypeToken<List<PointType>>(){}.getType();
-                    pointTypeList = new Gson().fromJson(result,type);
-                    Log.d(TAG, "收到消息为："+ result+"\n 当前标记点类型数量是：" + pointTypeList.size());
+                    Type type = new TypeToken<ResponseBean<DataType>>(){}.getType();
+                    ResponseBean<DataType> currentData = new Gson().fromJson(result,type);
+
+                    if(currentData.getResult() == Constants.RESULT_FAIL){
+                        sendFailureMsg(currentData.getDesc());
+                        return;
+                    }
+
+                    if(currentData.getResult() == Constants.RESULT_OK){
+                        pointTypeList = currentData.getList();
+                        Log.d(TAG, "收到消息为："+ result+"\n 当前标记点类型数量是：" + pointTypeList.size());
+                    }
+
                 }catch (Exception e){
                     sendErrorMsg(e);
                 }
@@ -422,9 +547,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
-    private void getLineType(){
-        Log.d(TAG, "请求获取线类型接口");
-        final String url = Constants.TEST_URL + Constants.TAG_GET_LINE_TYPE;
+    private void getPointTerminalType(){
+        final String url = Constants.TEST_URL + Constants.TAG_GET_POINT_TERMINAL_TYPE;
+        Log.d(TAG, "请求获取点终端类型接口"+ url);
         final Map<String,String> data = new HashMap<>();
 
         OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
@@ -432,9 +557,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void success(Response responseMapBean) {
                 try{
                     String result = responseMapBean.body().string();
-                    Type type = new TypeToken<List<LineType>>(){}.getType();
-                    lineTypeList = new Gson().fromJson(result,type);
-                    Log.d(TAG, "收到消息为："+ result+"\n 当前标记点类型数量是：" + lineTypeList.size());
+                    Type type = new TypeToken<ResponseBean<DataType>>(){}.getType();
+                    ResponseBean<DataType> currentData = new Gson().fromJson(result,type);
+
+                    if(currentData.getResult() == Constants.RESULT_FAIL){
+                        sendFailureMsg(currentData.getDesc());
+                        return;
+                    }
+
+                    if(currentData.getResult() == Constants.RESULT_OK){
+                        pointTerminalTypeList = currentData.getList();
+                        Log.d(TAG, "收到消息为："+ result+"\n 当前标记点终端类型数量是：" + pointTerminalTypeList.size());
+                    }
                 }catch (Exception e){
                     sendErrorMsg(e);
                 }
@@ -446,6 +580,64 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
     }
+
+    private void getPointLineType(){
+        final String url = Constants.TEST_URL + Constants.TAG_GET_POINT_LINE_TYPE;
+        Log.d(TAG, "请求获取点光缆类型接口"+ url);
+        final Map<String,String> data = new HashMap<>();
+
+        OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
+            @Override
+            public void success(Response responseMapBean) {
+                try{
+                    String result = responseMapBean.body().string();
+                    Type type = new TypeToken<ResponseBean<DataType>>(){}.getType();
+                    ResponseBean<DataType> currentData = new Gson().fromJson(result,type);
+
+                    if(currentData.getResult() == Constants.RESULT_FAIL){
+                        sendFailureMsg(currentData.getDesc());
+                        return;
+                    }
+
+                    if(currentData.getResult() == Constants.RESULT_OK){
+                        pointLineTypeList = currentData.getList();
+                        Log.d(TAG, "收到消息为："+ result+"\n 当前标记点光缆类型数量是：" + pointLineTypeList.size());
+                    }
+                }catch (Exception e){
+                    sendErrorMsg(e);
+                }
+            }
+
+            @Override
+            public void fail(Exception e) {
+                sendErrorMsg(e);
+            }
+        });
+    }
+//    private void getLineType(){
+//        Log.d(TAG, "请求获取线类型接口");
+//        final String url = Constants.TEST_URL + Constants.TAG_GET_LINE_TYPE;
+//        final Map<String,String> data = new HashMap<>();
+//
+//        OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
+//            @Override
+//            public void success(Response responseMapBean) {
+//                try{
+//                    String result = responseMapBean.body().string();
+//                    Type type = new TypeToken<List<LineType>>(){}.getType();
+//                    lineTypeList = new Gson().fromJson(result,type);
+//                    Log.d(TAG, "收到消息为："+ result+"\n 当前标记点类型数量是：" + lineTypeList.size());
+//                }catch (Exception e){
+//                    sendErrorMsg(e);
+//                }
+//            }
+//
+//            @Override
+//            public void fail(Exception e) {
+//                sendErrorMsg(e);
+//            }
+//        });
+//    }
 
     private void initControl(){
         Log.d(TAG, "=========================initControl called!=========================");
@@ -458,6 +650,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initToolBar();
         initSearchView();
         initImageData();
+        getUserPermission(userId);
     }
 
     private void initSearchView(){
@@ -509,28 +702,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        Log.d(TAG, "onCreateOptionsMenu: called!");
         getMenuInflater().inflate(R.menu.main,menu);
         MenuItem item = menu.findItem(R.id.search);
         searchView.setMenuItem(item);
         return true;
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         switch (item.getItemId()){
             case R.id.collect:
-                clearImageData();
-                isAdd = true;
-                currentPoint = null;
-                if(pointTypeList != null){
-                    showPointBottomDialog();
+                if(isPointAdd){
+                    clearImageData();
+                    isAdd = true;
+                    currentPoint = null;
+                    if(pointTypeList != null){
+                        showPointBottomDialog();
+                    }else{
+                        Toast.makeText(MainActivity.this,"与服务器连接失败，点击刷新重试！",Toast.LENGTH_LONG).show();
+                    }
                 }else{
-                    Toast.makeText(MainActivity.this,"与服务器连接失败，点击刷新重试！",Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this,"当前账户无权限，请授予权限后重试！",Toast.LENGTH_LONG).show();
                 }
                 break;
             case R.id.refresh:
                 clearMap();
-                getInfoFromServer();
+                getUserPermission(userId);
                 break;
             case R.id.reLocate:
                 refreshLocation();
@@ -539,15 +737,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 clearMap();
                 break;
             case R.id.exit:
-                PreferencesUtils.clear(MainActivity.this);
-                Intent loginIntent = new Intent(MainActivity.this,LoginActivity.class);
-                startActivity(loginIntent);
-                finish();
+                logOut(userId,true);
                 break;
                 default:
         }
         return true;
     }
+
+    private double tempLat = 0.0d;
+    private double tempLng = 0.0d;
+    private double tempStartLat = 0.0d;
+    private double tempStartLng = 0.0d;
+    private boolean isDrag = false;
+    private boolean isEmptyMarker = false;
 
     private void initMap(){
         Log.d(TAG, "=========================initMap called!=========================");
@@ -556,7 +758,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         aMap.setMapType(AMap.MAP_TYPE_NORMAL);
-        aMap.moveCamera(CameraUpdateFactory.zoomTo(15));
+        aMap.moveCamera(CameraUpdateFactory.zoomTo(19));
         AMap.OnPolylineClickListener l = new AMap.OnPolylineClickListener() {
             @Override
             public void onPolylineClick(Polyline polyline) {
@@ -576,7 +778,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
 
                 getSingleLine(currentLine.getId()+"");
-                polyline.setOptions(new PolylineOptions().width(40).setDottedLine(false).color(Color.BLUE));
             }
         };
 
@@ -585,7 +786,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void onInfoWindowClick(Marker currentMaker) {
-                Log.d(TAG, "onInfoWindowClick: hahahaahahahah" + currentPoint);
+                Log.d(TAG, "onInfoWindowClick: " + currentPoint);
                 isAdd = false;
 
                 if(currentPoint == null){
@@ -629,6 +830,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         };
         // 绑定 Marker 被点击事件
         aMap.setOnMarkerClickListener(markerClickListener);
+        
+        
+        aMap.setOnMarkerDragListener(new AMap.OnMarkerDragListener() {
+            @Override
+            public void onMarkerDragStart(Marker marker) {
+                Log.d(TAG, "onMarkerDragStart: "+marker.getPosition().latitude+","+marker.getPosition().longitude);
+                if(currentPoint == null || currentMarker.getPosition().longitude != marker.getPosition().longitude){
+                    tempStartLat = marker.getPosition().latitude;
+                    tempStartLng = marker.getPosition().longitude;
+                    isEmptyMarker = true;
+                }
+            }
+
+            @Override
+            public void onMarkerDrag(Marker marker) {
+            }
+
+            @Override
+            public void onMarkerDragEnd(Marker marker) {
+                if(isEmptyMarker){
+                    isEmptyMarker = false;
+                    marker.setPosition(new LatLng(tempStartLat,tempStartLng));
+                    aMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(tempStartLat,tempStartLng)));
+                }else{
+                    tempLat = marker.getPosition().latitude;
+                    tempLng = marker.getPosition().longitude;
+                    Log.d(TAG, "onMarkerDragEnd: "+marker+",lat==="+tempLat);
+                    isDrag = true;
+                    showPointBottomDialog();
+                }
+            }
+        });
         initLocationInfo();
     }
 
@@ -698,11 +931,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onDestroy() {
-        Log.d(TAG, "==============================onDestroy: ");
-        super.onDestroy();
+        Log.d(TAG, "==============================onDestroy: "+isExistAlready);
         //在activity执行onDestroy时执行mMapView.onDestroy()，销毁地图
+        if(!isExistAlready){
+            Log.d(TAG, "==============================如果没有退出，发送退出消息");
+            logOut(userId,false);
+        }
         mMapView.onDestroy();
         mLocationClient.onDestroy();
+        super.onDestroy();
     }
     @Override
     protected void onResume() {
@@ -760,6 +997,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     currentPoint.setId(0);
                     currentPoint.setName(name);
                     currentPoint.setType(currentType);
+                    currentPoint.setCe_type(currentTerminalType);
+                    currentPoint.setLe_type(currentLineType);
                     currentPoint.setTagNo("");
                     currentPoint.setRemark(remark);
                     currentPoint.setLocation_lat(latitude);
@@ -767,6 +1006,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }else{
                     currentPoint.setName(name);
                     currentPoint.setType(currentType);
+                    currentPoint.setCe_type(currentTerminalType);
+                    currentPoint.setLe_type(currentLineType);
                     currentPoint.setRemark(remark);
                     currentPoint.setLocation_lat(latitude);
                     currentPoint.setLocation_long(longitude);
@@ -775,8 +1016,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 savePoint(currentPoint);
                 break;
             case R.id.cancel:
+
                 if(pointDialog != null){
                     pointDialog.dismiss();
+                }
+
+                if(isDrag){
+                    isDrag = false;
+                    currentMarker.setPosition(new LatLng(currentPoint.getLocation_lat(),currentPoint.getLocation_long()));
+                    aMap.moveCamera(CameraUpdateFactory.newLatLng(currentMarker.getPosition()));
                 }
                 break;
             case R.id.navi:
@@ -815,7 +1063,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void clearImageData(){
-
         imageRemotePath.clear();
         imageViews.clear();
         imageLocalPath.clear();
@@ -897,6 +1144,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         data.put("location_lat",currentPoint.getLocation_lat()+"");
         data.put("location_long",currentPoint.getLocation_long()+"");
         data.put("type",currentPoint.getType()+"");
+        data.put("ceType",currentPoint.getCe_type()+"");
+        data.put("leType",currentPoint.getLe_type()+"");
         data.put("remark",currentPoint.getRemark());
         Log.d(TAG, "savePoint data is:" + data.toString());
         OkHttpClientManager.getInstance().sendFileToServer(url, imageLocalPath, data, new OnInfoListener() {
@@ -904,12 +1153,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void success(Response responseMapBean) {
                 try{
                     String result = responseMapBean.body().string();
-                    ResponsePoint responsePoint = new Gson().fromJson(result,ResponsePoint.class);
-                    Log.d(TAG, "收到消息为："+ result);
-                    Message message = Message.obtain();
-                    message.obj = responsePoint;
-                    message.what = MSG_SAVE_SINGLE_POINT_END;
-                    mHandler.sendMessage(message);
+                    Type type = new TypeToken<ResponseBean<ResponsePoint>>(){}.getType();
+                    ResponseBean<ResponsePoint> currentData = new Gson().fromJson(result,type);
+
+                    if(currentData.getResult() == Constants.RESULT_FAIL){
+                        sendFailureMsg("保存失败，原因是："+currentData.getDesc());
+                        return;
+                    }
+
+                    if(currentData.getResult() == Constants.RESULT_OK){
+                        Log.d(TAG, "收到消息为："+ result);
+                        Message message = Message.obtain();
+                        message.obj = currentData.getId();
+                        message.what = MSG_SAVE_SINGLE_POINT_END;
+                        mHandler.sendMessage(message);
+                    }
+
                 }catch (Exception e){
                     sendErrorMsg(e);
                 }
@@ -923,8 +1182,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void getSinglePoint(String pointId){
-        Log.d(TAG, "请求获取某个点接口");
         final String url = Constants.TEST_URL + Constants.TAG_GET_SINGLE_POINT;
+        Log.d(TAG, "请求获取某个点接口" + url);
         final Map<String,String> data = new HashMap<>();
         data.put("id",pointId);
         Log.d(TAG, "getSinglePoint data is:" + data.toString());
@@ -933,10 +1192,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void success(Response responseMapBean) {
                 try{
                     String result = responseMapBean.body().string();
-                    currentPoint = new Gson().fromJson(result,Point.class);
+                    Type type = new TypeToken<ResponseBean<Point>>(){}.getType();
+                    ResponseBean<Point> currentData = new Gson().fromJson(result,type);
 
-                    Log.d(TAG, "收到消息为："+ result);
-                    mHandler.sendEmptyMessage(MSG_GET_SINGLE_POINT_END);
+                    if(currentData.getResult() == Constants.RESULT_FAIL){
+                        sendFailureMsg("保存失败，原因是："+currentData.getDesc());
+                    }
+
+                    if(currentData.getResult() == Constants.RESULT_OK){
+                        currentPoint = currentData.getObject();
+                        Log.d(TAG, "收到消息为："+ result);
+                        mHandler.sendEmptyMessage(MSG_GET_SINGLE_POINT_END);
+                    }
                 }catch (Exception e){
                     sendErrorMsg(e);
                 }
@@ -964,8 +1231,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void getSingleLine(String lineId){
-        Log.d(TAG, "请求获取某个点接口");
         final String url = Constants.TEST_URL + Constants.TAG_GET_SINGLE_LINE;
+        Log.d(TAG, "请求获取某个点接口" + url);
         final Map<String,String> data = new HashMap<>();
         data.put("id",lineId);
         Log.d(TAG, "getSingleLine data is:" + data.toString());
@@ -974,10 +1241,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void success(Response responseMapBean) {
                 try{
                     String result = responseMapBean.body().string();
-                    currentLine = new Gson().fromJson(result,Line.class);
 
-                    Log.d(TAG, "收到消息为："+ result);
-                    mHandler.sendEmptyMessage(MSG_GET_SINGLE_LINE_END);
+                    Type type = new TypeToken<ResponseBean<Line>>(){}.getType();
+                    ResponseBean<Line> currentData = new Gson().fromJson(result,type);
+
+                    if(currentData.getResult() == Constants.RESULT_FAIL){
+                        sendFailureMsg("保存失败，原因是："+currentData.getDesc());
+                    }
+
+                    if(currentData.getResult() == Constants.RESULT_OK){
+                        currentLine = currentData.getObject();
+                        Log.d(TAG, "收到消息为："+ result);
+                        mHandler.sendEmptyMessage(MSG_GET_SINGLE_LINE_END);
+                    }
                 }catch (Exception e){
                     sendErrorMsg(e);
                 }
@@ -1013,7 +1289,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             MarkerOptions markerOption = new MarkerOptions();
             markerOption.position(latLng);
             String type = "";
-            for (PointType currentType:pointTypeList
+            for (DataType currentType:pointTypeList
                  ) {
                 if(currentType.getOptionValue() == current.getType()){
                     type = currentType.getOptionText();
@@ -1048,7 +1324,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         MarkerOptions markerOption = new MarkerOptions();
         markerOption.position(latLng);
         String type = "";
-        for (PointType currentType:pointTypeList
+        for (DataType currentType:pointTypeList
                 ) {
             if(currentType.getOptionValue() == currentPoint.getType()){
                 type = currentType.getOptionText();
@@ -1061,6 +1337,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         markerOption.setFlat(true);//设置marker平贴地图效果
         currentMarker = aMap.addMarker(markerOption);
         currentMarker.showInfoWindow();
+        if(aMap.getMaxZoomLevel() >= 20){
+            Log.d(TAG, "addMarker: haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+            currentMarker.setDraggable(true);
+        }else{
+
+        }
 
 //        Toast.makeText(this,"采集点操作成功！",Toast.LENGTH_LONG).show();
     }
@@ -1070,6 +1352,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private EditText etName = null;
     private EditText etOther = null;
     private Spinner spinnerType = null;
+    private Spinner spinnerTerminalType = null;
+    private Spinner spinnerLineType = null;
     private  Button confirmBtn = null;
     private  Button naviBtn = null;
     private Button locateBtn = null;
@@ -1114,7 +1398,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }else {
             adapter.notifyDataSetChanged();
         }
-
     }
 
     private void showPointBottomDialog() {
@@ -1137,6 +1420,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             choosePicBtn = view.findViewById(R.id.btn_pick_pic);
 
             spinnerType = view.findViewById(R.id.spinner_type);
+            spinnerTerminalType = view.findViewById(R.id.spinner_terminal_type);
+            spinnerLineType = view.findViewById(R.id.spinner_line_type);
             confirmBtn = view.findViewById(R.id.confirm);
             naviBtn = view.findViewById(R.id.navi);
 
@@ -1144,28 +1429,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Button cancelBtn = view.findViewById(R.id.cancel);
             pager = view.findViewById(R.id.viewPager);
 
-            String[] typeData =new String[pointTypeList.size()];
-
-            for (int i=0;i<pointTypeList.size();i++){
-                typeData[i] = pointTypeList.get(i).getOptionText();
-            }
             currentType = 0;
-            initSpinner(spinnerType,typeData);
-
-            spinnerType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                    Log.i(TAG, "类型选择当前的选择序号为：" + i);
-                    currentTypeIndex = i;
-                    currentType = pointTypeList.get(i).getOptionValue();
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> adapterView) {
-                    Log.i(TAG, "类型选择当前的选择序号为：0");
-                    currentTypeIndex = 0;
-                }
-            });
+            currentTerminalType = 0;
+            currentLineType = 0;
+            initSpinner(spinnerType,pointTypeList,CURRENT_TYPE_POINT);
+            initSpinner(spinnerTerminalType,pointTerminalTypeList,CURRENT_TYPE_POINT_TERMINAL);
+            initSpinner(spinnerLineType,pointLineTypeList,CURRENT_TYPE_POINT_LINE);
 
             confirmBtn.setOnClickListener(this);
             locateBtn.setOnClickListener(this);
@@ -1175,50 +1444,186 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             cancelBtn.setOnClickListener(this);
         }
 
-        if (isAdd){
-            confirmBtn.setText("添加");
-            naviBtn.setVisibility(View.GONE);
-        }else{
-            confirmBtn.setText("修改");
-            naviBtn.setVisibility(View.VISIBLE);
-        }
-
         if(currentPoint != null){
             currentType = currentPoint.getType();
+            currentTerminalType = currentPoint.getCe_type();
+            currentLineType = currentPoint.getLe_type();
+            Log.d(TAG, "showPointBottomDialog: current is:" + currentType);
             int index = 0;
-            for (PointType item:pointTypeList
-                 ) {
+            for (DataType item:pointTypeList) {
                 if(item.getOptionValue() == currentType){
                     break;
                 }
                 index++;
             }
 
+            if (index == pointTypeList.size()){
+                index = 0;
+            }
+
             spinnerType.setSelection(index);
+            index = 0;
+            for (DataType item:pointTerminalTypeList) {
+                if(item.getOptionValue() == currentTerminalType){
+                    break;
+                }
+                index++;
+            }
+            if (index == pointTerminalTypeList.size()){
+                index = 0;
+            }
+            spinnerTerminalType.setSelection(index);
+            index = 0;
+            for (DataType item:pointLineTypeList) {
+                if(item.getOptionValue() == currentLineType){
+                    break;
+                }
+                index++;
+            }
+            if (index == pointLineTypeList.size()){
+                index = 0;
+            }
+            spinnerLineType.setSelection(index);
+
             etName.setText(currentPoint.getName());
             etOther.setText(currentPoint.getRemark());
-            etLatitude.setText(String.valueOf(currentPoint.getLocation_lat()));
-            etLongitude.setText(String.valueOf(currentPoint.getLocation_long()));
+
+            if(isDrag){
+                etLatitude.setText(String.valueOf(tempLat));
+                etLongitude.setText(String.valueOf(tempLng));
+            }else{
+                etLatitude.setText(String.valueOf(currentPoint.getLocation_lat()));
+                etLongitude.setText(String.valueOf(currentPoint.getLocation_long()));
+            }
+
         }else{
             spinnerType.setSelection(0);
+            spinnerTerminalType.setSelection(0);
+            spinnerLineType.setSelection(0);
             etName.setText("");
             etOther.setText("");
-            etLatitude.setText("");
-            etLongitude.setText("");
+            if(isDrag){
+                etLatitude.setText(String.valueOf(tempLat));
+                etLongitude.setText(String.valueOf(tempLng));
+            }else{
+                etLatitude.setText("");
+                etLongitude.setText("");
+            }
         }
+
+        if (isAdd){
+            confirmBtn.setText("添加");
+            naviBtn.setVisibility(View.GONE);
+            Common.getInstance().setEditTextTrue(etName);
+            Common.getInstance().setEditTextTrue(etOther);
+            Common.getInstance().setEditTextTrue(etLatitude);
+            Common.getInstance().setEditTextTrue(etLongitude);
+            takePicBtn.setVisibility(View.VISIBLE);
+            choosePicBtn.setVisibility(View.VISIBLE);
+            confirmBtn.setVisibility(View.VISIBLE);
+            locateBtn.setVisibility(View.VISIBLE);
+        }else{
+            confirmBtn.setText("修改");
+            naviBtn.setVisibility(View.VISIBLE);
+            if(isPointWrite){
+                Common.getInstance().setEditTextTrue(etName);
+                Common.getInstance().setEditTextTrue(etOther);
+                Common.getInstance().setEditTextTrue(etLatitude);
+                Common.getInstance().setEditTextTrue(etLongitude);
+                takePicBtn.setVisibility(View.VISIBLE);
+                choosePicBtn.setVisibility(View.VISIBLE);
+                confirmBtn.setVisibility(View.VISIBLE);
+                locateBtn.setVisibility(View.VISIBLE);
+            }else{
+                Common.getInstance().setEditTextFalse(etName);
+                Common.getInstance().setEditTextFalse(etOther);
+                Common.getInstance().setEditTextFalse(etLatitude);
+                Common.getInstance().setEditTextFalse(etLongitude);
+                takePicBtn.setVisibility(View.GONE);
+                choosePicBtn.setVisibility(View.GONE);
+                confirmBtn.setVisibility(View.GONE);
+                locateBtn.setVisibility(View.GONE);
+            }
+        }
+
         showPager();
         pointDialog.show();
     }
 
-    private void initSpinner(Spinner spinner,String[] data){
-        ArrayAdapter<String> adapter=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_multiple_choice,data);
+    private void initSpinner(final Spinner spinner, List<DataType> dataList, int type){
+        Log.d(TAG, "initSpinner: " + dataList.size());
+        String[] typeData =new String[dataList.size()];
+        for (int i=0;i<dataList.size();i++){
+            typeData[i] = dataList.get(i).getOptionText();
+        }
+        ArrayAdapter<String> adapter=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_multiple_choice,typeData);
         spinner.setAdapter(adapter);
+        switch (type){
+            case CURRENT_TYPE_POINT:
+                spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        String currentText = (String)spinner.getSelectedItem();
+                        Log.d(TAG, "onItemClick 1: " + currentText);
+                        for (DataType cur : pointTypeList) {
+                            if(cur.getOptionText().equals(currentText)){
+                                currentType = cur.getOptionValue();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+
+                    }
+                });
+                break;
+            case CURRENT_TYPE_POINT_TERMINAL:
+                spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        String currentText = (String)spinner.getSelectedItem();
+                        Log.d(TAG, "onItemClick 2: " + currentText);
+                        for (DataType cur : pointTerminalTypeList) {
+                            if(cur.getOptionText().equals(currentText)){
+                                currentTerminalType = cur.getOptionValue();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+
+                    }
+                });
+                break;
+            case CURRENT_TYPE_POINT_LINE:
+                spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        String currentText = (String)spinner.getSelectedItem();
+                        Log.d(TAG, "onItemClick 3: " + currentText);
+                        for (DataType cur : pointLineTypeList) {
+                            if(cur.getOptionText().equals(currentText)){
+                                currentLineType = cur.getOptionValue();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+
+                    }
+                });
+                break;
+            default:
+        }
     }
 
     private EditText etLineName;
     private EditText etLineType;
     private EditText etLineType2;
-//    private Spinner spinnerLineType;
     private EditText etLineNum;
     private EditText etLineBelong;
     private EditText etLineRemark;
@@ -1248,55 +1653,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             etLineLocation = view.findViewById(R.id.et_line_location);
             etLineIsUpload = view.findViewById(R.id.et_line_upload);
 
-            Common.getInstance().setEdittextFalse(etLineName);
-            Common.getInstance().setEdittextFalse(etLineType);
-            Common.getInstance().setEdittextFalse(etLineType2);
-            Common.getInstance().setEdittextFalse(etLineNum);
-            Common.getInstance().setEdittextFalse(etLineBelong);
-            Common.getInstance().setEdittextFalse(etLineRemark);
-            Common.getInstance().setEdittextFalse(etLineLocation);
-            Common.getInstance().setEdittextFalse(etLineIsUpload);
+            Common.getInstance().setEditTextFalse(etLineName);
+            Common.getInstance().setEditTextFalse(etLineType);
+            Common.getInstance().setEditTextFalse(etLineType2);
+            Common.getInstance().setEditTextFalse(etLineNum);
+            Common.getInstance().setEditTextFalse(etLineBelong);
+            Common.getInstance().setEditTextFalse(etLineRemark);
+            Common.getInstance().setEditTextFalse(etLineLocation);
+            Common.getInstance().setEditTextFalse(etLineIsUpload);
 
 //            spinnerLineType = view.findViewById(R.id.spinner_line_type);
             btnLineConfirm = view.findViewById(R.id.btn_ok);
 
-            String[] typeData =new String[lineTypeList.size()];
-
-            for (int i=0;i<lineTypeList.size();i++){
-                typeData[i] = lineTypeList.get(i).getOptionText();
-            }
-            currentLineType = 0;
-//            initSpinner(spinnerLineType,typeData);
-//            spinnerLineType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-//                @Override
-//                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-//                    Log.i(TAG, "类型选择当前的选择序号为：" + i);
-//                    currentLineType = pointTypeList.get(i).getOptionValue();
-//                }
-//
-//                @Override
-//                public void onNothingSelected(AdapterView<?> adapterView) {
-//
-//                }
-//            });
 
             btnLineConfirm.setOnClickListener(this);
         }
-//            currentLineType = currentLine.getType();
-//            int index = 0;
-//            for (LineType item:lineTypeList ) {
-//                if(item.getOptionValue() == currentLineType){
-//                    break;
-//                }
-//                index++;
-//                }
-//            spinnerLineType.setSelection(index);
             etLineName.setText(currentLine.getName());
             etLineNum.setText(currentLine.getLineCount()+"");
             etLineRemark.setText(currentLine.getRemark());
             etLineType.setText(currentLine.getTypeStr());
             etLineType2.setText(currentLine.getPosTypeStr());
-//        showPager();
         lineDialog.show();
     }
 
@@ -1315,7 +1691,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void exit() {
         if ((System.currentTimeMillis() - mExitTime) > 2000) {
-            Toast.makeText(MainActivity.this, "再按一次退出每日新闻", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "再按一次退出", Toast.LENGTH_SHORT).show();
             mExitTime = System.currentTimeMillis();
         } else {
             finish();
@@ -1413,63 +1789,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     }
-
-    /**
-     * 获取原生gps信息，代码放 MainActivity 里就可以
-     */
-//    public void getGPSInfo() {
-//        LocationManager mManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-//                != PackageManager.PERMISSION_GRANTED
-//                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-//                != PackageManager.PERMISSION_GRANTED) {
-//            return;
-//        }
-//        Location mLocation = mManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-//
-//        updateGPSInfo(mLocation);
-//
-//        mManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 8, new LocationListener() {
-//            @Override
-//            public void onLocationChanged(Location location) {
-//                updateGPSInfo(mLocation);//位置变化时，更新位置信息
-//            }
-//
-//            @Override
-//            public void onStatusChanged(String provider, int status, Bundle extras) {
-//
-//            }
-//
-//            @Override
-//            public void onProviderEnabled(String provider) {
-//                // 当GPS LocationProvider可用时，更新位置
-//                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-//                        != PackageManager.PERMISSION_GRANTED
-//                        && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-//                        != PackageManager.PERMISSION_GRANTED) {
-//                    return;
-//                }
-//                updateGPSInfo(mManager.getLastKnownLocation(provider));
-//            }
-//
-//            @Override
-//            public void onProviderDisabled(String provider) {
-//
-//            }
-//        });
-//    }
-
-
-    /**
-     * 更新经纬度信息
-     * @param
-     */
-//    public void updateGPSInfo(Location location) {
-//        if (location != null) {
-//            mLat = location.getLatitude();
-//            mLng = location.getLongitude();
-//        }
-//    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {

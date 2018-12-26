@@ -23,6 +23,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import map.test.testmap.model.ResponseBean;
 import map.test.testmap.model.User;
 import map.test.testmap.utils.HttpUtils;
 import map.test.testmap.utils.PreferencesUtils;
@@ -234,7 +235,7 @@ public class LoginActivity extends AppCompatActivity {
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Response<User>> {
+    public class UserLoginTask extends AsyncTask<Void, Void, Response<ResponseBean<User>>> {
 
         private final String mAccount;
         private final String mPassword;
@@ -245,30 +246,46 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         @Override
-        protected Response<User> doInBackground(Void... params) {
-             return HttpUtils.getInstance().getLoginInfo();
+        protected Response<ResponseBean<User>> doInBackground(Void... params) {
+             return HttpUtils.getInstance().getLoginInfo(mAccount,mPassword);
         }
 
         @Override
-        protected void onPostExecute(final Response<User> response) {
+        protected void onPostExecute(final Response<ResponseBean<User>> response) {
             mAuthTask = null;
             showProgress(false);
 
-            User currentUser = response.body();
-
-            if(currentUser == null){
-                Toast.makeText(LoginActivity.this,"服务器异常，请稍后再试！",Toast.LENGTH_LONG).show();
+            if(response == null){
+                String errMsg = "服务器请求超时！";
+                Log.e(TAG, "onPostExecute: "+ errMsg);
+                Toast.makeText(LoginActivity.this,errMsg,Toast.LENGTH_LONG).show();
                 return;
             }
 
-            PreferencesUtils.putString(LoginActivity.this,"account",mAccount);
-            PreferencesUtils.putString(LoginActivity.this,"password",mPassword);
+            ResponseBean<User> currentBean = response.body();
 
-            Intent intent = new Intent(LoginActivity.this,MainActivity.class);
-            startActivity(intent);
+            if(currentBean == null){
+                String errMsg = "服务器异常，请稍后再试！";
+                Log.e(TAG, "onPostExecute: "+ errMsg);
+                Toast.makeText(LoginActivity.this,errMsg,Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            if(currentBean.getResult() == Constants.RESULT_FAIL){
+                Log.e(TAG, "onPostExecute: "+ currentBean.getDesc());
+                Toast.makeText(LoginActivity.this,currentBean.getDesc(),Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            if(currentBean.getResult() == Constants.RESULT_OK){
+                Log.i(TAG, "onPostExecute: success");
+                PreferencesUtils.putString(LoginActivity.this,"account",mAccount);
+                PreferencesUtils.putString(LoginActivity.this,"password",mPassword);
+                Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+                intent.putExtra("userId",currentBean.getObject().getId());
+                startActivity(intent);
+            }
             finish();
-//                mPasswordView.setError(getString(R.string.error_incorrect_password));
-//                mPasswordView.requestFocus();
         }
 
         @Override
@@ -278,4 +295,3 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 }
-

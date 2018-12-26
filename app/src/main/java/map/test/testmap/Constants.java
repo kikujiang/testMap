@@ -2,9 +2,11 @@ package map.test.testmap;
 
 public class Constants {
 
+    public static final int RESULT_OK = 1;
+    public static final int RESULT_FAIL = 2;
 //    public static final String TEST_URL = "http://172.19.26.52:8080/em";
 //    public static final String TEST_URL1 = "http://172.19.26.52:8080";
-    public static final String TEST_SPLITER = "";
+    public static final String TEST_SPLITTER = "";
 //    public static final String TEST_URL = "http://172.17.4.5:8080/em_test";
     public static final String TEST_URL1 = "http://119.3.71.206";
     public static final String TEST_URL = "http://119.3.71.206";
@@ -15,9 +17,29 @@ public class Constants {
      */
     public static final String TAG_LOGIN = SPLITTER + "loginClient";
     /**
+     * 登出
+     */
+    public static final String TAG_LOGOUT = SPLITTER + "logoutClient";
+    /**
+     * 获取用户信息
+     */
+    public static final String TAG_USER_INFO = SPLITTER + "getUserInfo";
+    /**
+     * 获取用户权限
+     */
+    public static final String TAG_USER_PERMISSION = "/userAction"+SPLITTER + "getPermission";
+    /**
      * 获取标记点类型列表
      */
     public static final String TAG_GET_POINT_TYPE = "/tagAction"+SPLITTER+"getTagTypeList";
+    /**
+     * 获取标记点终端类型列表
+     */
+    public static final String TAG_GET_POINT_TERMINAL_TYPE = "/tagAction"+SPLITTER+"getTagCeTypeList";
+    /**
+     * 获取标记点光缆类型列表
+     */
+    public static final String TAG_GET_POINT_LINE_TYPE = "/tagAction"+SPLITTER+"getTagLeTypeList";
     /**
      * 获取线路类型列表
      */
