@@ -11,7 +11,7 @@ public interface IUserBiz {
 
     @FormUrlEncoded
     @POST(Constants.TEST_SPLITTER + Constants.TAG_LOGIN)
-    Call<ResponseBean<User>> getLoginInfo(@Field("account") String account,@Field("password") String password);
+    Call<ResponseBean<User>> getLoginInfo(@Field("account") String account,@Field("password") String password,@Field("mac") String mac);
 
     @FormUrlEncoded
     @POST(Constants.TEST_SPLITTER + Constants.TAG_USER_PERMISSION)

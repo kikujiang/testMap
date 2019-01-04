@@ -94,8 +94,8 @@ public class HttpUtils {
      * 单线程获取登录信息
      * @return
      */
-    public Response<ResponseBean<User>> getLoginInfo(String account, String password){
-        Call<ResponseBean<User>> login = userBiz.getLoginInfo(account,password);
+    public Response<ResponseBean<User>> getLoginInfo(String account, String password,String mac){
+        Call<ResponseBean<User>> login = userBiz.getLoginInfo(account,password,mac);
         Response<ResponseBean<User>> user = null;
         try{
             user = login.execute();

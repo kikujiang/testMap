@@ -233,7 +233,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         userId = getIntent().getIntExtra("userId",0);
-        Log.d(TAG, "=========================onCreate called!========================= user is is：" + userId);
+        String mac = Common.getInstance().getMacAddress();
+        Log.d(TAG, "=========================onCreate called!========================= user is is：" + userId+",and mac is:" + mac);
         mMapView = (MapView) findViewById(R.id.map);
         mMapView.onCreate(savedInstanceState);
         checkLocationPermission();
@@ -716,9 +717,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if(isPointAdd){
                     clearImageData();
                     isAdd = true;
+                    if(currentPoint != null){
+                        currentMarker.hideInfoWindow();
+                    }
+
                     currentPoint = null;
+                    currentMarker = null;
                     if(pointTypeList != null){
-                        showPointBottomDialog();
+                        showPointBottomDialog(null);
                     }else{
                         Toast.makeText(MainActivity.this,"与服务器连接失败，点击刷新重试！",Toast.LENGTH_LONG).show();
                     }
@@ -800,7 +806,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
 
                 if(currentPoint != null){
-                    showPointBottomDialog();
+                    showPointBottomDialog(null);
                 } else{
                     Toast.makeText(MainActivity.this,"当前点信息异常，请重新刷新！",Toast.LENGTH_LONG).show();
                 }
@@ -858,7 +864,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     tempLng = marker.getPosition().longitude;
                     Log.d(TAG, "onMarkerDragEnd: "+marker+",lat==="+tempLat);
                     isDrag = true;
-                    showPointBottomDialog();
+                    showPointBottomDialog(null);
+                }
+            }
+        });
+        aMap.setOnMapLongClickListener(new AMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng current) {
+                if(isPointAdd){
+                    clearImageData();
+                    isAdd = true;
+
+                    if(currentPoint != null){
+                        currentMarker.hideInfoWindow();
+                    }
+
+                    currentPoint = null;
+                    currentMarker = null;
+                    if(pointTypeList != null){
+                        showPointBottomDialog(current);
+                    }else{
+                        Toast.makeText(MainActivity.this,"与服务器连接失败，点击刷新重试！",Toast.LENGTH_LONG).show();
+                    }
+                }else{
+                    Toast.makeText(MainActivity.this,"当前账户无权限，请授予权限后重试！",Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -1400,7 +1429,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void showPointBottomDialog() {
+    private void showPointBottomDialog(LatLng current) {
         View view = getLayoutInflater().inflate(R.layout.popup_list2, null);
         if(pointDialog == null ){
 
@@ -1506,8 +1535,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 etLatitude.setText(String.valueOf(tempLat));
                 etLongitude.setText(String.valueOf(tempLng));
             }else{
-                etLatitude.setText("");
-                etLongitude.setText("");
+                if(current != null){
+                    etLatitude.setText(String.valueOf(current.latitude));
+                    etLongitude.setText(String.valueOf(current.longitude));
+                }else{
+                    etLatitude.setText("");
+                    etLongitude.setText("");
+                }
+
             }
         }
 

@@ -3,13 +3,18 @@ package map.test.testmap;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -23,8 +28,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+
 import map.test.testmap.model.ResponseBean;
 import map.test.testmap.model.User;
+import map.test.testmap.utils.Common;
 import map.test.testmap.utils.HttpUtils;
 import map.test.testmap.utils.PreferencesUtils;
 import retrofit2.Response;
@@ -85,6 +93,28 @@ public class LoginActivity extends AppCompatActivity {
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
         initView();
+
+        download();
+    }
+
+
+    private void download() {
+        new AlertDialog.Builder(this)
+                .setTitle("提示")
+                .setMessage("版本更新")
+                .setPositiveButton("更新", new DialogInterface.OnClickListener() {
+                    @Override public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                        Common.getInstance().downloadApk(LoginActivity.this,"http://172.17.4.80:8080/examples/map.apk","下载中","电力地理系统");
+                    }
+                })
+                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .show();
+
     }
 
     private void initView(){
@@ -247,7 +277,13 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         protected Response<ResponseBean<User>> doInBackground(Void... params) {
-             return HttpUtils.getInstance().getLoginInfo(mAccount,mPassword);
+            String mac = Common.getInstance().getMacAddress();
+            Log.d(TAG, "doInBackground: mac is:" + mac);
+
+            if(null == mac || "".equals(mac)){
+                mac = "00:00:00:00:00:00";
+            }
+            return HttpUtils.getInstance().getLoginInfo(mAccount,mPassword,mac);
         }
 
         @Override
