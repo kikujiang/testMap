@@ -4,14 +4,17 @@ public class Constants {
 
     public static final int RESULT_OK = 1;
     public static final int RESULT_FAIL = 2;
-//    public static final String TEST_URL = "http://172.19.26.52:8080/em";
-//    public static final String TEST_URL1 = "http://172.19.26.52:8080";
-    public static final String TEST_SPLITTER = "";
-//    public static final String TEST_URL = "http://172.17.4.5:8080/em_test";
-    public static final String TEST_URL1 = "http://119.3.71.206";
-    public static final String TEST_URL = "http://119.3.71.206";
-    public static final String SPLITTER = "/app/";
+//    public static final String WEB_URL = "http://172.19.26.52:8080/em";
+//    public static final String TEST_SPLITTER = "em";
+//    public static final String TEST_SPLITTER = "";
+    public static final String WEB_URL = "http://172.17.4.5:8080";
+//    public static final String WEB_URL = "http://119.3.71.206";
+    private static final String SPLITTER = "/app/";
 
+    /**
+     * 登陆
+     */
+    public static final String TAG_UPDATE = SPLITTER + "version";
     /**
      * 登陆
      */

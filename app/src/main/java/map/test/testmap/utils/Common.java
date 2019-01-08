@@ -2,6 +2,8 @@ package map.test.testmap.utils;
 
 import android.app.DownloadManager;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
@@ -175,5 +177,17 @@ public class Common {
                 appContext.getSystemService(Context.DOWNLOAD_SERVICE);
         //进入下载队列
         manager.enqueue(request);
+    }
+
+    public int getVersionCode(Context context){
+        PackageManager pm = context.getPackageManager();
+        PackageInfo pi = null;
+        try {
+            pi = pm.getPackageInfo(context.getPackageName(),
+                    PackageManager.GET_CONFIGURATIONS);
+        } catch (PackageManager.NameNotFoundException e1) {
+            e1.printStackTrace();
+        }
+        return pi.versionCode;
     }
 }

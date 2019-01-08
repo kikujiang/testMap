@@ -4,17 +4,14 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -28,8 +25,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
-
+import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.ResponseBean;
 import map.test.testmap.model.User;
 import map.test.testmap.utils.Common;
@@ -93,19 +89,48 @@ public class LoginActivity extends AppCompatActivity {
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
         initView();
-
-        download();
+        checkUpdate();
     }
 
+    private void checkUpdate(){
+        HttpUtils.getInstance().checkUpdate(new OnResponseListener() {
+            @Override
+            public void success(Response responseMapBean) {
+                if(responseMapBean == null){
+                    Log.d(TAG, "服务器返回对象为空");
+                    return;
+                }
 
-    private void download() {
+                ResponseBean current = (ResponseBean)responseMapBean.body();
+                if(current.getResult() == Constants.RESULT_FAIL){
+                    Log.d(TAG, "fail message is:" + current.getDesc());
+                }
+
+                if(current.getResult() == Constants.RESULT_OK){
+                    int serverVersion = current.getId();
+                    int currentVersion = Common.getInstance().getVersionCode(LoginActivity.this);
+
+                    if(currentVersion < serverVersion){
+                        download(current.getDesc());
+                    }
+                }
+            }
+
+            @Override
+            public void fail(Throwable e) {
+                Log.d(TAG, "fail: "+e.getMessage());
+            }
+        });
+    }
+
+    private void download(final String url) {
         new AlertDialog.Builder(this)
                 .setTitle("提示")
                 .setMessage("版本更新")
                 .setPositiveButton("更新", new DialogInterface.OnClickListener() {
                     @Override public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.dismiss();
-                        Common.getInstance().downloadApk(LoginActivity.this,"http://172.17.4.80:8080/examples/map.apk","下载中","电力地理系统");
+                        Common.getInstance().downloadApk(LoginActivity.this,url,"下载中","电力地理系统");
                     }
                 })
                 .setNegativeButton("取消", new DialogInterface.OnClickListener() {

@@ -41,7 +41,7 @@ public class HttpUtils {
 
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
-        retrofit = new Retrofit.Builder().baseUrl(Constants.TEST_URL1)
+        retrofit = new Retrofit.Builder().baseUrl(Constants.WEB_URL)
                 .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
@@ -103,5 +103,24 @@ public class HttpUtils {
 
         }
         return user;
+    }
+
+    /**
+     * 获取更新信息
+     * @param listener
+     */
+    public void checkUpdate(final OnResponseListener listener){
+        Call<ResponseBean> updateInfo = userBiz.getApkUpdateInfo();
+        updateInfo.enqueue(new retrofit2.Callback<ResponseBean>() {
+            @Override
+            public void onResponse(Call<ResponseBean> call, retrofit2.Response<ResponseBean> response) {
+                listener.success(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBean> call, Throwable t) {
+                listener.fail(t);
+            }
+        });
     }
 }

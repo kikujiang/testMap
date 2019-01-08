@@ -1,6 +1,8 @@
 package map.test.testmap;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -441,7 +443,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 获取所有点的信息
      */
     private void getALLPoint(){
-        final String url = Constants.TEST_URL + Constants.TAG_GET_ALL_POINT;
+        final String url = Constants.WEB_URL + Constants.TAG_GET_ALL_POINT;
         Log.d(TAG, "请求获取所有点信息接口" + url);
         final Map<String,String> data = new HashMap<>();
         aMap.clear();
@@ -477,7 +479,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void getALLLine(){
-        final String url = Constants.TEST_URL + Constants.TAG_GET_ALL_LINE;
+        final String url = Constants.WEB_URL + Constants.TAG_GET_ALL_LINE;
         Log.d(TAG, "请求获取所有线接口" + url);
         final Map<String,String> data = new HashMap<>();
 
@@ -514,7 +516,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void getPointType(){
-        final String url = Constants.TEST_URL + Constants.TAG_GET_POINT_TYPE;
+        final String url = Constants.WEB_URL + Constants.TAG_GET_POINT_TYPE;
         Log.d(TAG, "请求获取点类型接口" + url);
         final Map<String,String> data = new HashMap<>();
 
@@ -549,7 +551,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void getPointTerminalType(){
-        final String url = Constants.TEST_URL + Constants.TAG_GET_POINT_TERMINAL_TYPE;
+        final String url = Constants.WEB_URL + Constants.TAG_GET_POINT_TERMINAL_TYPE;
         Log.d(TAG, "请求获取点终端类型接口"+ url);
         final Map<String,String> data = new HashMap<>();
 
@@ -583,7 +585,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void getPointLineType(){
-        final String url = Constants.TEST_URL + Constants.TAG_GET_POINT_LINE_TYPE;
+        final String url = Constants.WEB_URL + Constants.TAG_GET_POINT_LINE_TYPE;
         Log.d(TAG, "请求获取点光缆类型接口"+ url);
         final Map<String,String> data = new HashMap<>();
 
@@ -745,9 +747,66 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.exit:
                 logOut(userId,true);
                 break;
+            case R.id.update:
+                checkUpdate();
+                break;
                 default:
         }
         return true;
+    }
+
+    private void checkUpdate(){
+        HttpUtils.getInstance().checkUpdate(new OnResponseListener() {
+            @Override
+            public void success(retrofit2.Response responseMapBean) {
+                if(responseMapBean == null){
+                    Log.d(TAG, "服务器返回对象为空");
+                    return;
+                }
+
+                ResponseBean current = (ResponseBean)responseMapBean.body();
+                if(current.getResult() == Constants.RESULT_FAIL){
+                    Log.d(TAG, "fail message is:" + current.getDesc());
+                    Toast.makeText(MainActivity.this,current.getDesc(),Toast.LENGTH_LONG).show();
+                }
+
+                if(current.getResult() == Constants.RESULT_OK){
+                    int serverVersion = current.getId();
+                    int currentVersion = Common.getInstance().getVersionCode(MainActivity.this);
+
+                    if(currentVersion < serverVersion){
+                        download(current.getDesc());
+                    }else{
+                        Toast.makeText(MainActivity.this,"当前是最新版本",Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+
+            @Override
+            public void fail(Throwable e) {
+                Log.d(TAG, "fail: "+e.getMessage());
+                Toast.makeText(MainActivity.this,e.getMessage(),Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void download(final String url) {
+        new AlertDialog.Builder(this)
+                .setTitle("提示")
+                .setMessage("版本更新")
+                .setPositiveButton("更新", new DialogInterface.OnClickListener() {
+                    @Override public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                        Common.getInstance().downloadApk(MainActivity.this,url,"下载中","电力地理系统");
+                    }
+                })
+                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .show();
+
     }
 
     private double tempLat = 0.0d;
@@ -1081,6 +1140,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     lineDialog.dismiss();
                 }
                 break;
+            case R.id.state:
+                break;
                 default:
         }
     }
@@ -1165,7 +1226,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void savePoint(Point currentPoint){
         Log.d(TAG, "请求保存点接口");
-        final String url = Constants.TEST_URL + Constants.TAG_SAVE_SINGLE_POINT;
+        final String url = Constants.WEB_URL + Constants.TAG_SAVE_SINGLE_POINT;
         final Map<String,String> data = new HashMap<>();
         data.put("id",currentPoint.getId()+"");
         data.put("name",currentPoint.getName());
@@ -1211,7 +1272,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void getSinglePoint(String pointId){
-        final String url = Constants.TEST_URL + Constants.TAG_GET_SINGLE_POINT;
+        final String url = Constants.WEB_URL + Constants.TAG_GET_SINGLE_POINT;
         Log.d(TAG, "请求获取某个点接口" + url);
         final Map<String,String> data = new HashMap<>();
         data.put("id",pointId);
@@ -1260,7 +1321,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void getSingleLine(String lineId){
-        final String url = Constants.TEST_URL + Constants.TAG_GET_SINGLE_LINE;
+        final String url = Constants.WEB_URL + Constants.TAG_GET_SINGLE_LINE;
         Log.d(TAG, "请求获取某个点接口" + url);
         final Map<String,String> data = new HashMap<>();
         data.put("id",lineId);
@@ -1388,6 +1449,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button locateBtn = null;
     private Button takePicBtn = null;
     private Button choosePicBtn = null;
+    private Button stateBtn = null;
     private ViewPager pager = null;
     private TextView tvEmpty = null;
     private List<ImageView> imageViews = new ArrayList<>();
@@ -1452,6 +1514,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             spinnerTerminalType = view.findViewById(R.id.spinner_terminal_type);
             spinnerLineType = view.findViewById(R.id.spinner_line_type);
             confirmBtn = view.findViewById(R.id.confirm);
+            stateBtn = view.findViewById(R.id.state);
             naviBtn = view.findViewById(R.id.navi);
 
             tvEmpty = view.findViewById(R.id.empty_text);
@@ -1465,6 +1528,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             initSpinner(spinnerTerminalType,pointTerminalTypeList,CURRENT_TYPE_POINT_TERMINAL);
             initSpinner(spinnerLineType,pointLineTypeList,CURRENT_TYPE_POINT_LINE);
 
+            stateBtn.setOnClickListener(this);
             confirmBtn.setOnClickListener(this);
             locateBtn.setOnClickListener(this);
             takePicBtn.setOnClickListener(this);

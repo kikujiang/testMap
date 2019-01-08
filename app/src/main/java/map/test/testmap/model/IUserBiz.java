@@ -10,14 +10,17 @@ import retrofit2.http.POST;
 public interface IUserBiz {
 
     @FormUrlEncoded
-    @POST(Constants.TEST_SPLITTER + Constants.TAG_LOGIN)
+    @POST(Constants.TAG_LOGIN)
     Call<ResponseBean<User>> getLoginInfo(@Field("account") String account,@Field("password") String password,@Field("mac") String mac);
 
     @FormUrlEncoded
-    @POST(Constants.TEST_SPLITTER + Constants.TAG_USER_PERMISSION)
+    @POST(Constants.TAG_USER_PERMISSION)
     Call<ResponseBean<UserPermission>>  getUserPermissionInfo(@Field("id") int userId);
 
     @FormUrlEncoded
-    @POST(Constants.TEST_SPLITTER + Constants.TAG_LOGOUT)
+    @POST(Constants.TAG_LOGOUT)
     Call<ResponseBean> logOut(@Field("id") int userId);
+
+    @GET(Constants.TAG_UPDATE)
+    Call<ResponseBean> getApkUpdateInfo();
 }

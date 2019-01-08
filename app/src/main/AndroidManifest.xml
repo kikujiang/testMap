@@ -46,7 +46,7 @@
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait" />
 
         <service android:name="com.amap.api.location.APSService" />
 
@@ -65,10 +65,11 @@
             android:name=".receiver.InstallReceiver"
             android:enabled="true"
             android:exported="true">
-            <intent-filter android:priority="20" >
+            <intent-filter android:priority="20">
                 <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
             </intent-filter>
         </receiver>
+
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="map.provider"
@@ -76,8 +77,10 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths"/>
+                android:resource="@xml/provider_paths" />
         </provider>
+
+        <activity android:name=".StateActivity"></activity>
     </application>
 
 </manifest>
