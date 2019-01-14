@@ -14,6 +14,14 @@ public class State implements Parcelable {
     private List<String> imageList;
 
 
+    public State(String o,String t,int s,String r,List<String> images){
+        this.operator = o;
+        this.checkTime = t;
+        this.checkState = s;
+        this.remark = r;
+        this.imageList = images;
+    }
+
     protected State(Parcel in) {
         operator = in.readString();
         checkTime = in.readString();
@@ -46,5 +54,25 @@ public class State implements Parcelable {
         dest.writeInt(checkState);
         dest.writeString(remark);
         dest.writeList(imageList);
+    }
+
+    public String getOperator() {
+        return operator;
+    }
+
+    public String getCheckTime() {
+        return checkTime;
+    }
+
+    public int getCheckState() {
+        return checkState;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public List<String> getImageList() {
+        return imageList;
     }
 }

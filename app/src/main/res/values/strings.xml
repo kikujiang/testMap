@@ -25,4 +25,11 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+
+    <string name="check_name"> 检修人</string>
+    <string name="check_time">检修时间</string>
+    <string name="check_state">检修状态</string>
+    <string name="check_remark">检修备注</string>
+    <string name="check_picture">现场图片</string>
+
 </resources>

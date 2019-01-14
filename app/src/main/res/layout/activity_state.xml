@@ -3,10 +3,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".StateActivity">
 
     <fragment
+        android:id="@+id/fragment_detail"
         android:name="map.test.testmap.Detail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <View
+        android:background="@android:color/darker_gray"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"/>
+
+    <fragment
+        android:id="@+id/fragment_list"
+        android:name="map.test.testmap.StateListFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
