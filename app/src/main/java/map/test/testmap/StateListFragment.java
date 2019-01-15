@@ -28,6 +28,8 @@ public class StateListFragment extends ListFragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_DATA = "stateData";
+    private OnTouchListener mCallback;
+
 
     // TODO: Rename and change types of parameters
     private ArrayList<State> list;
@@ -46,10 +48,8 @@ public class StateListFragment extends ListFragment {
     public static StateListFragment newInstance(ArrayList<State> dataList) {
         StateListFragment fragment = new StateListFragment();
         Bundle data = new Bundle();
+        Log.d(ARG_DATA, "newInstance: list size is:" + dataList.size());
         data.putParcelableArrayList("list",dataList);
-//        data.put
-//        args.arr(ARG_DATA, param1);
-//        args.putStringArrayList();
         fragment.setArguments(data);
 
         return fragment;
@@ -58,7 +58,6 @@ public class StateListFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -77,17 +76,29 @@ public class StateListFragment extends ListFragment {
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        super.onListItemClick(l, v, position, id);
+        Log.d(ARG_DATA, "onListItemClick: position is:" + position);
+        State current = list.get(position);
+        mCallback.setData(current);
     }
-
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        try {
+            mCallback = (OnTouchListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString()
+                    + " must implement TextClicked");
+        }
     }
 
     @Override
     public void onDetach() {
+        mCallback = null;
         super.onDetach();
+    }
+
+    public interface OnTouchListener{
+        public void setData(State current);
     }
 }

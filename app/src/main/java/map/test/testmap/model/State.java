@@ -11,10 +11,10 @@ public class State implements Parcelable {
     private String checkTime;
     private int checkState;
     private String remark;
-    private List<String> imageList;
+    private List<Image> imageList;
 
 
-    public State(String o,String t,int s,String r,List<String> images){
+    public State(String o,String t,int s,String r,List<Image> images){
         this.operator = o;
         this.checkTime = t;
         this.checkState = s;
@@ -72,7 +72,7 @@ public class State implements Parcelable {
         return remark;
     }
 
-    public List<String> getImageList() {
+    public List<Image> getImageList() {
         return imageList;
     }
 }

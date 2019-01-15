@@ -31,5 +31,6 @@
     <string name="check_state">检修状态</string>
     <string name="check_remark">检修备注</string>
     <string name="check_picture">现场图片</string>
+    <string name="check_add">添加历史记录</string>
 
 </resources>

@@ -1141,6 +1141,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.state:
+                Intent stateIntent = new Intent(MainActivity.this,StateActivity.class);
+                startActivity(stateIntent);
+                break;
+            case R.id.line_state:
+                Intent stateIntent1 = new Intent(MainActivity.this,StateActivity.class);
+                startActivity(stateIntent1);
                 break;
                 default:
         }
@@ -1729,6 +1735,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private EditText etLineLocation;
     private EditText etLineIsUpload;
     private Button btnLineConfirm;
+    private Button btnLineState;
 
 
     private void showLineBottomDialog() {
@@ -1763,9 +1770,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 //            spinnerLineType = view.findViewById(R.id.spinner_line_type);
             btnLineConfirm = view.findViewById(R.id.btn_ok);
+            btnLineState = view.findViewById(R.id.line_state);
 
 
             btnLineConfirm.setOnClickListener(this);
+            btnLineState.setOnClickListener(this);
         }
             etLineName.setText(currentLine.getName());
             etLineNum.setText(currentLine.getLineCount()+"");
@@ -1829,8 +1838,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 case REQUEST_CODE_TAKE_PICTURE:
 
                     Bitmap originalBmp = BitmapFactory.decodeFile(currentFileName);
+
                     final String oriPath = Common.getInstance().saveBitmap(MainActivity.this,originalBmp);
-                    Log.d(TAG, "onActivityResult: path is" + oriPath);
+                    Log.d(TAG, "onActivityResult: path is" + oriPath+",angle is:" + Common.getInstance().readPictureDegree(oriPath));
                     imageLocalPath.add(oriPath);
                     ImageView cur = new ImageView(MainActivity.this);
                     cur.setOnClickListener(new View.OnClickListener() {
@@ -1841,7 +1851,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             startActivity(intent);
                         }
                     });
-                    cur.setRotation(90);
                     cur.setImageBitmap(originalBmp);
                     imageViews.add(0,cur);
                     adapter = null;
@@ -1865,7 +1874,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     startActivity(intent);
                                 }
                             });
-                            choose.setRotation(90);
                             choose.setImageBitmap(bit);
                             imageViews.add(0,choose);
                             adapter = null;

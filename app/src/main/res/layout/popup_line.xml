@@ -179,6 +179,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
             </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:padding="5dp"
+            android:orientation="horizontal"
+            android:layout_height="wrap_content">
 
             <Button
                 android:id="@+id/btn_ok"
@@ -186,27 +192,13 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="关闭"/>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_weight="1"
-            android:padding="5dp"
-            android:visibility="gone"
-            android:orientation="horizontal"
-            android:layout_height="wrap_content">
 
             <Button
-                android:id="@+id/confirm"
+                android:id="@+id/line_state"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="确定"/>
-
-            <Button
-                android:id="@+id/cancel"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="取消"/>
+                android:text="维修状态"/>
         </LinearLayout>
         </LinearLayout>
     </ScrollView>
