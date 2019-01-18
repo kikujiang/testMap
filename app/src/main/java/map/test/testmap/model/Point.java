@@ -17,6 +17,8 @@ import java.util.List;
  *        },
  * 	"remark": "rtretreter",
  * 	"id": 4
+ * 	"checkStatus": 0,
+ *             "tagCheckId": 0,
  * }
  */
 public class Point {
@@ -34,6 +36,9 @@ public class Point {
     private User createUser;
     private String remark;
     private int id;
+    private int tagCheckId;
+    private int checkStatus;
+    private int lineId;
     private List<Image> imageList;
 
     public String getName() {
@@ -146,6 +151,30 @@ public class Point {
 
     public void setLe_type(int le_type) {
         this.le_type = le_type;
+    }
+
+    public int getTagCheckId() {
+        return tagCheckId;
+    }
+
+    public void setTagCheckId(int tagCheckId) {
+        this.tagCheckId = tagCheckId;
+    }
+
+    public int getCheckStatus() {
+        return checkStatus;
+    }
+
+    public void setCheckStatus(int checkStatus) {
+        this.checkStatus = checkStatus;
+    }
+
+    public int getLineId() {
+        return lineId;
+    }
+
+    public void setLineId(int lineId) {
+        this.lineId = lineId;
     }
 
     @Override

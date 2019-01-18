@@ -4,6 +4,8 @@ public class Constants {
 
     public static final int RESULT_OK = 1;
     public static final int RESULT_FAIL = 2;
+    public static final int REQUEST_CODE = 1000;
+    public static final int REQUEST_LINE_CODE = 1001;
 //    public static final String WEB_URL = "http://172.19.26.52:8080/em";
 //    public static final String TEST_SPLITTER = "em";
 //    public static final String TEST_SPLITTER = "";
@@ -79,4 +81,20 @@ public class Constants {
      * 删除某条线路
      */
     public static final String TAG_DELETE_SINGLE_LINE = "/tagAction"+SPLITTER+"delTagLine";
+    /**
+     * 获取维修点历史记录
+     */
+    public static final String TAG_GET_CHECK_HISTORY = "/tagAction"+SPLITTER+"getTagCheckHistory";
+    /**
+     * 添加维修点历史记录
+     */
+    public static final String TAG_SAVE_CHECK = "/tagAction"+SPLITTER+"saveTagCheck";
+    /**
+     * 添加维修点
+     */
+    public static final String TAG_SAVE_LINE_CHECK = "/tagAction"+SPLITTER+"addTagLineCheck";
+    /**
+     * 获取维修点历史记录
+     */
+    public static final String TAG_GET_CHECK_LINE_HISTORY = "/tagAction"+SPLITTER+"getTagLineCheckHistory";
 }

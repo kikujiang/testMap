@@ -80,7 +80,12 @@
                 android:resource="@xml/provider_paths" />
         </provider>
 
-        <activity android:name=".StateActivity" />
+        <activity
+            android:name=".StateActivity"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustUnspecified|stateHidden" />
+        <activity android:name=".LineStateHistoryActivity"></activity>
     </application>
 
 </manifest>

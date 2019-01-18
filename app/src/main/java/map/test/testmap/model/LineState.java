@@ -5,30 +5,7 @@ import android.os.Parcelable;
 
 import java.util.List;
 
-/**
- "id": 21,
- "name": "将故障报警排除",
- "status": 1,
- "statusStr": "正常",
- "createUserName": "admin",
- "createTime": "2019-01-15 19:04:56",
- "modifyUserName": "admin",
- "modifyTime": "2019-01-16 16:53:07",
- "remark": "ssss\r\nddd\r\ndddd",
- "tagId": 50,
- "imageList": [
- {
- "name": "08_avatar_small.jpg",
- "path": "http://172.17.4.5:8080/resouce/pimages/tagCheck/15476287566560.jpg"
- },
- {
- "name": "11.png",
- "path": "http://172.17.4.5:8080/resouce/pimages/tagCheck/15476287875310.png"
- }
- ],
- "remarkHtml": "ssss<br/>ddd<br/>dddd"
- */
-public class State implements Parcelable {
+public class LineState implements Parcelable {
 
     private int id;
     private String name;
@@ -39,16 +16,21 @@ public class State implements Parcelable {
     private String modifyUserName;
     private String modifyTime;
     private String remark;
+    private String pointName;
+    private double latitude;
+    private double longitude;
     private int tagId;
     private List<Image> imageList;
 
-
-    public State(){
+    public LineState() {
     }
 
-    protected State(Parcel in) {
+    protected LineState(Parcel in) {
         id = in.readInt();
         name = in.readString();
+        pointName = in.readString();
+        latitude = in.readDouble();
+        longitude = in.readDouble();
         status = in.readInt();
         statusStr = in.readString();
         createUserName = in.readString();
@@ -60,15 +42,15 @@ public class State implements Parcelable {
         imageList = in.readArrayList(null);
     }
 
-    public static final Creator<State> CREATOR = new Creator<State>() {
+    public static final Creator<LineState> CREATOR = new Creator<LineState>() {
         @Override
-        public State createFromParcel(Parcel in) {
-            return new State(in);
+        public LineState createFromParcel(Parcel in) {
+            return new LineState(in);
         }
 
         @Override
-        public State[] newArray(int size) {
-            return new State[size];
+        public LineState[] newArray(int size) {
+            return new LineState[size];
         }
     };
 
@@ -81,6 +63,7 @@ public class State implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(id);
         dest.writeString(name);
+        dest.writeString(pointName);
         dest.writeInt(status);
         dest.writeString(statusStr);
         dest.writeString(createUserName);
@@ -90,6 +73,8 @@ public class State implements Parcelable {
         dest.writeString(remark);
         dest.writeInt(tagId);
         dest.writeList(imageList);
+        dest.writeDouble(latitude);
+        dest.writeDouble(longitude);
     }
 
     public int getId() {
@@ -162,6 +147,30 @@ public class State implements Parcelable {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public String getPointName() {
+        return pointName;
+    }
+
+    public void setPointName(String pointName) {
+        this.pointName = pointName;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 
     public int getTagId() {

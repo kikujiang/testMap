@@ -1,5 +1,7 @@
 package map.test.testmap.model;
 
+import java.util.List;
+
 /**
  * 线对象
  * {
@@ -29,6 +31,8 @@ public class Line {
     private int hasBox;
     private String createTime;
     private String remark;
+    private int status;
+    private String statusStr;
     private double tag_begin_location_lat;
     private double tag_begin_location_long;
     private double tag_end_location_lat;
@@ -36,6 +40,7 @@ public class Line {
     private Point tag_end;
     private String typeStr;
     private String posTypeStr;
+    private List<Point> checkPoints;
 
     public int getId() {
         return id;
@@ -163,5 +168,29 @@ public class Line {
 
     public void setPosTypeStr(String posTypeStr) {
         this.posTypeStr = posTypeStr;
+    }
+
+    public List<Point> getCheckPoints() {
+        return checkPoints;
+    }
+
+    public void setCheckPoints(List<Point> checkPoints) {
+        this.checkPoints = checkPoints;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    public String getStatusStr() {
+        return statusStr;
+    }
+
+    public void setStatusStr(String statusStr) {
+        this.statusStr = statusStr;
     }
 }

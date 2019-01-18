@@ -2,16 +2,23 @@ package map.test.testmap.utils;
 
 import android.util.Log;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import map.test.testmap.Constants;
 import map.test.testmap.model.IUserBiz;
 import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.ResponseBean;
+import map.test.testmap.model.ResponseCheckHistory;
 import map.test.testmap.model.User;
 import map.test.testmap.model.UserPermission;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
+import okhttp3.RequestBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -31,7 +38,7 @@ public class HttpUtils {
             @Override
             public void log(String message) {
                 //打印retrofit日志
-                Log.i("map","返回数据为 = "+message);
+                Log.i("http","返回数据为 = "+message);
             }
         });
 
@@ -112,6 +119,102 @@ public class HttpUtils {
     public void checkUpdate(final OnResponseListener listener){
         Call<ResponseBean> updateInfo = userBiz.getApkUpdateInfo();
         updateInfo.enqueue(new retrofit2.Callback<ResponseBean>() {
+            @Override
+            public void onResponse(Call<ResponseBean> call, retrofit2.Response<ResponseBean> response) {
+                listener.success(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBean> call, Throwable t) {
+                listener.fail(t);
+            }
+        });
+    }
+
+    public void getCheckHistoryInfo(int id,final OnResponseListener listener){
+        Call<ResponseBean<ResponseCheckHistory>> historyInfo = userBiz.getCheckHistoryInfo(id);
+        historyInfo.enqueue(new retrofit2.Callback<ResponseBean<ResponseCheckHistory>>() {
+            @Override
+            public void onResponse(Call<ResponseBean<ResponseCheckHistory>> call, retrofit2.Response<ResponseBean<ResponseCheckHistory>> response) {
+                listener.success(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBean<ResponseCheckHistory>> call, Throwable t) {
+                listener.fail(t);
+            }
+        });
+    }
+
+    public void getLineCheckHistoryInfo(int id,final OnResponseListener listener){
+        Call<ResponseBean<ResponseCheckHistory>> historyInfo = userBiz.getLineCheckHistoryInfo(id);
+        historyInfo.enqueue(new retrofit2.Callback<ResponseBean<ResponseCheckHistory>>() {
+            @Override
+            public void onResponse(Call<ResponseBean<ResponseCheckHistory>> call, retrofit2.Response<ResponseBean<ResponseCheckHistory>> response) {
+                listener.success(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBean<ResponseCheckHistory>> call, Throwable t) {
+                listener.fail(t);
+            }
+        });
+    }
+
+    public void saveCheckInfo(int id,int status,String remark,List<String> imagePaths,final OnResponseListener listener){
+
+        Map<String,RequestBody> params = new HashMap<>();
+
+        params.put("tag_id",toRequestBody(id+""));
+        params.put("status",toRequestBody(status+""));
+        params.put("remark",toRequestBody(remark));
+
+        Log.d(TAG, "saveCheckInfo: "+imagePaths.size());
+
+        for (int i = 0; i < imagePaths.size(); i++) {
+            File file = new File(imagePaths.get(i));
+            params.put("images\";filename=\""+file.getName(),RequestBody.create(OkHttpClientManager.MEDIA_TYPE_JPG,file));
+        }
+
+        Call<ResponseBean> historyInfo = userBiz.saveHistoryInfo(params);
+        historyInfo.enqueue(new retrofit2.Callback<ResponseBean>() {
+            @Override
+            public void onResponse(Call<ResponseBean> call, retrofit2.Response<ResponseBean> response) {
+                listener.success(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBean> call, Throwable t) {
+                listener.fail(t);
+            }
+        });
+    }
+
+    public RequestBody toRequestBody(String value){
+        return RequestBody.create(MediaType.parse("text/plain"),value);
+    }
+
+    public void saveLineTagInfo(int id,int tagCheckId,String name,String remark,int lineId,int status,String location_lat,String location_long,List<String> imagePaths,final OnResponseListener listener){
+        Map<String,RequestBody> params = new HashMap<>();
+
+        params.put("id",toRequestBody(id+""));
+        params.put("name",toRequestBody(name));
+        params.put("location_lat",toRequestBody(location_lat));
+        params.put("location_long",toRequestBody(location_long));
+        params.put("type",toRequestBody("101"));
+        params.put("lineId",toRequestBody(lineId+""));
+        params.put("status",toRequestBody(status+""));
+        params.put("tagCheckId",toRequestBody(tagCheckId+""));
+        params.put("remark",toRequestBody(remark));
+
+        Log.d(TAG, "saveLineTagInfo: "+imagePaths.size());
+        for (int i = 0; i < imagePaths.size(); i++) {
+            File file = new File(imagePaths.get(i));
+            params.put("images\";filename=\""+file.getName(),RequestBody.create(OkHttpClientManager.MEDIA_TYPE_JPG,file));
+        }
+
+        Call<ResponseBean> lineCheckInfo = userBiz.addLineCheck(params);
+        lineCheckInfo.enqueue(new retrofit2.Callback<ResponseBean>() {
             @Override
             public void onResponse(Call<ResponseBean> call, retrofit2.Response<ResponseBean> response) {
                 listener.success(response);

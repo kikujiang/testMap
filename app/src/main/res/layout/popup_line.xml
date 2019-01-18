@@ -194,6 +194,13 @@
                 android:text="关闭"/>
 
             <Button
+                android:id="@+id/line_create_point"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="添加维修点"/>
+
+            <Button
                 android:id="@+id/line_state"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

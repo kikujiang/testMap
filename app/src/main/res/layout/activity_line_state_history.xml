@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".StateActivity">
+    tools:context=".LineStateHistoryActivity">
 
     <FrameLayout
         android:id="@+id/toolbar_container"
@@ -23,6 +23,7 @@
 
     <LinearLayout
         android:id="@+id/loading"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -70,13 +71,29 @@
         android:orientation="horizontal"
         android:layout_height="wrap_content">
         <TextView
+            android:text="@string/check_lat"
+            style="@style/CustomTextView" />
+        <TextView
+            android:id="@+id/check_lat"
+            style="@style/CustomTextView" />
+        <TextView
+            android:text="@string/check_long"
+            style="@style/CustomTextView" />
+        <TextView
+            android:id="@+id/check_long"
+            style="@style/CustomTextView" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_height="wrap_content">
+        <TextView
             android:text="@string/check_state"
             style="@style/CustomTextView" />
         <TextView
             android:id="@+id/sp_state"
             style="@style/CustomEditText"/>
     </LinearLayout>
-
 
     <LinearLayout
         android:layout_width="match_parent"

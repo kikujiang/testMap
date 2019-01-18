@@ -31,6 +31,9 @@
     <string name="check_state">检修状态</string>
     <string name="check_remark">检修备注</string>
     <string name="check_picture">现场图片</string>
-    <string name="check_add">添加历史记录</string>
+    <string name="check_add">添加维修记录</string>
+    <string name="check_lat">经度</string>
+    <string name="check_long">纬度</string>
 
+    <string name="maintenance_line_info">所属线缆</string>
 </resources>

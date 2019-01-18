@@ -37,7 +37,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,6 +49,7 @@ import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.CameraUpdateFactory;
 import com.amap.api.maps.MapView;
+import com.amap.api.maps.model.BitmapDescriptorFactory;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.Marker;
 import com.amap.api.maps.model.MarkerOptions;
@@ -98,6 +99,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean isPointRead = false;
     private boolean isPointWrite = false;
     private boolean isLineRead = false;
+    private boolean isHistoryItemADD = false;
+    private boolean isHistoryItemQuery = false;
+    private boolean isHistoryItemFix = false;
+    private boolean isLineCheckAdd = false;
+
 
     private MapView mMapView;
 
@@ -121,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private List<DataType> pointTerminalTypeList = null;
     private List<DataType> pointLineTypeList = null;
     private List<Marker> markerList = null;
-    private ProgressBar progressBar =null;
+    private LinearLayout progressBar =null;
 
     public static final int MSG_START = 100000;
     public static final int MSG_END = 100001;
@@ -135,14 +141,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final int MSG_GET_SINGLE_LINE_END = 100008;
     public static final int REQUEST_CODE_TAKE_PICTURE = 0;
     public final static int REQUEST_CODE_GALLERY = 1;
+    public static final int REQUEST_CODE_MAINTENANCE_TAKE_PICTURE = 2;
+    public final static int REQUEST_CODE_MAINTENANCE_GALLERY = 3;
+    public final static int TYPE_MAIN = 4;
+    public final static int TYPE_MAINTENANCE = 5;
+
+    private int currentImageType = TYPE_MAIN;
 
     private Marker currentMarker = null;
 
     private boolean isAdd = false;
+    private boolean isMaintenanceAdd = true;
     private String showMsg= "";
 
     private List<String> imageLocalPath = null;
-    private List<String> imageRemotePath = null;
 
     private List<String> searchData = null;
     private HashMap<String,Object> searchDataMarkerMap = null;
@@ -153,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             switch (msg.what){
                 case MSG_START:
                     progressBar.setVisibility(View.VISIBLE);
+                    Log.d(TAG, "handleMessage: msg start");
                     break;
                 case MSG_GET_ALL_POINT_END:
                     if(pointList != null){
@@ -176,10 +189,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(MainActivity.this,"保存成功！",Toast.LENGTH_LONG).show();
                     getSinglePoint(id+"");
 
-                    if (pointDialog != null){
+                    if (pointDialog != null&& pointDialog.isShowing()){
                         pointDialog.dismiss();
                     }
 
+                    if(maintenanceDialog  != null && maintenanceDialog.isShowing()){
+                        maintenanceDialog.dismiss();
+                    }
                     break;
                 case MSG_GET_SINGLE_POINT_END:
                     if (currentMarker != null){
@@ -213,11 +229,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(MainActivity.this,loginError,Toast.LENGTH_LONG).show();
                     break;
                 case MSG_END:
+                    Log.d(TAG, "handleMessage: msg end");
                     progressBar.setVisibility(View.GONE);
                     break;
                 case MSG_GET_SINGLE_LINE_END:
                     if(currentLine != null){
                         Log.d(TAG, "onPolylineClick: "+currentLine.getName());
+
+                        if(currentPolyLine != null){
+                            currentPolyLine.remove();
+                        }
+
+                        List<LatLng> latLngs = new ArrayList<>();
+
+                        for (Point item:currentLine.getCheckPoints()) {
+                            LatLng cur = new LatLng(item.getLocation_lat(),item.getLocation_long());
+                            latLngs.add(cur);
+                        }
+
+                        switch (currentLine.getStatus()){
+                            case 0:
+                            case 1:
+                                currentPolyLine = aMap.addPolyline(new PolylineOptions().
+                                        addAll(latLngs).setDottedLine(true).width(20).color(Color.parseColor("#4096FB")));
+                                currentPolyLine.setVisible(true);
+                                break;
+                            case 2:
+                                currentPolyLine = aMap.addPolyline(new PolylineOptions().
+                                        addAll(latLngs).setDottedLine(true).width(20).color(Color.parseColor("#73736A")));
+                                currentPolyLine.setVisible(true);
+                                break;
+                            case 3:
+                                currentPolyLine = aMap.addPolyline(new PolylineOptions().
+                                        addAll(latLngs).setDottedLine(true).width(20).color(Color.parseColor("#DC0A0A")));
+                                currentPolyLine.setVisible(true);
+                                break;
+                            case 4:
+                                currentPolyLine = aMap.addPolyline(new PolylineOptions().
+                                        addAll(latLngs).setDottedLine(true).width(20).color(Color.parseColor("#380C0B")));
+                                currentPolyLine.setVisible(true);
+                                break;
+                        }
                         showLineBottomDialog();
                     }else {
                         Toast.makeText(MainActivity.this,"当前线路信息异常，请重新刷新！",Toast.LENGTH_LONG).show();
@@ -250,9 +302,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             int checkLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
-            if (checkLocationPermission != PackageManager.PERMISSION_GRANTED) {
+            if (checkLocationPermission != PackageManager.PERMISSION_GRANTED ) {
                 //没有获取权限，发起申请
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.WRITE_SETTINGS}, 1);
             } else {
                 //doing everything what you want
                 initial();
@@ -260,6 +312,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }else{
             initial();
         }
+    }
+
+
+    private void enterCheckActivity(){
+        Intent stateIntent = new Intent(MainActivity.this,StateActivity.class);
+        Log.d(TAG, "传入的点id为：" + currentPoint.getId());
+        stateIntent.putExtra("point_id",currentPoint.getId());
+        stateIntent.putExtra("itemAdd",isHistoryItemADD);
+        stateIntent.putExtra("itemQuery",isHistoryItemQuery);
+        stateIntent.putExtra("itemFix",isHistoryItemFix);
+        startActivityForResult(stateIntent,Constants.REQUEST_CODE);
+    }
+
+    private void enterLineCheckActivity(){
+        Intent stateIntent = new Intent(MainActivity.this,LineStateHistoryActivity.class);
+        Log.d(TAG, "传入的点id为：" + currentLine.getId());
+        stateIntent.putExtra("line_id",currentLine.getId());
+        startActivityForResult(stateIntent,Constants.REQUEST_LINE_CODE);
     }
 
     /**
@@ -398,6 +468,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         case 103:
                             isPointWrite = detail.isCheck();
                             break;
+                        case 105:
+                            isHistoryItemQuery = detail.isCheck();
+                            break;
+                        case 106:
+                            isHistoryItemFix = detail.isCheck();
+                            break;
+                        case 107:
+                            isHistoryItemADD = detail.isCheck();
+                            break;
                     }
                 }
             }
@@ -420,6 +499,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         isPointRead = false;
         isPointWrite = false;
         isLineRead = false;
+
+        isHistoryItemADD = false;
+        isHistoryItemFix = false;
+        isHistoryItemQuery = false;
+        isLineCheckAdd = false;
     }
 
     private void getDataFromServer(){
@@ -436,7 +520,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             getALLLine();
         }
 
-        mHandler.sendEmptyMessage(MSG_END);
     }
 
     /**
@@ -617,37 +700,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
     }
-//    private void getLineType(){
-//        Log.d(TAG, "请求获取线类型接口");
-//        final String url = Constants.TEST_URL + Constants.TAG_GET_LINE_TYPE;
-//        final Map<String,String> data = new HashMap<>();
-//
-//        OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
-//            @Override
-//            public void success(Response responseMapBean) {
-//                try{
-//                    String result = responseMapBean.body().string();
-//                    Type type = new TypeToken<List<LineType>>(){}.getType();
-//                    lineTypeList = new Gson().fromJson(result,type);
-//                    Log.d(TAG, "收到消息为："+ result+"\n 当前标记点类型数量是：" + lineTypeList.size());
-//                }catch (Exception e){
-//                    sendErrorMsg(e);
-//                }
-//            }
-//
-//            @Override
-//            public void fail(Exception e) {
-//                sendErrorMsg(e);
-//            }
-//        });
-//    }
 
     private void initControl(){
         Log.d(TAG, "=========================initControl called!=========================");
-        toolbar = (Toolbar) findViewById(R.id.id_toolbar);
-        progressBar = (ProgressBar)findViewById(R.id.progress);
-        tvLocation = (TextView) findViewById(R.id.tv_show_location);
-        searchView = (MaterialSearchView) findViewById(R.id.search_view);
+        toolbar = findViewById(R.id.id_toolbar);
+        progressBar = findViewById(R.id.loading);
+        tvLocation = findViewById(R.id.tv_show_location);
+        searchView = findViewById(R.id.search_view);
 
         progressBar.setVisibility(View.GONE);
         initToolBar();
@@ -737,6 +796,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.refresh:
                 clearMap();
                 getUserPermission(userId);
+                refreshLocation();
                 break;
             case R.id.reLocate:
                 refreshLocation();
@@ -830,15 +890,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.d(TAG, "onPolylineClick: ");
                 double startLat = polyline.getPoints().get(0).latitude;
                 double startLng = polyline.getPoints().get(0).longitude;
-                double endLat = polyline.getPoints().get(1).latitude;
-                double endLng = polyline.getPoints().get(1).longitude;
+                double endLat = polyline.getPoints().get(polyline.getPoints().size() -1).latitude;
+                double endLng = polyline.getPoints().get(polyline.getPoints().size() -1).longitude;
+
+                Log.d(TAG, "onPolylineClick: "+startLat+","+startLng+",  \nend is:"+endLat+","+endLng);
 
                 for (Line cur: lineList) {
-                    if (cur.getTag_begin_location_lat() == startLat &&
-                            cur.getTag_begin_location_long() == startLng &&
-                            cur.getTag_end_location_lat() == endLat &&
-                            cur.getTag_end_location_long() == endLng){
+                    if (cur.getCheckPoints().get(0).getLocation_lat() == startLat &&
+                            cur.getCheckPoints().get(0).getLocation_long() == startLng &&
+                            cur.getCheckPoints().get(cur.getCheckPoints().size()-1).getLocation_lat() == endLat &&
+                            cur.getCheckPoints().get(cur.getCheckPoints().size()-1).getLocation_long() == endLng){
                         currentLine = cur;
+                        currentPolyLine = polyline;
                     }
                 }
 
@@ -865,7 +928,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
 
                 if(currentPoint != null){
-                    showPointBottomDialog(null);
+
+                    if(currentPoint.getType() == 101){
+                        isMaintenanceAdd = false;
+                        showMaintenanceDialog();
+                    }else{
+                        showPointBottomDialog(null);
+                    }
                 } else{
                     Toast.makeText(MainActivity.this,"当前点信息异常，请重新刷新！",Toast.LENGTH_LONG).show();
                 }
@@ -1013,6 +1082,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.d("map", "onMyLocationChange: "+ location.toString());
                 showMsg = "当前经度："+location.getLongitude()+"，纬度："+location.getLatitude();
                 tvLocation.setText(showMsg);
+                mHandler.sendEmptyMessage(MSG_END);
             }
         });
     }
@@ -1101,7 +1171,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     currentPoint.setLocation_long(longitude);
                 }
 
-                savePoint(currentPoint);
+                savePoint(currentPoint,imageLocalPath);
                 break;
             case R.id.cancel:
 
@@ -1141,25 +1211,122 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.state:
-                Intent stateIntent = new Intent(MainActivity.this,StateActivity.class);
-                startActivity(stateIntent);
+                if(pointDialog != null && pointDialog.isShowing()){
+                    pointDialog.dismiss();
+                }
+                enterCheckActivity();
                 break;
             case R.id.line_state:
-                Intent stateIntent1 = new Intent(MainActivity.this,StateActivity.class);
-                startActivity(stateIntent1);
+                if(lineDialog != null){
+                    lineDialog.dismiss();
+                }
+                enterLineCheckActivity();
+                break;
+            case R.id.line_create_point:
+                if(lineDialog != null){
+                    lineDialog.dismiss();
+                }
+                isMaintenanceAdd = true;
+                showMaintenanceDialog();
+                break;
+            case R.id.maintenance_close:
+                if(maintenanceDialog  != null){
+                    maintenanceDialog.dismiss();
+                }
+                currentImageType = TYPE_MAIN;
+                break;
+            case R.id.maintenance_add:
+
+                //判断名称
+                String mName = maintenanceName.getText().toString();
+                if(TextUtils.isEmpty(mName)){
+                    Toast.makeText(MainActivity.this,"名称不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                //判断经度
+                String mLongitudeStr = maintenanceLng.getText().toString();
+                if(TextUtils.isEmpty(mLongitudeStr)){
+                    Toast.makeText(MainActivity.this,"经度不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                //判断纬度
+                String mLatitudeStr = maintenanceLat.getText().toString();
+                if(TextUtils.isEmpty(mLatitudeStr)){
+                    Toast.makeText(MainActivity.this,"纬度不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                //判断名称
+                String mRemark = maintenanceRemark.getText().toString();
+                if(TextUtils.isEmpty(mName)){
+                    Toast.makeText(MainActivity.this,"备注不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                HttpUtils.getInstance().saveLineTagInfo(0,0,mName, mRemark,currentLine.getId(),2,mLatitudeStr, mLongitudeStr, maintenanceLocalPath, new OnResponseListener() {
+                    @Override
+                    public void success(final retrofit2.Response responseMapBean) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                ResponseBean resultBean = ( ResponseBean)responseMapBean.body();
+                                if(resultBean.getResult() == 1){
+                                    if(maintenanceDialog  != null && maintenanceDialog.isShowing()){
+                                        maintenanceDialog.dismiss();
+                                    }
+                                    Log.d(TAG, "获取维修点id为:" + resultBean.getTagId());
+                                    getSinglePoint(resultBean.getTagId()+"");
+                                    getSingleLine(currentLine.getId()+"");
+                                }else if(resultBean.getResult() == 2){
+                                    if(null == resultBean.getDesc()||"".equals(resultBean.getDesc())){
+                                        Toast.makeText(MainActivity.this,"提交失败",Toast.LENGTH_LONG).show();
+                                    }else{
+                                        Toast.makeText(MainActivity.this,resultBean.getDesc(),Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                        @Override
+                        public void fail(Throwable e) {
+                            Log.d(TAG, "fail: "+e.getMessage());
+                            Toast.makeText(MainActivity.this,"服务器出现问题，稍后重试！",Toast.LENGTH_LONG).show();
+                        }
+                    });
+
+                break;
+            case R.id.maintenance_take_pic:
+                checkCameraPermission();
+                break;
+            case R.id.maintenance_pick_pic:
+                choosePhoto();
+                break;
+            case R.id.maintenance_state:
+                if(maintenanceDialog != null && maintenanceDialog.isShowing()){
+                    maintenanceDialog.dismiss();
+                }
+                enterCheckActivity();
+                break;
+            case R.id.maintenance_locate:
+                refreshLocation();
+                if(currentLocation != null){
+                    maintenanceLat.setText(String.valueOf(currentLocation.getLatitude()));
+                    maintenanceLng.setText(String.valueOf(currentLocation.getLongitude()));
+                }
                 break;
                 default:
         }
     }
 
     private void initImageData(){
-        imageRemotePath = new ArrayList<>();
         imageViews = new ArrayList<>();
         imageLocalPath = new ArrayList<>();
     }
 
     private void clearImageData(){
-        imageRemotePath.clear();
         imageViews.clear();
         imageLocalPath.clear();
         initImageData();
@@ -1192,7 +1359,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Intent intentToTakePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         currentFileName = Common.getInstance().getFilePath(MainActivity.this);
         intentToTakePhoto.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(new File(currentFileName)));
-        startActivityForResult(intentToTakePhoto, REQUEST_CODE_TAKE_PICTURE);
+        if(currentImageType == TYPE_MAIN){
+            startActivityForResult(intentToTakePhoto, REQUEST_CODE_TAKE_PICTURE);
+        }else{
+            startActivityForResult(intentToTakePhoto, REQUEST_CODE_MAINTENANCE_TAKE_PICTURE);
+        }
+
     }
 
     private void checkCameraPermission(){
@@ -1220,17 +1392,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Intent intentToPickPic = new Intent(Intent.ACTION_PICK, null);
         // 如果限制上传到服务器的图片类型时可以直接写如："image/jpeg 、 image/png等的类型" 所有类型则写 "image/*"
         intentToPickPic.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/jpeg");
-        startActivityForResult(intentToPickPic, REQUEST_CODE_GALLERY);
+        if(currentImageType == TYPE_MAIN){
+            startActivityForResult(intentToPickPic, REQUEST_CODE_GALLERY);
+        }else{
+            startActivityForResult(intentToPickPic, REQUEST_CODE_MAINTENANCE_GALLERY);
+        }
     }
 
-    private EditText etLatitude = null;
-    private EditText etLongitude = null;
+    private EditText etLatitude;
+    private EditText etLongitude;
 
     /**
      * 参数 id=标记点ID(如新增则为0), name=名称,tagNo=编号,location_lat=纬度,location_long=经度,type=类型,remark=备注
      * @param currentPoint
      */
-    private void savePoint(Point currentPoint){
+    private void savePoint(Point currentPoint,List<String> imagePath){
         Log.d(TAG, "请求保存点接口");
         final String url = Constants.WEB_URL + Constants.TAG_SAVE_SINGLE_POINT;
         final Map<String,String> data = new HashMap<>();
@@ -1243,8 +1419,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         data.put("ceType",currentPoint.getCe_type()+"");
         data.put("leType",currentPoint.getLe_type()+"");
         data.put("remark",currentPoint.getRemark());
+
         Log.d(TAG, "savePoint data is:" + data.toString());
-        OkHttpClientManager.getInstance().sendFileToServer(url, imageLocalPath, data, new OnInfoListener() {
+        OkHttpClientManager.getInstance().sendFileToServer(url, imagePath, data, new OnInfoListener() {
             @Override
             public void success(Response responseMapBean) {
                 try{
@@ -1316,19 +1493,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         for (Line current:lineList) {
             Log.d(TAG, "showAllLine: called");
             List<LatLng> latLngs = new ArrayList<>();
-            LatLng start = new LatLng(current.getTag_begin_location_lat(),current.getTag_begin_location_long());
-            LatLng end = new LatLng(current.getTag_end_location_lat(),current.getTag_end_location_long());
-            latLngs.add(start);
-            latLngs.add(end);
-            Polyline line = aMap.addPolyline(new PolylineOptions().
-                    addAll(latLngs).setDottedLine(true).width(20).color(Color.argb(255, 255, 0, 0)));
-            line.setVisible(true);
+
+            if(current.getCheckPoints().isEmpty()){
+                continue;
+            }
+
+            for (Point item:current.getCheckPoints()) {
+                LatLng cur = new LatLng(item.getLocation_lat(),item.getLocation_long());
+                latLngs.add(cur);
+            }
+
+            switch (current.getStatus()){
+                case 0:
+                case 1:
+                    Polyline line1 = aMap.addPolyline(new PolylineOptions().
+                            addAll(latLngs).setDottedLine(true).width(20).color(Color.parseColor("#4096FB")));
+                    line1.setVisible(true);
+                    break;
+                case 2:
+                    Polyline line2 = aMap.addPolyline(new PolylineOptions().
+                            addAll(latLngs).setDottedLine(true).width(20).color(Color.parseColor("#73736A")));
+                    line2.setVisible(true);
+                    break;
+                case 3:
+                    Polyline line3 = aMap.addPolyline(new PolylineOptions().
+                            addAll(latLngs).setDottedLine(true).width(20).color(Color.parseColor("#DC0A0A")));
+                    line3.setVisible(true);
+                    break;
+                case 4:
+                    Polyline line4 = aMap.addPolyline(new PolylineOptions().
+                            addAll(latLngs).setDottedLine(true).width(20).color(Color.parseColor("#380C0B")));
+                    line4.setVisible(true);
+                    break;
+            }
         }
     }
 
+    private Polyline currentPolyLine = null;
+
     private void getSingleLine(String lineId){
         final String url = Constants.WEB_URL + Constants.TAG_GET_SINGLE_LINE;
-        Log.d(TAG, "请求获取某个点接口" + url);
+        Log.d(TAG, "请求获取某条线接口" + url);
         final Map<String,String> data = new HashMap<>();
         data.put("id",lineId);
         Log.d(TAG, "getSingleLine data is:" + data.toString());
@@ -1346,6 +1551,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
 
                     if(currentData.getResult() == Constants.RESULT_OK){
+
                         currentLine = currentData.getObject();
                         Log.d(TAG, "收到消息为："+ result);
                         mHandler.sendEmptyMessage(MSG_GET_SINGLE_LINE_END);
@@ -1379,8 +1585,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         for (Point current: pointList) {
+
+            if(current.getType() == 101 && current.getCheckStatus() == 1){
+                continue;
+            }
+
             String cur = current.getName() + "," +current.getId();
             searchData.add(cur);
+            Log.d(TAG, "showAllPoint: "+current.getLocation_lat()+","+current.getLocation_long());
+            if(current.getLocation_lat() == 0.0 || current.getLocation_long() == 0.0){
+                continue;
+            }
             LatLng latLng = new LatLng(current.getLocation_lat(),current.getLocation_long());
             MarkerOptions markerOption = new MarkerOptions();
             markerOption.position(latLng);
@@ -1397,6 +1612,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             // 将Marker设置为贴地显示，可以双指下拉地图查看效果
             markerOption.setFlat(true);//设置marker平贴地图效果
             Marker marker = aMap.addMarker(markerOption);
+
+            switch (current.getCheckStatus()){
+                case 0:
+                case 1:
+                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                            .decodeResource(getResources(),R.mipmap.mark_bs)));
+                    break;
+                case 2:
+                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                            .decodeResource(getResources(),R.mipmap.mark_warn)));
+                    break;
+                case 3:
+                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                            .decodeResource(getResources(),R.mipmap.mark_repair_2)));
+                    break;
+                case 4:
+                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                            .decodeResource(getResources(),R.mipmap.mark_repair_1)));
+                    break;
+            }
+
             Animation animation = new AlphaAnimation(0,1);
             long duration = 1000L;
             animation.setDuration(duration);
@@ -1416,9 +1652,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void addMarker(Point currentPoint){
 
+        if(currentPoint.getType() == 101 && currentPoint.getCheckStatus() == 1){
+            Log.d(TAG, "维修点已经修复！");
+            return;
+        }
+
         LatLng latLng = new LatLng(currentPoint.getLocation_lat(),currentPoint.getLocation_long());
         MarkerOptions markerOption = new MarkerOptions();
         markerOption.position(latLng);
+
         String type = "";
         for (DataType currentType:pointTypeList
                 ) {
@@ -1432,7 +1674,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // 将Marker设置为贴地显示，可以双指下拉地图查看效果
         markerOption.setFlat(true);//设置marker平贴地图效果
         currentMarker = aMap.addMarker(markerOption);
+
+        switch (currentPoint.getCheckStatus()){
+            case 0:
+            case 1:
+                currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                        .decodeResource(getResources(),R.mipmap.mark_bs)));
+                break;
+            case 2:
+                currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                        .decodeResource(getResources(),R.mipmap.mark_warn)));
+                break;
+            case 3:
+                currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                        .decodeResource(getResources(),R.mipmap.mark_repair_2)));
+                break;
+            case 4:
+                currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                        .decodeResource(getResources(),R.mipmap.mark_repair_1)));
+                break;
+        }
+
         currentMarker.showInfoWindow();
+        Log.d(TAG, "current point is:" + currentPoint.getLocation_long()+" and "+currentPoint.getLocation_lat());
         if(aMap.getMaxZoomLevel() >= 20){
             Log.d(TAG, "addMarker: haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
             currentMarker.setDraggable(true);
@@ -1444,6 +1708,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     private BottomSheetDialog pointDialog = null;
     private BottomSheetDialog lineDialog = null;
+    private BottomSheetDialog maintenanceDialog = null;
 
     private EditText etName = null;
     private EditText etOther = null;
@@ -1460,7 +1725,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView tvEmpty = null;
     private List<ImageView> imageViews = new ArrayList<>();
     private int pagerWidth;
-    private String mTempPhotoPath;
     // 照片所在的Uri地址
     private Uri imageUri;
 
@@ -1504,7 +1768,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             pointDialog = new BottomSheetDialog(this);
 
             pointDialog.setContentView(view);
-            pointDialog.setCancelable(true);
+            pointDialog.setCancelable(false);
             pointDialog.setCanceledOnTouchOutside(false);
 
             etName = view.findViewById(R.id.edit_name);
@@ -1612,13 +1876,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     etLatitude.setText("");
                     etLongitude.setText("");
                 }
-
             }
         }
 
         if (isAdd){
             confirmBtn.setText("添加");
             naviBtn.setVisibility(View.GONE);
+            stateBtn.setVisibility(View.GONE);
             Common.getInstance().setEditTextTrue(etName);
             Common.getInstance().setEditTextTrue(etOther);
             Common.getInstance().setEditTextTrue(etLatitude);
@@ -1630,6 +1894,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }else{
             confirmBtn.setText("修改");
             naviBtn.setVisibility(View.VISIBLE);
+            stateBtn.setVisibility(View.VISIBLE);
             if(isPointWrite){
                 Common.getInstance().setEditTextTrue(etName);
                 Common.getInstance().setEditTextTrue(etOther);
@@ -1652,6 +1917,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         showPager();
+        Log.d(TAG, "showPointBottomDialog:show");
         pointDialog.show();
     }
 
@@ -1736,7 +2002,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private EditText etLineIsUpload;
     private Button btnLineConfirm;
     private Button btnLineState;
-
+    private Button btnLineCreatePoint;
 
     private void showLineBottomDialog() {
         View view = getLayoutInflater().inflate(R.layout.popup_line, null);
@@ -1745,7 +2011,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             lineDialog = new BottomSheetDialog(this);
 
             lineDialog.setContentView(view);
-            lineDialog.setCancelable(true);
+            lineDialog.setCancelable(false);
             lineDialog.setCanceledOnTouchOutside(false);
 //
             etLineName = view.findViewById(R.id.et_line_name);
@@ -1771,17 +2037,168 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //            spinnerLineType = view.findViewById(R.id.spinner_line_type);
             btnLineConfirm = view.findViewById(R.id.btn_ok);
             btnLineState = view.findViewById(R.id.line_state);
+            btnLineCreatePoint = view.findViewById(R.id.line_create_point);
 
 
             btnLineConfirm.setOnClickListener(this);
             btnLineState.setOnClickListener(this);
+            btnLineCreatePoint.setOnClickListener(this);
         }
-            etLineName.setText(currentLine.getName());
-            etLineNum.setText(currentLine.getLineCount()+"");
-            etLineRemark.setText(currentLine.getRemark());
-            etLineType.setText(currentLine.getTypeStr());
-            etLineType2.setText(currentLine.getPosTypeStr());
+        etLineName.setText(currentLine.getName());
+        etLineNum.setText(currentLine.getLineCount()+"");
+        etLineRemark.setText(currentLine.getRemark());
+        etLineType.setText(currentLine.getTypeStr());
+        etLineType2.setText(currentLine.getPosTypeStr());
         lineDialog.show();
+    }
+
+    private ViewPager maintenancePager = null;
+    private TextView maintenanceTvEmpty = null;
+    private Button maintenanceBtnClose;
+    private Button maintenanceBtnAdd;
+    private Button maintenanceBtnState;
+    private Button maintenanceBtnTakePic;
+    private Button maintenanceBtnPickPic;
+    private Button maintenanceBtnLocate;
+    private List<ImageView> maintenanceImageViews = null;
+    private List<String> maintenanceLocalPath = null;
+    private EditText maintenanceLat;
+    private EditText maintenanceLng;
+    private TextView maintenanceLine;
+    private EditText maintenanceName;
+    private EditText maintenanceRemark;
+    private MyViewPagerAdapter maintenanceAdapter = null;
+    private LinearLayout lineLayout;
+    private LinearLayout photoLayout;
+
+    private void showMaintenanceDialog() {
+        currentImageType = TYPE_MAINTENANCE;
+        maintenanceImageViews = new ArrayList<>();
+        maintenanceLocalPath = new ArrayList<>();
+        maintenanceAdapter = null;
+        View view = getLayoutInflater().inflate(R.layout.popup_maintenance, null);
+        if(maintenanceDialog == null){
+
+            maintenanceDialog = new BottomSheetDialog(this);
+
+            maintenanceDialog.setContentView(view);
+            maintenanceDialog.setCancelable(false);
+            maintenanceDialog.setCanceledOnTouchOutside(false);
+
+            maintenanceName = view.findViewById(R.id.maintenance_et_name);
+            maintenanceRemark = view.findViewById(R.id.maintenance_et_remark);
+            maintenanceLine = view.findViewById(R.id.maintenance_line);
+            maintenanceTvEmpty = view.findViewById(R.id.maintenance_empty_text);
+            maintenanceLat = view.findViewById(R.id.maintenance_edit_latitude);
+            maintenanceLng = view.findViewById(R.id.maintenance_edit_longitude);
+            maintenancePager = view.findViewById(R.id.maintenance_viewPager);
+            maintenanceBtnClose = view.findViewById(R.id.maintenance_close);
+            maintenanceBtnState = view.findViewById(R.id.maintenance_state);
+            maintenanceBtnAdd = view.findViewById(R.id.maintenance_add);
+            maintenanceBtnTakePic = view.findViewById(R.id.maintenance_take_pic);
+            maintenanceBtnPickPic = view.findViewById(R.id.maintenance_pick_pic);
+            maintenanceBtnLocate = view.findViewById(R.id.maintenance_locate);
+            lineLayout = view.findViewById(R.id.maintenance_line_layout);
+            photoLayout = view.findViewById(R.id.photo_layout);
+
+            maintenanceBtnAdd.setOnClickListener(this);
+            maintenanceBtnClose.setOnClickListener(this);
+            maintenanceBtnState.setOnClickListener(this);
+            maintenanceBtnTakePic.setOnClickListener(this);
+            maintenanceBtnPickPic.setOnClickListener(this);
+            maintenanceBtnLocate.setOnClickListener(this);
+        }
+
+        if(isMaintenanceAdd){
+            maintenanceBtnAdd.setText("添加");
+            maintenanceBtnState.setVisibility(View.GONE);
+            lineLayout.setVisibility(View.GONE);
+            photoLayout.setVisibility(View.GONE);
+            maintenanceName.setText("");
+            maintenanceBtnAdd.setVisibility(View.VISIBLE);
+            maintenanceBtnPickPic.setVisibility(View.GONE);
+            maintenanceBtnTakePic.setVisibility(View.GONE);
+            maintenanceBtnLocate.setVisibility(View.VISIBLE);
+            Common.getInstance().setEditTextTrue(maintenanceName);
+            Common.getInstance().setEditTextTrue(maintenanceLat);
+            Common.getInstance().setEditTextTrue(maintenanceLng);
+            Common.getInstance().setEditTextTrue(maintenanceRemark);
+
+        }else{
+            maintenanceBtnState.setVisibility(View.VISIBLE);
+            lineLayout.setVisibility(View.VISIBLE);
+            photoLayout.setVisibility(View.GONE);
+            maintenanceBtnPickPic.setVisibility(View.GONE);
+            maintenanceBtnAdd.setVisibility(View.GONE);
+            maintenanceBtnTakePic.setVisibility(View.GONE);
+            maintenanceBtnLocate.setVisibility(View.GONE);
+            Common.getInstance().setEditTextFalse(maintenanceName);
+            Common.getInstance().setEditTextFalse(maintenanceLat);
+            Common.getInstance().setEditTextFalse(maintenanceLng);
+            Common.getInstance().setEditTextFalse(maintenanceRemark);
+            int lineId = currentPoint.getLineId();
+
+            for (Line item:lineList) {
+                if(item.getId() == lineId){
+                    maintenanceLine.setText(item.getName());
+                }
+            }
+            maintenanceName.setText(currentPoint.getName());
+            maintenanceLat.setText(currentPoint.getLocation_lat()+"");
+            maintenanceLng.setText(currentPoint.getLocation_long()+"");
+
+            if(currentPoint.getImages() != null && currentPoint.getImages().size() > 0){
+                for (final Image cur: currentPoint.getImages()) {
+                    ImageView current = new ImageView(MainActivity.this);
+                    current.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(MainActivity.this,ImageActivity.class);
+                            intent.putExtra("http",cur.getPath());
+                            startActivity(intent);
+                        }
+                    });
+                    Glide.with(this).applyDefaultRequestOptions(new RequestOptions().placeholder(R.drawable.loading).diskCacheStrategy(DiskCacheStrategy.NONE)).load(cur.getPath()).into(current);
+                    maintenanceImageViews.add(current);
+                }
+                Log.d(TAG, "configRemoteData: "+ maintenanceImageViews.size());
+            }
+        }
+
+        showMaintenancePager();
+        maintenanceDialog.show();
+    }
+
+    private void showMaintenancePager(){
+
+        if (maintenanceImageViews.size() < 1){
+            maintenancePager.setVisibility(View.GONE);
+            maintenanceTvEmpty.setVisibility(View.VISIBLE);
+            return;
+        }else{
+            maintenancePager.setVisibility(View.VISIBLE);
+            maintenanceTvEmpty.setVisibility(View.GONE);
+        }
+
+        configMaintenancePager();
+    }
+
+    private void configMaintenancePager(){
+
+        if(maintenanceAdapter == null){
+            pagerWidth = (int) (getResources().getDisplayMetrics().widthPixels);
+            ViewGroup.LayoutParams lp = maintenancePager.getLayoutParams();
+            if (lp == null) {
+                lp = new ViewGroup.LayoutParams(pagerWidth, ViewGroup.LayoutParams.MATCH_PARENT);
+            } else {
+                lp.width = pagerWidth;
+            }
+            maintenancePager.setLayoutParams(lp);
+            maintenanceAdapter = new MyViewPagerAdapter(maintenanceImageViews);
+            maintenancePager.setAdapter(maintenanceAdapter);
+        }else {
+            maintenanceAdapter.notifyDataSetChanged();
+        }
     }
 
     //退出时的时间
@@ -1892,6 +2309,70 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                     }
                     break;
+                case REQUEST_CODE_MAINTENANCE_TAKE_PICTURE:
+                    Bitmap originalBmp1 = BitmapFactory.decodeFile(currentFileName);
+
+                    final String path = Common.getInstance().saveBitmap(MainActivity.this,originalBmp1);
+                    maintenanceLocalPath.add(path);
+                    ImageView cur1 = new ImageView(MainActivity.this);
+                    cur1.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(MainActivity.this,ImageActivity.class);
+                            intent.putExtra("path",path);
+                            startActivity(intent);
+                        }
+                    });
+                    cur1.setImageBitmap(originalBmp1);
+                    maintenanceImageViews.add(0,cur1);
+                    maintenanceAdapter = null;
+                    showMaintenancePager();
+                    break;
+                case REQUEST_CODE_MAINTENANCE_GALLERY:
+                    try {
+                        //该uri是上一个Activity返回的
+                        imageUri = data.getData();
+                        if(imageUri!=null) {
+                            Bitmap bit = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri));
+                            final String path2 = Common.getInstance().saveBitmap(MainActivity.this,bit);
+                            Log.d(TAG, "onActivityResult: path is" + path2);
+                            maintenanceLocalPath.add(path2);
+                            ImageView choose = new ImageView(MainActivity.this);
+                            choose.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    Intent intent = new Intent(MainActivity.this,ImageActivity.class);
+                                    intent.putExtra("path",path2);
+                                    startActivity(intent);
+                                }
+                            });
+                            choose.setImageBitmap(bit);
+                            maintenanceImageViews.add(0,choose);
+                            maintenanceAdapter = null;
+                            showMaintenancePager();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case Constants.REQUEST_CODE:
+                    int pointId = data.getIntExtra("pointId",-1);
+                    Log.d(TAG, "onActivityResult: id:" + pointId);
+                    if(pointId != -1){
+                        getSinglePoint(pointId+"");
+                    }
+                    break;
+                case Constants.REQUEST_LINE_CODE:
+                    int lineId = data.getIntExtra("lineId",-1);
+                    int pointId1 = data.getIntExtra("pointId",-1);
+                    Log.d(TAG, "onActivityResult: 线id:" + lineId+",point id is:" + pointId1);
+                    if(lineId != -1){
+                        getSingleLine(lineId+"");
+                    }
+                    if(pointId1 != -1){
+                        getSinglePoint(pointId1+"");
+                    }
+                    break;
                     default:
             }
         }
@@ -1930,6 +2411,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }else {
                     //用户拒绝获取权限，则Toast出一句话提醒用户
                     Toast.makeText(this, "应用未开启拍照权限，请开启后重试", Toast.LENGTH_LONG).show();
+                }
+                break;
+            case 3:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    enterCheckActivity();
+                } else {
+                    //用户拒绝获取权限，则Toast出一句话提醒用户
+                    Toast.makeText(this, "应用未开启权限，请开启后重试", Toast.LENGTH_LONG).show();
                 }
                 break;
             default:

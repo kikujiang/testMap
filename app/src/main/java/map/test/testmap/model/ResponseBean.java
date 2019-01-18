@@ -13,6 +13,7 @@ public class ResponseBean<T> {
     private int result;
     private String desc;
     private int id;
+    private int tagId;
 
     public T getObject() {
         return object;
@@ -52,5 +53,13 @@ public class ResponseBean<T> {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public int getTagId() {
+        return tagId;
+    }
+
+    public void setTagId(int tagId) {
+        this.tagId = tagId;
     }
 }
