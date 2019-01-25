@@ -27,6 +27,7 @@ import java.util.List;
  */
 public class ResponseCheckHistory {
 
+    private int checkId;
     private int status;
     private String createTime;
     private List<State> list;
@@ -62,5 +63,13 @@ public class ResponseCheckHistory {
 
     public void setTag(Point tag) {
         this.tag = tag;
+    }
+
+    public int getCheckId() {
+        return checkId;
+    }
+
+    public void setCheckId(int checkId) {
+        this.checkId = checkId;
     }
 }

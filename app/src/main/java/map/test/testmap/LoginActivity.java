@@ -6,10 +6,13 @@ import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -24,6 +27,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.tencent.android.tpush.XGIOperateCallback;
+import com.tencent.android.tpush.XGPushConfig;
+import com.tencent.android.tpush.XGPushManager;
 
 import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.ResponseBean;
@@ -61,6 +68,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Constants.isLogin = false;
         setContentView(R.layout.activity_login);
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
@@ -90,6 +98,45 @@ public class LoginActivity extends AppCompatActivity {
         mProgressView = findViewById(R.id.login_progress);
         initView();
         checkUpdate();
+        initWithApiKey();
+    }
+
+    private void initWithApiKey() {
+//        PushManager.startWork(getApplicationContext(),
+//                PushConstants.LOGIN_TYPE_API_KEY,
+//                Utils.getMetaValue(LoginActivity.this, "api_key"));
+        initWithTencent();
+    }
+
+    private void initWithTencent(){
+        XGPushConfig.enableDebug(this, true);
+        XGPushConfig.getToken(this);
+        /*
+            注册信鸽服务的接口
+            如果仅仅需要发推送消息调用这段代码即可
+        */
+        XGPushManager.registerPush(getApplicationContext(),
+                new XGIOperateCallback() {
+                    @Override
+                    public void onSuccess(Object data, int flag) {
+                        Log.w(com.tencent.android.tpush.common.Constants.LogTag, "+++ register push sucess. token:" + data + "flag" + flag);
+                        if(data != null){
+                            Constants.channelId = data.toString();
+                            Log.d(TAG, "channel id is:" + Constants.channelId);
+                        }
+                    }
+
+                    @Override
+                    public void onFail(Object data, int errCode, String msg) {
+                        Log.w(com.tencent.android.tpush.common.Constants.LogTag,
+                                "+++ register push fail. token:" + data
+                                        + ", errCode:" + errCode + ",msg:"
+                                        + msg);
+                    }
+                });
+//
+//        // 获取token
+//        XGPushConfig.getToken(this);
     }
 
     private void checkUpdate(){
@@ -102,6 +149,11 @@ public class LoginActivity extends AppCompatActivity {
                 }
 
                 ResponseBean current = (ResponseBean)responseMapBean.body();
+
+                if(current == null){
+                    return;
+                }
+
                 if(current.getResult() == Constants.RESULT_FAIL){
                     Log.d(TAG, "fail message is:" + current.getDesc());
                 }
@@ -308,7 +360,7 @@ public class LoginActivity extends AppCompatActivity {
             if(null == mac || "".equals(mac)){
                 mac = "00:00:00:00:00:00";
             }
-            return HttpUtils.getInstance().getLoginInfo(mAccount,mPassword,mac);
+            return HttpUtils.getInstance().getLoginInfo(mAccount,mPassword,mac,Constants.channelId);
         }
 
         @Override
@@ -340,6 +392,8 @@ public class LoginActivity extends AppCompatActivity {
 
             if(currentBean.getResult() == Constants.RESULT_OK){
                 Log.i(TAG, "onPostExecute: success");
+                Constants.isLogin = true;
+                Constants.userId = currentBean.getObject().getId();
                 PreferencesUtils.putString(LoginActivity.this,"account",mAccount);
                 PreferencesUtils.putString(LoginActivity.this,"password",mPassword);
                 Intent intent = new Intent(LoginActivity.this,MainActivity.class);

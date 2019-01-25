@@ -84,12 +84,16 @@ public class LineStateHistoryActivity extends AppCompatActivity implements View.
 
     private int lastId;
     private int pointId;
+    private boolean isModify;
+    private boolean isVerify;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_line_state_history);
         lineId = getIntent().getIntExtra("line_id",-1);
+        isModify = getIntent().getBooleanExtra("line_modify",false);
+        isVerify = getIntent().getBooleanExtra("line_verify",false);
 
         Log.d(TAG, "收到的的线id为：" + lineId);
         init();
@@ -154,7 +158,7 @@ public class LineStateHistoryActivity extends AppCompatActivity implements View.
     }
 
     private void initToolBar(){
-        toolbar.setTitle("添加维修信息");
+        toolbar.setTitle("维修信息");
         setSupportActionBar(toolbar);
     }
 
@@ -180,30 +184,46 @@ public class LineStateHistoryActivity extends AppCompatActivity implements View.
                             showListFragment();
                         }else if(data.getResult() == 1){
                             stateList = new ArrayList<>();
-                            for (ResponseCheckHistory history: data.getList()) {
-                                LineState item = new LineState();
-                                item.setPointName(history.getTag().getName());
-                                item.setLatitude(history.getTag().getLocation_lat());
-                                item.setLongitude(history.getTag().getLocation_long());
 
-                                if(history.getList().size() > 0){
-                                    State cur = history.getList().get(0);
-                                    item.setId(cur.getId());
-                                    item.setCreateTime(cur.getCreateTime());
-                                    item.setImageList(cur.getImageList());
-                                    item.setCreateUserName(cur.getCreateUserName());
-                                    item.setModifyTime(cur.getModifyTime());
-                                    item.setName(cur.getName());
-                                    item.setRemark(cur.getRemark());
-                                    item.setTagId(cur.getTagId());
-                                    item.setModifyUserName(cur.getModifyUserName());
-                                    item.setStatus(cur.getStatus());
-                                    item.setStatusStr(cur.getStatusStr());
+                            if(data.getList() != null && data.getList().size() > 0){
+                                for (ResponseCheckHistory history: data.getList()) {
+
+
+                                    String name = history.getTag().getName();
+                                    double lat = history.getTag().getLocation_lat();
+                                    double lng = history.getTag().getLocation_long();
+                                    int checkId = history.getCheckId();
+
+                                    if(history.getList().size() > 0){
+
+                                        for (State item1:history.getList()) {
+                                            LineState item = new LineState();
+                                            item.setCheckId(checkId);
+                                            item.setLatitude(lat);
+                                            item.setLongitude(lng);
+                                            item.setPointName(name);
+                                            item.setId(item1.getId());
+                                            item.setCreateTime(item1.getCreateTime());
+                                            item.setImageList(item1.getImageList());
+                                            item.setCreateUserName(item1.getCreateUserName());
+                                            item.setModifyTime(item1.getModifyTime());
+                                            item.setName(item1.getName());
+                                            item.setRemark(item1.getRemark());
+                                            item.setTagId(item1.getTagId());
+                                            item.setModifyUserName(item1.getModifyUserName());
+                                            item.setStatus(item1.getStatus());
+                                            item.setStatusStr(item1.getStatusStr());
+                                            stateList.add(item);
+                                        }
+
+                                    }
                                 }
-                                stateList.add(item);
+                                lastId = stateList.get(0).getId();
+                                pointId = stateList.get(0).getTagId();
+
+                                setData(stateList.get(0));
                             }
-                            lastId = stateList.get(0).getId();
-                            pointId = stateList.get(0).getTagId();
+
                             showListFragment();
                         }
                         showLoading(false);
@@ -225,7 +245,8 @@ public class LineStateHistoryActivity extends AppCompatActivity implements View.
     }
 
     public void saveCheckInfo(int status,String remark,List<String> imagePath){
-        HttpUtils.getInstance().saveCheckInfo(currentState.getTagId(), status,remark,imagePath, new OnResponseListener() {
+        Log.d(TAG, "saveCheckInfo: "+" checkId:"+currentState.getCheckId()+",tag id:"+currentState.getTagId());
+        HttpUtils.getInstance().saveCheckInfo(currentState.getTagId(), currentState.getCheckId(),status,remark,imagePath, new OnResponseListener() {
             @Override
             public void success(Response responseMapBean) {
                 ResponseBean data = ( ResponseBean)responseMapBean.body();
@@ -275,7 +296,11 @@ public class LineStateHistoryActivity extends AppCompatActivity implements View.
                 break;
             case R.id.check_finish:
                 String remark3 = checkRemark.getText().toString();
-                saveCheckInfo(1,remark3,imageLocalPath);
+                if(btnFinish.getText().toString().equals("修复完成")){
+                    saveCheckInfo(5,remark3,imageLocalPath);
+                }else if(btnFinish.getText().toString().equals("审核通过")){
+                    saveCheckInfo(1,remark3,imageLocalPath);
+                }
                 break;
             case R.id.check_take_pic:
                 checkCameraPermission();
@@ -290,8 +315,8 @@ public class LineStateHistoryActivity extends AppCompatActivity implements View.
     public void setData(LineState current) {
         currentState = current;
         clearImageData();
-        checkName.setText(current.getName());
-        checkTime.setText(current.getCreateUserName());
+        checkName.setText(current.getCreateUserName());
+        checkTime.setText(current.getCreateTime());
         checkState.setText(current.getStatusStr());
         checkRemark.setText(current.getRemark());
         checkLat.setText(current.getLatitude()+"");
@@ -309,7 +334,33 @@ public class LineStateHistoryActivity extends AppCompatActivity implements View.
             btnModifySerious.setVisibility(View.VISIBLE);
             btnModifyNormal.setVisibility(View.VISIBLE);
             btnFinish.setVisibility(View.VISIBLE);
-            btnFinish.setText("排除故障点");
+            switch (current.getStatus()){
+                case 1:
+                    setLayoutFalse();
+                    break;
+                case 3:
+                case 4:
+                    if(isModify){
+                        btnModifySerious.setVisibility(View.GONE);
+                        btnModifyNormal.setVisibility(View.GONE);
+                        btnFinish.setText("修复完成");
+                    }else{
+                        setLayoutFalse();
+                        Toast.makeText(LineStateHistoryActivity.this,"当前无修复权限",Toast.LENGTH_LONG).show();
+                    }
+                    break;
+                case 5:
+                    if(isVerify){
+                        btnModifySerious.setVisibility(View.VISIBLE);
+                        btnModifyNormal.setVisibility(View.VISIBLE);
+                        btnFinish.setVisibility(View.VISIBLE);
+                        btnFinish.setText("审核通过");
+                    }else{
+                        setLayoutFalse();
+                        Toast.makeText(LineStateHistoryActivity.this,"当前无审核权限",Toast.LENGTH_LONG).show();
+                    }
+                    break;
+            }
 
         }else{
             setLayoutFalse();

@@ -34,12 +34,28 @@
                 android:padding="5dp"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="类型："
+                    android:text="设备名称："
                     android:layout_width="wrap_content"
                     android:gravity="center"
                     android:layout_height="match_parent" />
                 <Spinner
                     android:id="@+id/spinner_type"
+                    android:layout_marginLeft="5dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_weight="1"
+                android:padding="5dp"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:text="设备类型："
+                    android:layout_width="wrap_content"
+                    android:gravity="center"
+                    android:layout_height="match_parent" />
+                <map.test.testmap.view.MultiSelectionSpinner
+                    android:id="@+id/spinner_device_type"
                     android:layout_marginLeft="5dp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
@@ -149,6 +165,38 @@
                     android:layout_width="wrap_content"
                     android:layout_height="200dp"
                     android:clipChildren="false"/>
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_weight="1"
+                android:padding="5dp"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:text="联系方式："
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+                <EditText
+                    android:id="@+id/edit_phone"
+                    android:layout_marginLeft="5dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_weight="1"
+                android:padding="5dp"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:text="IP地址："
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+                <EditText
+                    android:id="@+id/edit_ip"
+                    android:layout_marginLeft="5dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
             </LinearLayout>
             <LinearLayout
                 android:layout_width="match_parent"

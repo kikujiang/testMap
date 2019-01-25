@@ -39,6 +39,9 @@ public class Point {
     private int tagCheckId;
     private int checkStatus;
     private int lineId;
+    private String ip;
+    private String mtype;
+    private String phone;
     private List<Image> imageList;
 
     public String getName() {
@@ -175,6 +178,30 @@ public class Point {
 
     public void setLineId(int lineId) {
         this.lineId = lineId;
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public String getMtype() {
+        return mtype;
+    }
+
+    public void setMtype(String mtype) {
+        this.mtype = mtype;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     @Override

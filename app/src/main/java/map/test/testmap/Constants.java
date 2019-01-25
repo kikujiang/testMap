@@ -6,11 +6,14 @@ public class Constants {
     public static final int RESULT_FAIL = 2;
     public static final int REQUEST_CODE = 1000;
     public static final int REQUEST_LINE_CODE = 1001;
+    public static String channelId = "";
+    public static boolean isLogin = false;
+    public static int userId = 0;
 //    public static final String WEB_URL = "http://172.19.26.52:8080/em";
 //    public static final String TEST_SPLITTER = "em";
 //    public static final String TEST_SPLITTER = "";
-    public static final String WEB_URL = "http://172.17.4.5:8080";
-//    public static final String WEB_URL = "http://119.3.71.206";
+//    public static final String WEB_URL = "http://172.17.4.5:8080";
+    public static final String WEB_URL = "http://119.3.71.206";
     private static final String SPLITTER = "/app/";
 
     /**
@@ -49,6 +52,11 @@ public class Constants {
      * 获取线路类型列表
      */
     public static final String TAG_GET_LINE_TYPE = "/tagAction"+SPLITTER+"getTagLineTypeList";
+
+    /**
+     * 获取设备类型列表
+     */
+    public static final String TAG_GET_DEVICE_TYPE = "/tagAction"+SPLITTER+"getTagMTypeList";
     /**
      * 获取所有标记点
      */
@@ -77,6 +85,10 @@ public class Constants {
      * 保存某条线路
      */
     public static final String TAG_SAVE_SINGLE_LINE = "/tagAction"+SPLITTER+"saveTagLine";
+    /**
+     * 添加辅助点
+     */
+    public static final String TAG_SAVE_ASSIST_POINT = "/tagAction"+SPLITTER+"addTagLineAssist";
     /**
      * 删除某条线路
      */

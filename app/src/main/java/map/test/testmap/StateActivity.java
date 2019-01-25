@@ -10,7 +10,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.provider.MediaStore;
-import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetDialog;
 import android.support.v4.app.ActivityCompat;
@@ -19,7 +18,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -30,21 +28,17 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.amap.api.maps.model.LatLng;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
-import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import map.test.testmap.model.DataType;
 import map.test.testmap.model.Image;
 import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.ResponseBean;
@@ -65,7 +59,6 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
     public static final int REQUEST_CODE_TAKE_PICTURE_DIALOG = 4;
     public final static int REQUEST_CODE_GALLERY_DIALOG = 5;
 
-
     private int currentType;
     private TextView checkName;
     private TextView checkTime;
@@ -77,12 +70,12 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
     private Button btnFinish;
     private Button btnTakePic;
     private Button btnSelectPic;
+    private Button btnAdd;
 
     private ViewPager pager = null;
     private TextView tvEmpty = null;
     private List<ImageView> imageViews = null;
     private int pagerWidth;
-
 
     private List<String> imageLocalPath = null;
     private List<String> imageRemotePath = null;
@@ -93,9 +86,13 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
     private LinearLayout loadingLayout;
 
     private int pointId;
+    private State currentState;
 
+    //添加权限
     private boolean isHistoryItemADD;
-    private boolean isHistoryItemQuery;
+    //审核权限
+    private boolean isHistoryItemVerify;
+    //修改权限
     private boolean isHistoryItemFix;
 
     private int lastId;
@@ -106,7 +103,7 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
         setContentView(R.layout.activity_state);
         pointId = getIntent().getIntExtra("point_id",-1);
         isHistoryItemADD = getIntent().getBooleanExtra("itemAdd",false);
-        isHistoryItemQuery = getIntent().getBooleanExtra("itemQuery",false);
+        isHistoryItemVerify = getIntent().getBooleanExtra("itemQuery",false);
         isHistoryItemFix = getIntent().getBooleanExtra("itemFix",false);
         Log.d(TAG, "收到的的点id为：" + pointId);
         init();
@@ -137,7 +134,8 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
         btnTakePic = findViewById(R.id.check_take_pic);
         btnTakePic.setOnClickListener(this);
         btnSelectPic = findViewById(R.id.check_pick_pic);
-        btnSelectPic.setOnClickListener(this);
+        btnAdd = findViewById(R.id.check_add_item);
+        btnAdd.setOnClickListener(this);
         currentType = REQUEST_TYPE_MAIN;
         initData();
 
@@ -171,7 +169,7 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
     }
 
     private void initToolBar(){
-        toolbar.setTitle("添加维修信息");
+        toolbar.setTitle("维修信息");
         setSupportActionBar(toolbar);
     }
 
@@ -184,20 +182,6 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        switch (item.getItemId()){
-            case R.id.check_add:
-
-                if(isHistoryItemADD){
-                    dialogImageViews = new ArrayList<>();
-                    dialogImageLocalPath = new ArrayList<>();
-                    showBottomDialog();
-                }else{
-                    Toast.makeText(StateActivity.this,"当前无权限，请到后台申请后重试！",Toast.LENGTH_LONG).show();
-                }
-
-                break;
-            default:
-        }
         return true;
     }
 
@@ -212,19 +196,28 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
                         ResponseBean<ResponseCheckHistory> data = ( ResponseBean<ResponseCheckHistory>)responseMapBean.body();
 
                         if(data.getResult() == 2){
-                            Log.d(TAG, "run: 2");
                             stateList = new ArrayList<>();
                             showListFragment();
                         }else if(data.getResult() == 1){
-                            Log.d(TAG, "run: 1");
                             stateList = new ArrayList<>();
-                            for (ResponseCheckHistory history: data.getList()
-                                 ) {
-                                if(!history.getList().isEmpty()){
-                                    stateList.addAll(history.getList());
+
+                            if(data.getList() != null && data.getList().size() > 0){
+                                for (ResponseCheckHistory history: data.getList()
+                                     ) {
+                                    if(!history.getList().isEmpty()){
+
+                                        for (State item:
+                                        history.getList()) {
+                                            item.setCheckId(history.getCheckId());
+                                            stateList.add(item);
+                                        }
+                                    }
                                 }
+                                lastId = stateList.get(0).getId();
+                                setData(stateList.get(0));
+                            }else{
+                                setData(null);
                             }
-                            lastId = stateList.get(0).getId();
                             showListFragment();
                         }
                         showLoading(false);
@@ -245,8 +238,9 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
         });
     }
 
-    public void saveCheckInfo(int status,String remark,List<String> imagePath){
-        HttpUtils.getInstance().saveCheckInfo(pointId, status,remark,imagePath, new OnResponseListener() {
+    public void saveCheckInfo(int checkId,int status,String remark,List<String> imagePath){
+        Log.d(TAG, "saveCheckInfo: check id is:" + checkId);
+        HttpUtils.getInstance().saveCheckInfo(pointId, checkId,status,remark,imagePath, new OnResponseListener() {
             @Override
             public void success(Response responseMapBean) {
                 ResponseBean data = ( ResponseBean)responseMapBean.body();
@@ -288,15 +282,20 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
         switch (v.getId()){
             case R.id.check_modify_normal:
                 String remark1 = checkRemark.getText().toString();
-                saveCheckInfo(4,remark1,imageLocalPath);
+                saveCheckInfo(currentState.getCheckId(),4,remark1,imageLocalPath);
                 break;
             case R.id.check_modify_serious:
                 String remark2 = checkRemark.getText().toString();
-                saveCheckInfo(3,remark2,imageLocalPath);
+                saveCheckInfo(currentState.getCheckId(),3,remark2,imageLocalPath);
                 break;
             case R.id.check_finish:
                 String remark3 = checkRemark.getText().toString();
-                saveCheckInfo(1,remark3,imageLocalPath);
+
+                if(btnFinish.getText().toString().equals("修复完成")){
+                    saveCheckInfo(currentState.getCheckId(),5,remark3,imageLocalPath);
+                }else if(btnFinish.getText().toString().equals("审核通过")){
+                    saveCheckInfo(currentState.getCheckId(),1,remark3,imageLocalPath);
+                }
                 break;
             case R.id.check_take_pic:
                 currentType = REQUEST_TYPE_MAIN;
@@ -306,9 +305,17 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
                 currentType = REQUEST_TYPE_MAIN;
                 choosePhoto();
                 break;
-            case R.id.dialog_add:
-                String remark = dialogRemark.getText().toString();
-                saveCheckInfo(2,remark,dialogImageLocalPath);
+            case R.id.dialog_add_normal:
+                String remarkNormal = dialogRemark.getText().toString();
+                saveCheckInfo(0,4,remarkNormal,dialogImageLocalPath);
+                if (dialog != null && dialog.isShowing()){
+                    dialog.dismiss();
+                }
+                currentType = REQUEST_TYPE_MAIN;
+                break;
+            case R.id.dialog_add_serious:
+                String remarkSerious = dialogRemark.getText().toString();
+                saveCheckInfo(0,3,remarkSerious,dialogImageLocalPath);
                 if (dialog != null && dialog.isShowing()){
                     dialog.dismiss();
                 }
@@ -322,14 +329,37 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
                 currentType = REQUEST_TYPE_DIALOG;
                 checkCameraPermission();
                 break;
+            case R.id.check_add_item:
+                addClick();
+                break;
+        }
+    }
+
+    @Override
+    public void addClick() {
+        if(isHistoryItemADD){
+            dialogImageViews = new ArrayList<>();
+            dialogImageLocalPath = new ArrayList<>();
+            showBottomDialog();
+        }else{
+            Toast.makeText(StateActivity.this,"当前无权限，请到后台申请后重试！",Toast.LENGTH_LONG).show();
         }
     }
 
     @Override
     public void setData(State current) {
+
+        if(current == null){
+            setLayoutFalse();
+            btnAdd.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        currentState = current;
         clearImageData();
-        checkName.setText(current.getName());
-        checkTime.setText(current.getCreateUserName());
+        btnAdd.setVisibility(View.GONE);
+        checkName.setText(current.getCreateUserName());
+        checkTime.setText(current.getCreateTime());
         checkState.setText(current.getStatusStr());
         checkRemark.setText(current.getRemark());
         List<Image> images = current.getImageList();
@@ -346,16 +376,42 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
             btnModifyNormal.setVisibility(View.VISIBLE);
             btnFinish.setVisibility(View.VISIBLE);
 
-            if(isHistoryItemFix){
-                btnFinish.setText("完成");
-            }
+            switch (current.getStatus()){
+                case 0:
+                case 1:
+                    setLayoutFalse();
+                    break;
+                case 3:
+                case 4:
+                    if(isHistoryItemFix){
+                        btnTakePic.setVisibility(View.VISIBLE);
+                        btnSelectPic.setVisibility(View.VISIBLE);
+                        btnModifySerious.setVisibility(View.GONE);
+                        btnModifyNormal.setVisibility(View.GONE);
+                        btnFinish.setVisibility(View.VISIBLE);
+                        Common.getInstance().setEditTextTrue(checkRemark);
+                        btnFinish.setText("修复完成");
+                    }else{
+                        setLayoutFalse();
+                        Toast.makeText(StateActivity.this,"当前无修复权限",Toast.LENGTH_LONG).show();
+                    }
+                    break;
+                case 5:
 
-            if(isHistoryItemQuery){
-                btnFinish.setText("排除故障点");
-                btnModifySerious.setVisibility(View.VISIBLE);
-                btnModifyNormal.setVisibility(View.VISIBLE);
+                    if(isHistoryItemVerify){
+                        btnTakePic.setVisibility(View.VISIBLE);
+                        btnSelectPic.setVisibility(View.VISIBLE);
+                        btnModifySerious.setVisibility(View.VISIBLE);
+                        btnModifyNormal.setVisibility(View.VISIBLE);
+                        btnFinish.setVisibility(View.VISIBLE);
+                        Common.getInstance().setEditTextTrue(checkRemark);
+                        btnFinish.setText("审核通过");
+                    }else{
+                        setLayoutFalse();
+                        Toast.makeText(StateActivity.this,"当前无审核权限",Toast.LENGTH_LONG).show();
+                    }
+                    break;
             }
-
         }else{
             setLayoutFalse();
         }
@@ -491,7 +547,8 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
     private EditText dialogRemark;
     private TextView dialogTvEmpty;
     private ViewPager dialogPager;
-    private Button dialogBtnAdd;
+    private Button dialogNormalBtnAdd;
+    private Button dialogSeriousBtnAdd;
     private Button dialogBtnTakePic;
     private Button dialogBtnPickPic;
 
@@ -510,11 +567,13 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
 
             dialogTvEmpty = view.findViewById(R.id.dialog_empty_text);
             dialogPager = view.findViewById(R.id.dialog_viewPager);
-            dialogBtnAdd = view.findViewById(R.id.dialog_add);
+            dialogNormalBtnAdd = view.findViewById(R.id.dialog_add_normal);
+            dialogSeriousBtnAdd = view.findViewById(R.id.dialog_add_serious);
             dialogBtnTakePic = view.findViewById(R.id.dialog_take_pic);
             dialogBtnPickPic = view.findViewById(R.id.dialog_pick_pic);
 
-            dialogBtnAdd.setOnClickListener(this);
+            dialogNormalBtnAdd.setOnClickListener(this);
+            dialogSeriousBtnAdd.setOnClickListener(this);
             dialogBtnTakePic.setOnClickListener(this);
             dialogBtnPickPic.setOnClickListener(this);
         }

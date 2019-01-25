@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ public class StateListFragment extends ListFragment {
     private static final String ARG_DATA = "stateData";
     private OnTouchListener mCallback;
 
+    private boolean isAddFooter = false;
 
     // TODO: Rename and change types of parameters
     private ArrayList<State> list;
@@ -64,14 +66,43 @@ public class StateListFragment extends ListFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        Log.d(ARG_DATA, "onCreate: ``11111");
+        Log.d(ARG_DATA, "onCreateView: ``11111");
         if (getArguments() != null) {
             Log.d(ARG_DATA, "onCreate: ");
             list = getArguments().getParcelableArrayList("list");
+
+            if(list.size() > 0){
+                if(list.get(0).getStatus() != 1){
+                    isAddFooter = true;
+                }else{
+                    isAddFooter = false;
+                }
+            }
+
             StateAdapter adapter = new StateAdapter(getActivity(),list);
             setListAdapter(adapter);
         }
+
         return inflater.inflate(R.layout.fragment_state_list, container, false);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.d(ARG_DATA, "onStart: ");
+
+        if (!isAddFooter){
+            isAddFooter = true;
+            Button btnFooter = new Button(getActivity());
+            btnFooter.setText("新增故障");
+            btnFooter.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mCallback.addClick();
+                }
+            });
+            getListView().addFooterView(btnFooter);
+        }
     }
 
     @Override
@@ -99,6 +130,7 @@ public class StateListFragment extends ListFragment {
     }
 
     public interface OnTouchListener{
-        public void setData(State current);
+        void setData(State current);
+        void addClick();
     }
 }

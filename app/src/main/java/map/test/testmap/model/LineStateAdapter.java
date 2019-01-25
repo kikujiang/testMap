@@ -51,7 +51,7 @@ public class LineStateAdapter extends BaseAdapter {
              }
 
              LineState current = stateList.get(position);
-             holder.text.setText(current.getCreateTime()+" "+current.getCreateUserName()+" "+current.getPointName());
+             holder.text.setText(current.getCreateTime()+" "+current.getCreateUserName()+" "+current.getName());
 
              return convertView;
     }

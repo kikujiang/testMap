@@ -30,6 +30,7 @@ import java.util.List;
  */
 public class State implements Parcelable {
 
+    private int checkId;
     private int id;
     private String name;
     private int status;
@@ -47,6 +48,7 @@ public class State implements Parcelable {
     }
 
     protected State(Parcel in) {
+        checkId = in.readInt();
         id = in.readInt();
         name = in.readString();
         status = in.readInt();
@@ -80,6 +82,7 @@ public class State implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(id);
+        dest.writeInt(checkId);
         dest.writeString(name);
         dest.writeInt(status);
         dest.writeString(statusStr);
@@ -178,5 +181,13 @@ public class State implements Parcelable {
 
     public void setImageList(List<Image> imageList) {
         this.imageList = imageList;
+    }
+
+    public int getCheckId() {
+        return checkId;
+    }
+
+    public void setCheckId(int checkId) {
+        this.checkId = checkId;
     }
 }

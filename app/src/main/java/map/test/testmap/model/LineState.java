@@ -20,6 +20,7 @@ public class LineState implements Parcelable {
     private double latitude;
     private double longitude;
     private int tagId;
+    private int checkId;
     private List<Image> imageList;
 
     public LineState() {
@@ -187,5 +188,13 @@ public class LineState implements Parcelable {
 
     public void setImageList(List<Image> imageList) {
         this.imageList = imageList;
+    }
+
+    public int getCheckId() {
+        return checkId;
+    }
+
+    public void setCheckId(int checkId) {
+        this.checkId = checkId;
     }
 }

@@ -248,4 +248,16 @@ public class Common {
         }
         return pi.versionCode;
     }
+
+    public String[] splitStr(String string){
+        return string == null?new String[0]:string.split(",");
+    }
+
+    public String combine(String[] strings){
+        String result = "";
+        for(String item:strings){
+            result+=item+",";
+        }
+        return result.substring(0,result.length()-1);
+    }
 }

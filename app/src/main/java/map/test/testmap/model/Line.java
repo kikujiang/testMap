@@ -41,6 +41,7 @@ public class Line {
     private String typeStr;
     private String posTypeStr;
     private List<Point> checkPoints;
+    private String statusIconColor;
 
     public int getId() {
         return id;
@@ -192,5 +193,13 @@ public class Line {
 
     public void setStatusStr(String statusStr) {
         this.statusStr = statusStr;
+    }
+
+    public String getStatusIconColor() {
+        return statusIconColor;
+    }
+
+    public void setStatusIconColor(String statusIconColor) {
+        this.statusIconColor = statusIconColor;
     }
 }

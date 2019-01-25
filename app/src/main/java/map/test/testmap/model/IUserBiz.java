@@ -16,7 +16,7 @@ public interface IUserBiz {
 
     @FormUrlEncoded
     @POST(Constants.TAG_LOGIN)
-    Call<ResponseBean<User>> getLoginInfo(@Field("account") String account,@Field("password") String password,@Field("mac") String mac);
+    Call<ResponseBean<User>> getLoginInfo(@Field("account") String account,@Field("password") String password,@Field("mac") String mac,@Field("channelId") String channelId);
 
     @FormUrlEncoded
     @POST(Constants.TAG_USER_PERMISSION)
@@ -44,4 +44,8 @@ public interface IUserBiz {
     @FormUrlEncoded
     @POST(Constants.TAG_GET_CHECK_LINE_HISTORY)
     Call<ResponseBean<ResponseCheckHistory>> getLineCheckHistoryInfo(@Field("lineId") int id);
+
+    @FormUrlEncoded
+    @POST(Constants.TAG_SAVE_ASSIST_POINT)
+    Call<ResponseBean> saveAssistPoint(@Field("name") String name,@Field("location_long") double location_long,@Field("location_lat") double location_lat,@Field("lineId") int lineId);
 }

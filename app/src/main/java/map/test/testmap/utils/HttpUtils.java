@@ -101,8 +101,9 @@ public class HttpUtils {
      * 单线程获取登录信息
      * @return
      */
-    public Response<ResponseBean<User>> getLoginInfo(String account, String password,String mac){
-        Call<ResponseBean<User>> login = userBiz.getLoginInfo(account,password,mac);
+    public Response<ResponseBean<User>> getLoginInfo(String account, String password,String mac,String channelId){
+        Log.d(TAG, "getLoginInfo: "+account+","+password+","+mac+","+channelId);
+        Call<ResponseBean<User>> login = userBiz.getLoginInfo(account,password,mac,channelId);
         Response<ResponseBean<User>> user = null;
         try{
             user = login.execute();
@@ -161,11 +162,12 @@ public class HttpUtils {
         });
     }
 
-    public void saveCheckInfo(int id,int status,String remark,List<String> imagePaths,final OnResponseListener listener){
+    public void saveCheckInfo(int id,int checkId,int status,String remark,List<String> imagePaths,final OnResponseListener listener){
 
         Map<String,RequestBody> params = new HashMap<>();
 
         params.put("tag_id",toRequestBody(id+""));
+        params.put("checkId",toRequestBody(checkId+""));
         params.put("status",toRequestBody(status+""));
         params.put("remark",toRequestBody(remark));
 
@@ -215,6 +217,21 @@ public class HttpUtils {
 
         Call<ResponseBean> lineCheckInfo = userBiz.addLineCheck(params);
         lineCheckInfo.enqueue(new retrofit2.Callback<ResponseBean>() {
+            @Override
+            public void onResponse(Call<ResponseBean> call, retrofit2.Response<ResponseBean> response) {
+                listener.success(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBean> call, Throwable t) {
+                listener.fail(t);
+            }
+        });
+    }
+
+    public void saveAssistPoint(String name, double lat,double lng,int lineId,final OnResponseListener listener){
+        Call<ResponseBean> historyInfo = userBiz.saveAssistPoint(name,lng,lat,lineId);
+        historyInfo.enqueue(new retrofit2.Callback<ResponseBean>() {
             @Override
             public void onResponse(Call<ResponseBean> call, retrofit2.Response<ResponseBean> response) {
                 listener.success(response);

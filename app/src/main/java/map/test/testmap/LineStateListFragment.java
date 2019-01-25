@@ -29,7 +29,7 @@ public class LineStateListFragment extends ListFragment {
     private static final String ARG_DATA = "stateData";
     private OnTouchListener mCallback;
 
-
+    private boolean isAddFooter = false;
     // TODO: Rename and change types of parameters
     private ArrayList<LineState> list;
 
