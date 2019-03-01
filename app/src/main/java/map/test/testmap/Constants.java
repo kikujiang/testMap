@@ -6,6 +6,8 @@ public class Constants {
     public static final int RESULT_FAIL = 2;
     public static final int REQUEST_CODE = 1000;
     public static final int REQUEST_LINE_CODE = 1001;
+    public static final int TYPE_HISTORY_POINT = 10010;
+    public static final int TYPE_HISTORY_LINE = 10011;
     public static String channelId = "";
     public static boolean isLogin = false;
     public static int userId = 0;
@@ -13,8 +15,12 @@ public class Constants {
 //    public static final String TEST_SPLITTER = "em";
 //    public static final String TEST_SPLITTER = "";
 //    public static final String WEB_URL = "http://172.17.4.5:8080";
+//    public static final String WEB_URL = "http://10.206.0.28";
+    //正式环境
     public static final String WEB_URL = "http://119.3.71.206";
     private static final String SPLITTER = "/app/";
+
+    public static boolean isExistAlready = false;
 
     /**
      * 登陆
@@ -31,7 +37,7 @@ public class Constants {
     /**
      * 获取用户信息
      */
-    public static final String TAG_USER_INFO = SPLITTER + "getUserInfo";
+    public static final String TAG_USER_INFO = "/userAction"+SPLITTER + "getUserInfo";
     /**
      * 获取用户权限
      */
@@ -98,6 +104,10 @@ public class Constants {
      */
     public static final String TAG_GET_CHECK_HISTORY = "/tagAction"+SPLITTER+"getTagCheckHistory";
     /**
+     * 获取维修点修改记录
+     */
+    public static final String TAG_GET_POINT_HISTORY = "/tagAction"+SPLITTER+"getTagChangeHistory";
+    /**
      * 添加维修点历史记录
      */
     public static final String TAG_SAVE_CHECK = "/tagAction"+SPLITTER+"saveTagCheck";
@@ -109,4 +119,13 @@ public class Constants {
      * 获取维修点历史记录
      */
     public static final String TAG_GET_CHECK_LINE_HISTORY = "/tagAction"+SPLITTER+"getTagLineCheckHistory";
+    /**
+     * 获取维修点修改记录
+     */
+    public static final String TAG_GET_LINE_HISTORY = "/tagAction"+SPLITTER+"getTagLineChangeHistory";
+
+    /**
+     * 获取维修点历史记录
+     */
+    public static final String TAG_GET_NOTICE = "/noticeAction"+SPLITTER+"getLatestNotice";
 }

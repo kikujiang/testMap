@@ -8,7 +8,29 @@ package map.test.testmap.model;
  * 	"password": "",
  * 	"level": 0,
  * 	"id": 1
+ *
  * }
+ *
+ * "id": 3,
+ *         "username": "admin",
+ *         "userAccount": "admin",
+ *         "level": 3,
+ *         "phone": "13566782347",
+ *         "email": "sdfs@sina.com",
+ *         "levelName": "管理岗位人员",
+ *         "sex": 1,
+ *         "sexName": "男",
+ *         "workNo": "",
+ *         "address": "",
+ *         "hometown": "",
+ *         "birth_time": 0,
+ *         "in_date_time": 0,
+ *         "desc": "",
+ *         "descHtml": "",
+ *         "macLimit": "",
+ *         "macLimitHtml": "",
+ *         "status": 0
+ *
  */
 public class User {
     private String username;

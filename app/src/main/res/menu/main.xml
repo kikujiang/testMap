@@ -21,11 +21,5 @@
         android:id="@+id/clear"
         android:visible="false"
         android:title="@string/clear"/>
-    <item
-        android:id="@+id/update"
-        android:title="@string/update"/>
-    <item
-        android:id="@+id/exit"
-        android:title="@string/exit"/>
 
 </menu>

@@ -11,9 +11,11 @@ import java.util.concurrent.TimeUnit;
 
 import map.test.testmap.Constants;
 import map.test.testmap.model.IUserBiz;
+import map.test.testmap.model.Notice;
 import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.ResponseBean;
 import map.test.testmap.model.ResponseCheckHistory;
+import map.test.testmap.model.ResponseHistory;
 import map.test.testmap.model.User;
 import map.test.testmap.model.UserPermission;
 import okhttp3.MediaType;
@@ -82,6 +84,22 @@ public class HttpUtils {
 
     }
 
+    public void getUserInfo(int userId, final OnResponseListener listener){
+        Call<ResponseBean<User>> userInfo = userBiz.getUserInfo(userId);
+        userInfo.enqueue(new retrofit2.Callback<ResponseBean<User>>() {
+            @Override
+            public void onResponse(Call<ResponseBean<User>> call, retrofit2.Response<ResponseBean<User>> response) {
+                listener.success(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBean<User>> call, Throwable t) {
+                listener.fail(t);
+            }
+        });
+
+    }
+
     public void  logOut(int userId, final OnResponseListener listener){
         Call<ResponseBean> permissionInfo = userBiz.logOut(userId);
         permissionInfo.enqueue(new retrofit2.Callback<ResponseBean>() {
@@ -127,6 +145,25 @@ public class HttpUtils {
 
             @Override
             public void onFailure(Call<ResponseBean> call, Throwable t) {
+                listener.fail(t);
+            }
+        });
+    }
+
+    /**
+     * 获取消息信息
+     * @param listener
+     */
+    public void getNotice(final OnResponseListener listener){
+        Call<ResponseBean<Notice>> noticeInfo = userBiz.getNoticeInfo();
+        noticeInfo.enqueue(new retrofit2.Callback<ResponseBean<Notice>>() {
+            @Override
+            public void onResponse(Call<ResponseBean<Notice>> call, retrofit2.Response<ResponseBean<Notice>> response) {
+                listener.success(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBean<Notice>> call, Throwable t) {
                 listener.fail(t);
             }
         });
@@ -239,6 +276,36 @@ public class HttpUtils {
 
             @Override
             public void onFailure(Call<ResponseBean> call, Throwable t) {
+                listener.fail(t);
+            }
+        });
+    }
+
+    public void getPointHistoryInfo(int id,final OnResponseListener listener){
+        Call<ResponseBean<ResponseHistory>> historyInfo = userBiz.getPointHistoryInfo(id);
+        historyInfo.enqueue(new retrofit2.Callback<ResponseBean<ResponseHistory>>() {
+            @Override
+            public void onResponse(Call<ResponseBean<ResponseHistory>> call, retrofit2.Response<ResponseBean<ResponseHistory>> response) {
+                listener.success(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBean<ResponseHistory>> call, Throwable t) {
+                listener.fail(t);
+            }
+        });
+    }
+
+    public void getLineHistoryInfo(int id,final OnResponseListener listener){
+        Call<ResponseBean<ResponseHistory>> historyInfo = userBiz.getLineHistoryInfo(id);
+        historyInfo.enqueue(new retrofit2.Callback<ResponseBean<ResponseHistory>>() {
+            @Override
+            public void onResponse(Call<ResponseBean<ResponseHistory>> call, retrofit2.Response<ResponseBean<ResponseHistory>> response) {
+                listener.success(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBean<ResponseHistory>> call, Throwable t) {
                 listener.fail(t);
             }
         });

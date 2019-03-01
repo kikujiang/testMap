@@ -226,6 +226,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:textSize="10sp"
                 android:text="添加"/>
 
             <Button
@@ -233,6 +234,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:textSize="10sp"
                 android:text="去这里" />
 
             <Button
@@ -240,13 +242,22 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:textSize="10sp"
                 android:text="取消"/>
             <Button
                 android:id="@+id/state"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:textSize="10sp"
                 android:text="维修状态"/>
+            <Button
+                android:id="@+id/point_history"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="10sp"
+                android:text="历史记录"/>
         </LinearLayout>
         </LinearLayout>
     </ScrollView>

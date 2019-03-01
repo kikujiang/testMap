@@ -32,6 +32,20 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
+    <!-- 【必须】 信鸽SDK所需权限 -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- 【常用】 信鸽SDK所需权限 -->
+    <uses-permission android:name="android.permission.RECEIVE_USER_PRESENT" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <!-- 【可选】 信鸽SDK所需权限 -->
+    <uses-permission android:name="android.permission.RESTART_PACKAGES" />
+    <uses-permission android:name="android.permission.BROADCAST_STICKY" />
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="android.permission.READ_LOGS" />
+    <uses-permission android:name="android.permission.BATTERY_STATS" />
 
     <application
         android:allowBackup="true"
@@ -47,15 +61,13 @@
 
         <activity
             android:name=".MainActivity"
-            android:launchMode="singleTask"
             android:configChanges="orientation|screenSize"
-            android:screenOrientation="portrait" >
-            <intent-filter >
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait">
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:scheme="xgscheme"
-                    android:host="com.xg.push"
-                    android:path="/notify_detail" />
+
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
@@ -99,9 +111,11 @@
         <activity android:name=".LineStateHistoryActivity" />
 
         <!-- push应用定义消息receiver声明 -->
-        <receiver android:name=".CustomReceiver"
+        <receiver
+            android:name=".CustomReceiver"
             android:exported="true">
             <intent-filter>
+
                 <!-- 接收消息透传 -->
                 <action android:name="com.tencent.android.tpush.action.PUSH_MESSAGE" />
                 <!-- 监听注册、反注册、设置/删除标签、通知被点击等处理结果 -->
@@ -110,9 +124,11 @@
         </receiver>
 
         <!-- 【必须】 信鸽receiver广播接收 -->
-        <receiver android:name="com.tencent.android.tpush.XGPushReceiver"
-            android:process=":xg_service_v4" >
-            <intent-filter android:priority="0x7fffffff" >
+        <receiver
+            android:name="com.tencent.android.tpush.XGPushReceiver"
+            android:process=":xg_service_v4">
+            <intent-filter android:priority="0x7fffffff">
+
                 <!-- 【必须】 信鸽SDK的内部广播 -->
                 <action android:name="com.tencent.android.tpush.action.SDK" />
                 <action android:name="com.tencent.android.tpush.action.INTERNAL_PUSH_MESSAGE" />
@@ -132,17 +148,16 @@
             android:persistent="true"
             android:process=":xg_service_v4" />
 
-
         <!-- 【必须】 提高service的存活率 -->
         <service
             android:name="com.tencent.android.tpush.rpc.XGRemoteService"
             android:exported="true">
             <intent-filter>
+
                 <!-- 【必须】 请修改为当前APP包名 .PUSH_ACTION, 如demo的包名为：com.qq.xgdemo -->
                 <action android:name="map.test.testmap.PUSH_ACTION" />
             </intent-filter>
         </service>
-
 
         <!-- 【必须】 请将YOUR_ACCESS_ID修改为APP的AccessId，“21”开头的10位数字，中间没空格 -->
         <meta-data
@@ -153,20 +168,26 @@
             android:name="XG_V2_ACCESS_KEY"
             android:value="A77I49VN9VWP" />
 
+        <activity
+            android:name=".NaviMain"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_navi_main"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data
+                    android:host="com.xg.push"
+                    android:path="/notify_detail"
+                    android:scheme="xgscheme" />
+            </intent-filter>
+
+        </activity>
+        <activity android:name=".VersionActivity" />
+        <activity android:name=".HistoryActivity"></activity>
     </application>
 
-    <!-- 【必须】 信鸽SDK所需权限 -->
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <!-- 【常用】 信鸽SDK所需权限 -->
-    <uses-permission android:name="android.permission.RECEIVE_USER_PRESENT" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
-    <!-- 【可选】 信鸽SDK所需权限 -->
-    <uses-permission android:name="android.permission.RESTART_PACKAGES" />
-    <uses-permission android:name="android.permission.BROADCAST_STICKY" />
-    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
-    <uses-permission android:name="android.permission.GET_TASKS" />
-    <uses-permission android:name="android.permission.READ_LOGS" />
-    <uses-permission android:name="android.permission.BATTERY_STATS" />
 </manifest>

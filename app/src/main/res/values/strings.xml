@@ -11,7 +11,7 @@
     <string name="exit">退出当前账号</string>
 
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="hello_blank_fragment">功能开发中，敬请期待！</string>
     <string name="title_activity_login">Sign in</string>
     <!-- Strings related to login -->
     <string name="prompt_email">账号</string>
@@ -36,4 +36,9 @@
     <string name="check_long">纬度</string>
 
     <string name="maintenance_line_info">所属线缆</string>
+    <string name="title_activity_navi_main">NaviMain</string>
+    <string name="title_home">主页</string>
+    <string name="title_dashboard">任务</string>
+    <string name="title_notifications">消息</string>
+    <string name="title_person">个人</string>
 </resources>

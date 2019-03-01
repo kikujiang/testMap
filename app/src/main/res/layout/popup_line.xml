@@ -191,7 +191,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textSize="12sp"
+                android:textSize="9sp"
                 android:text="关闭"/>
 
             <Button
@@ -199,14 +199,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textSize="12sp"
+                android:textSize="9sp"
                 android:text="添加维修点"/>
             <Button
                 android:id="@+id/line_create_assist_point"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textSize="12sp"
+                android:textSize="9sp"
                 android:text="添加辅助点"/>
 
             <Button
@@ -214,8 +214,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textSize="12sp"
+                android:textSize="9sp"
                 android:text="维修状态"/>
+            <Button
+                android:id="@+id/line_history"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="9sp"
+                android:text="历史记录"/>
         </LinearLayout>
         </LinearLayout>
     </ScrollView>

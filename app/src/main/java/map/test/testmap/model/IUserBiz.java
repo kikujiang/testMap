@@ -23,6 +23,10 @@ public interface IUserBiz {
     Call<ResponseBean<UserPermission>>  getUserPermissionInfo(@Field("id") int userId);
 
     @FormUrlEncoded
+    @POST(Constants.TAG_USER_INFO)
+    Call<ResponseBean<User>>  getUserInfo(@Field("id") int userId);
+
+    @FormUrlEncoded
     @POST(Constants.TAG_LOGOUT)
     Call<ResponseBean> logOut(@Field("id") int userId);
 
@@ -46,6 +50,17 @@ public interface IUserBiz {
     Call<ResponseBean<ResponseCheckHistory>> getLineCheckHistoryInfo(@Field("lineId") int id);
 
     @FormUrlEncoded
+    @POST(Constants.TAG_GET_LINE_HISTORY)
+    Call<ResponseBean<ResponseHistory>> getLineHistoryInfo(@Field("id") int id);
+
+    @FormUrlEncoded
+    @POST(Constants.TAG_GET_POINT_HISTORY)
+    Call<ResponseBean<ResponseHistory>> getPointHistoryInfo(@Field("id") int id);
+
+    @FormUrlEncoded
     @POST(Constants.TAG_SAVE_ASSIST_POINT)
     Call<ResponseBean> saveAssistPoint(@Field("name") String name,@Field("location_long") double location_long,@Field("location_lat") double location_lat,@Field("lineId") int lineId);
+
+    @GET(Constants.TAG_GET_NOTICE)
+    Call<ResponseBean<Notice>> getNoticeInfo();
 }

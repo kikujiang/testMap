@@ -396,7 +396,7 @@ public class LoginActivity extends AppCompatActivity {
                 Constants.userId = currentBean.getObject().getId();
                 PreferencesUtils.putString(LoginActivity.this,"account",mAccount);
                 PreferencesUtils.putString(LoginActivity.this,"password",mPassword);
-                Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+                Intent intent = new Intent(LoginActivity.this,NaviMain.class);
                 intent.putExtra("userId",currentBean.getObject().getId());
                 startActivity(intent);
             }

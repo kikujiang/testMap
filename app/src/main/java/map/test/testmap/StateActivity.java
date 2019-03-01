@@ -171,6 +171,7 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
     private void initToolBar(){
         toolbar.setTitle("维修信息");
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     @Override
@@ -181,7 +182,15 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
+        switch (item.getItemId()) {
+            //重写ToolBar返回按钮的行为，防止重新打开父Activity重走生命周期方法
+            case android.R.id.home:
+                Intent intent = new Intent();
+                intent.putExtra("pointId",pointId);
+                setResult(RESULT_OK,intent);
+                finish();
+                return true;
+        }
         return true;
     }
 

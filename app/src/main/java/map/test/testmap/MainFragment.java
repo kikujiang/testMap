@@ -1,7 +1,9 @@
 package map.test.testmap;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -20,14 +22,18 @@ import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetDialog;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,6 +53,7 @@ import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
+import com.amap.api.maps.CameraUpdate;
 import com.amap.api.maps.CameraUpdateFactory;
 import com.amap.api.maps.MapView;
 import com.amap.api.maps.model.BitmapDescriptorFactory;
@@ -89,7 +96,17 @@ import map.test.testmap.utils.OkHttpClientManager;
 import map.test.testmap.view.MultiSelectionSpinner;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+
+/**
+ * A simple {@link Fragment} subclass.
+ * Activities that contain this fragment must implement the
+ * to handle interaction events.
+ * Use the {@link MainFragment#newInstance} factory method to
+ * create an instance of this fragment.
+ */
+public class MainFragment extends Fragment implements View.OnClickListener{
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    private static final String ARG_PARAM1 = "userId";
 
     private static final String TAG = "map";
     public static final int CURRENT_TYPE_POINT = 1;
@@ -112,12 +129,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final int MAINTENANCE_TYPE_ASSIST = 10002;
 
     private MapView mMapView;
+    private View currentView;
 
     private AMap aMap;
 
     private Toolbar toolbar;
 
-    private AMapLocation currentLocation = null;
+    private Location currentLocation = null;
     private TextView tvLocation = null;
 
     private int currentType = 0;
@@ -194,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 case MSG_SAVE_SINGLE_POINT_END:
 
                     int id = (int) msg.obj;
-                    Toast.makeText(MainActivity.this,"保存成功！",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),"保存成功！",Toast.LENGTH_LONG).show();
                     getSinglePoint(id+"");
 
                     if (pointDialog != null&& pointDialog.isShowing()){
@@ -224,17 +242,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 case MSG_MSG_ERROR:
                     String message = (String) msg.obj;
                     Log.d(TAG, "错误消息为:" + message);
-                    Toast.makeText(MainActivity.this,"服务器响应失败，请稍后重试！",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),"服务器响应失败，请稍后重试！",Toast.LENGTH_LONG).show();
                     break;
                 case MSG_MSG_FAILURE:
                     String failureMsg = (String) msg.obj;
                     Log.d(TAG, "失败消息为:" + failureMsg);
-                    Toast.makeText(MainActivity.this,failureMsg,Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),failureMsg,Toast.LENGTH_LONG).show();
                     break;
                 case MSG_LOGIN_FAILED:
                     String loginError = (String) msg.obj;
                     Log.d(TAG, "登录错误消息为:" + loginError);
-                    Toast.makeText(MainActivity.this,loginError,Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),loginError,Toast.LENGTH_LONG).show();
                     break;
                 case MSG_END:
                     Log.d(TAG, "handleMessage: msg end");
@@ -260,7 +278,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         currentPolyLine.setVisible(true);
                         showLineBottomDialog();
                     }else {
-                        Toast.makeText(MainActivity.this,"当前线路信息异常，请重新刷新！",Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity(),"当前线路信息异常，请重新刷新！",Toast.LENGTH_LONG).show();
                     }
                     break;
             }
@@ -268,24 +286,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     };
 
     private int userId = 0;
-    private boolean isExistAlready = false;
+//    private boolean isExistAlready = false;
+
+    public MainFragment() {
+        // Required empty public constructor
+    }
+
+    /**
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
+     *
+     * @return A new instance of fragment MainFragment.
+     */
+    // TODO: Rename and change types and number of parameters
+    public static MainFragment newInstance(int userId) {
+        MainFragment fragment = new MainFragment();
+        Bundle args = new Bundle();
+        args.putInt(ARG_PARAM1, userId);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        if(Constants.isLogin){
-            userId = Constants.userId;
-        }else{
-            userId = getIntent().getIntExtra("userId",0);
+        if (getArguments() != null) {
+            userId = getArguments().getInt(ARG_PARAM1);
         }
+        setHasOptionsMenu(true);
+    }
 
-        String mac = Common.getInstance().getMacAddress();
-        Log.d(TAG, "=========================onCreate called!========================= user is is：" + userId+",and mac is:" + mac);
-        mMapView = (MapView) findViewById(R.id.map);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        currentView = inflater.inflate(R.layout.activity_main, container, false);
+        mMapView = (MapView) currentView.findViewById(R.id.map);
         mMapView.onCreate(savedInstanceState);
+
         checkLocationPermission();
+
+        return currentView;
     }
 
     private void checkLocationPermission(){
@@ -295,21 +336,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             StrictMode.setVmPolicy( builder.build() );
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            int checkLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
+            int checkLocationPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION);
             if (checkLocationPermission != PackageManager.PERMISSION_GRANTED ) {
                 //没有获取权限，发起申请
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
             } else {
                 //doing everything what you want
-                initial();
+                initial(currentView);
             }
         }else{
-            initial();
+            initial(currentView);
         }
     }
 
     private void enterCheckActivity(){
-        Intent stateIntent = new Intent(MainActivity.this,StateActivity.class);
+        Intent stateIntent = new Intent(getActivity(),StateActivity.class);
         Log.d(TAG, "传入的点id为：" + currentPoint.getId());
 
         stateIntent.putExtra("point_id",currentPoint.getId());
@@ -320,7 +361,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void enterLineCheckActivity(){
-        Intent stateIntent = new Intent(MainActivity.this,LineStateHistoryActivity.class);
+        Intent stateIntent = new Intent(getActivity(),LineStateHistoryActivity.class);
         Log.d(TAG, "传入的点id为：" + currentLine.getId());
         stateIntent.putExtra("line_id",currentLine.getId());
         stateIntent.putExtra("line_modify",isLineCheckFix);
@@ -338,11 +379,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         getDeviceType();
     }
 
-    private void initial(){
+    private void initial(View view){
         Log.d(TAG, "=========================initial called!=========================");
-        initControl();
+        initControl(view);
         initMap();
-        refreshLocation();
     }
 
     /**
@@ -351,6 +391,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void refreshLocation(){
         mLocationClient.stopLocation();
         mLocationClient.startLocation();
+        isFirst = true;
+        locate();
     }
 
     private void clearMap(){
@@ -371,50 +413,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mHandler.sendMessage(msg);
     }
 
-    /**
-     * 退出app
-     */
-    private void logOut(int userId, final boolean isClearAllData){
-        Log.d(TAG, "=========================logOut called!=========================");
-        HttpUtils.getInstance().logOut(userId, new OnResponseListener() {
-            @Override
-            public void success(retrofit2.Response responseMapBean) {
 
-                if(responseMapBean == null){
-                    Toast.makeText(MainActivity.this,"访问服务器超时，请稍后重试！",Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                ResponseBean current = (ResponseBean)responseMapBean.body();
-                if(current.getResult() == Constants.RESULT_FAIL){
-                    sendFailureMsg(current.getDesc());
-                    Intent loginIntent = new Intent(MainActivity.this,LoginActivity.class);
-                    startActivity(loginIntent);
-                    finish();
-                }
-
-                if(current.getResult() == Constants.RESULT_OK){
-                    isExistAlready = true;
-                    if(isClearAllData){
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(MainActivity.this,"退出成功",Toast.LENGTH_LONG).show();
-                                Intent loginIntent = new Intent(MainActivity.this,LoginActivity.class);
-                                startActivity(loginIntent);
-                                finish();
-                            }
-                        });
-                    }
-                }
-            }
-
-            @Override
-            public void fail(Throwable e) {
-                sendFailureMsg(e.getMessage());
-            }
-        });
-    }
 
     /**
      * 获取用户权限的信息
@@ -426,10 +425,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void success(retrofit2.Response responseMapBean) {
 
                 if(responseMapBean == null){
-                    runOnUiThread(new Runnable() {
+                    getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(MainActivity.this,"访问服务器超时，请稍后重试！",Toast.LENGTH_LONG).show();
+                            Toast.makeText(getActivity(),"访问服务器超时，请稍后重试！",Toast.LENGTH_LONG).show();
                         }
                     });
                     return;
@@ -442,7 +441,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 if(current.getResult() == Constants.RESULT_OK){
 
-                    runOnUiThread(new Runnable() {
+                    getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             resetState();
@@ -755,17 +754,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
-    private void initControl(){
+    private void initControl(View view){
         Log.d(TAG, "=========================initControl called!=========================");
-        toolbar = findViewById(R.id.id_toolbar);
-        progressBar = findViewById(R.id.loading);
-        tvLocation = findViewById(R.id.tv_show_location);
-        searchView = findViewById(R.id.search_view);
+        toolbar = view.findViewById(R.id.id_toolbar);
+        progressBar = view.findViewById(R.id.loading);
+        tvLocation = view.findViewById(R.id.tv_show_location);
+        searchView = view.findViewById(R.id.search_view);
+        String mac = Common.getInstance().getMacAddress();
+        Log.d(TAG, "=========================onCreate called!========================= user is is：" + userId+",and mac is:" + mac);
+
 
 //        progressBar.setVisibility(View.GONE);
-        initToolBar();
+        initToolbar(toolbar,"电力地理信息",false);
         initSearchView();
         initImageData();
+
+//        if (aMap == null) {
+//            aMap = mMapView.getMap();
+//        }
+//
+//        aMap.setMapType(AMap.MAP_TYPE_NORMAL);
+//        aMap.moveCamera(CameraUpdateFactory.zoomTo(19));
+//        initLocationInfo();
         getUserPermission(userId);
     }
 
@@ -811,19 +821,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private MaterialSearchView searchView = null;
 
-    private void initToolBar(){
-        toolbar.setTitle("电力地理信息");
-        setSupportActionBar(toolbar);
+    public void initToolbar(Toolbar toolbar, String title, boolean isDisplayHomeAsUp) {
+        AppCompatActivity appCompatActivity= (AppCompatActivity) getActivity();
+        appCompatActivity.setSupportActionBar(toolbar);
+        ActionBar actionBar = appCompatActivity.getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle(title);
+            actionBar.setDisplayHomeAsUpEnabled(isDisplayHomeAsUp);
+        }
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
         Log.d(TAG, "onCreateOptionsMenu: called!");
-        getMenuInflater().inflate(R.menu.main,menu);
+        inflater.inflate(R.menu.main,menu);
         MenuItem item = menu.findItem(R.id.search);
         searchView.setMenuItem(item);
-        return true;
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -841,10 +857,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if(pointTypeList != null){
                         showPointBottomDialog(null);
                     }else{
-                        Toast.makeText(MainActivity.this,"与服务器连接失败，点击刷新重试！",Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity(),"与服务器连接失败，点击刷新重试！",Toast.LENGTH_LONG).show();
                     }
                 }else{
-                    Toast.makeText(MainActivity.this,"当前账户无权限，请授予权限后重试！",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),"当前账户无权限，请授予权限后重试！",Toast.LENGTH_LONG).show();
                 }
                 break;
             case R.id.refresh:
@@ -858,63 +874,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.clear:
                 clearMap();
                 break;
-                default:
+            default:
         }
         return true;
-    }
-
-    private void checkUpdate(){
-        HttpUtils.getInstance().checkUpdate(new OnResponseListener() {
-            @Override
-            public void success(retrofit2.Response responseMapBean) {
-                if(responseMapBean == null){
-                    Log.d(TAG, "服务器返回对象为空");
-                    return;
-                }
-
-                ResponseBean current = (ResponseBean)responseMapBean.body();
-                if(current.getResult() == Constants.RESULT_FAIL){
-                    Log.d(TAG, "fail message is:" + current.getDesc());
-                    Toast.makeText(MainActivity.this,current.getDesc(),Toast.LENGTH_LONG).show();
-                }
-
-                if(current.getResult() == Constants.RESULT_OK){
-                    int serverVersion = current.getId();
-                    int currentVersion = Common.getInstance().getVersionCode(MainActivity.this);
-
-                    if(currentVersion < serverVersion){
-                        download(current.getDesc());
-                    }else{
-                        Toast.makeText(MainActivity.this,"当前是最新版本",Toast.LENGTH_LONG).show();
-                    }
-                }
-            }
-
-            @Override
-            public void fail(Throwable e) {
-                Log.d(TAG, "fail: "+e.getMessage());
-                Toast.makeText(MainActivity.this,e.getMessage(),Toast.LENGTH_LONG).show();
-            }
-        });
-    }
-
-    private void download(final String url) {
-        new AlertDialog.Builder(this)
-                .setTitle("提示")
-                .setMessage("版本更新")
-                .setPositiveButton("更新", new DialogInterface.OnClickListener() {
-                    @Override public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                        Common.getInstance().downloadApk(MainActivity.this,url,"下载中","电力地理系统");
-                    }
-                })
-                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                    @Override public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                    }
-                })
-                .show();
-
     }
 
     private double tempLat = 0.0d;
@@ -984,7 +946,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         showPointBottomDialog(null);
                     }
                 } else{
-                    Toast.makeText(MainActivity.this,"当前点信息异常，请重新刷新！",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),"当前点信息异常，请重新刷新！",Toast.LENGTH_LONG).show();
                 }
             }
         };
@@ -1011,8 +973,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         };
         // 绑定 Marker 被点击事件
         aMap.setOnMarkerClickListener(markerClickListener);
-        
-        
+
+
         aMap.setOnMarkerDragListener(new AMap.OnMarkerDragListener() {
             @Override
             public void onMarkerDragStart(Marker marker) {
@@ -1059,14 +1021,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if(pointTypeList != null){
                         showPointBottomDialog(current);
                     }else{
-                        Toast.makeText(MainActivity.this,"与服务器连接失败，点击刷新重试！",Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity(),"与服务器连接失败，点击刷新重试！",Toast.LENGTH_LONG).show();
                     }
                 }else{
-                    Toast.makeText(MainActivity.this,"当前账户无权限，请授予权限后重试！",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),"当前账户无权限，请授予权限后重试！",Toast.LENGTH_LONG).show();
                 }
             }
         });
-        initLocationInfo();
+        locate();
+//        initLocationInfo();
     }
 
     //声明AMapLocationClientOption对象
@@ -1089,10 +1052,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     showMsg = "当前经度："+aMapLocation.getLongitude()+"，纬度："+aMapLocation.getLatitude();
                     tvLocation.setText(showMsg);
                     currentLocation = aMapLocation;
-                    locate();
+//                    locate();
                 }else {
                     //定位失败时，可通过ErrCode（错误码）信息来确定失败的原因，errInfo是错误信息，详见错误码表。
-                    Toast.makeText(MainActivity.this,"定位失败,原因是："+aMapLocation.getErrorInfo()+"。请重新尝试！",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),"定位失败,原因是："+aMapLocation.getErrorInfo()+"。请重新尝试！",Toast.LENGTH_LONG).show();
                     Log.e("Error","location Error, ErrCode:"
                             + aMapLocation.getErrorCode() + ", errInfo:"
                             + aMapLocation.getErrorInfo());
@@ -1100,58 +1063,69 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         };
         //初始化定位
-        mLocationClient = new AMapLocationClient(getApplicationContext());
+        mLocationClient = new AMapLocationClient(getActivity().getApplicationContext());
         //设置定位回调监听
-        mLocationClient.setLocationListener(mLocationListener);
         mLocationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
-        mLocationOption.setOnceLocationLatest(true);
-        /**
-         * 设置定位场景，目前支持三种场景（签到、出行、运动，默认无场景）
-         */
-        mLocationOption.setLocationPurpose(AMapLocationClientOption.AMapLocationPurpose.SignIn);
+        mLocationOption.setLocationCacheEnable(false);
+        mLocationOption.setInterval(4000);
+        mLocationClient.setLocationListener(mLocationListener);
         mLocationClient.setLocationOption(mLocationOption);
+        mLocationClient.startLocation();
+        mHandler.sendEmptyMessage(MSG_END);
     }
+
+    private boolean isFirst = true;
 
     private void locate(){
 
         MyLocationStyle myLocationStyle = new MyLocationStyle();//初始化定位蓝点样式类myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE);//连续定位、且将视角移动到地图中心点，定位点依照设备方向旋转，并且会跟随设备移动。（1秒1次定位）如果不设置myLocationType，默认也会执行此种模式。
-        myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATE);
-//        myLocationStyle.anchor((float)currentLocation.getLatitude(),(float)currentLocation.getLongitude());
-//        myLocationStyle.anchor(0.0f,0.5f);
+        myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_FOLLOW_NO_CENTER);
         myLocationStyle.showMyLocation(true);
+        myLocationStyle.interval(4000);
+
         aMap.setMyLocationStyle(myLocationStyle);//设置定位蓝点的Style
-//        aMap.getUiSettings().setMyLocationButtonEnabled(true);//设置默认定位按钮是否显示，非必需设置。
+        aMap.getUiSettings().setMyLocationButtonEnabled(true);//设置默认定位按钮是否显示，非必需设置。
         aMap.setMyLocationEnabled(true);// 设置为true表示启动显示定位蓝点，false表示隐藏定位蓝点并不进行定位，默认是false。
         aMap.showIndoorMap(true);
         aMap.setOnMyLocationChangeListener(new AMap.OnMyLocationChangeListener() {
             @Override
             public void onMyLocationChange(Location location) {
                 Log.d("map", "onMyLocationChange: "+ location.toString());
-                showMsg = "当前经度："+location.getLongitude()+"，纬度："+location.getLatitude();
-                tvLocation.setText(showMsg);
-                mHandler.sendEmptyMessage(MSG_END);
+
+                if (location != null) {
+                    currentLocation = location;
+                    Bundle bundle = location.getExtras();
+                    if (bundle != null) {
+                        double mLocationLatitude = location.getLatitude();
+                        double mLocationLongitude = location.getLongitude();
+                        if (isFirst) {
+                            if (mLocationLatitude > 0 && mLocationLongitude > 0) {
+                                CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(new LatLng(mLocationLatitude, mLocationLongitude), 19);
+                                aMap.moveCamera(cu);
+                            }
+                            isFirst = false;
+                            mHandler.sendEmptyMessage(MSG_END);
+                        }
+                    }
+
+                    showMsg = "当前经度："+location.getLongitude()+"，纬度："+location.getLatitude();
+                    tvLocation.setText(showMsg);
+                }
+
             }
         });
     }
 
     @Override
-    protected void onDestroy() {
-        Log.d(TAG, "==============================onDestroy: "+isExistAlready);
-        //在activity执行onDestroy时执行mMapView.onDestroy()，销毁地图
-        if(!isExistAlready){
-            Log.d(TAG, "==============================如果没有退出，发送退出消息");
-            logOut(userId,false);
-        }
+    public void onDestroy() {
         if(mLocationClient != null){
-            mLocationClient.stopLocation();
             mLocationClient.onDestroy();
-            mLocationClient = null;
         }
         mMapView.onDestroy();
         super.onDestroy();
     }
     @Override
-    protected void onResume() {
+    public void onResume() {
         Log.d(TAG, "==============================onResume: ");
         super.onResume();
         //在activity执行onResume时执行mMapView.onResume ()，重新绘制加载地图
@@ -1159,14 +1133,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
     @Override
-    protected void onPause() {
+    public void onPause() {
         Log.d(TAG, "==============================onPause: ");
         super.onPause();
         //在activity执行onPause时执行mMapView.onPause ()，暂停地图的绘制
         mMapView.onPause();
     }
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         //在activity执行onSaveInstanceState时执行mMapView.onSaveInstanceState (outState)，保存地图当前的状态
         mMapView.onSaveInstanceState(outState);
@@ -1179,21 +1153,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //判断名称
                 String name = etName.getText().toString();
                 if(TextUtils.isEmpty(name)){
-                    Toast.makeText(MainActivity.this,"名称不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),"名称不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
                     return;
                 }
 
                 //判断经度
                 String longitudeStr = etLongitude.getText().toString();
                 if(TextUtils.isEmpty(longitudeStr)){
-                    Toast.makeText(MainActivity.this,"经度不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),"经度不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
                     return;
                 }
 
                 //判断纬度
                 String latitudeStr = etLatitude.getText().toString();
                 if(TextUtils.isEmpty(latitudeStr)){
-                    Toast.makeText(MainActivity.this,"纬度不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),"纬度不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
                     return;
                 }
 
@@ -1252,6 +1226,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     pointDialog.dismiss();
                 }
 
+                if(currentMarker != null){
+                    currentMarker.hideInfoWindow();
+                }
+
                 if(isDrag){
                     isDrag = false;
                     currentMarker.setPosition(new LatLng(currentPoint.getLocation_lat(),currentPoint.getLocation_long()));
@@ -1260,7 +1238,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.navi:
                 if(currentPoint == null){
-                    Toast.makeText(MainActivity.this,"当前节点数据为空，请重新刷新！",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),"当前节点数据为空，请重新刷新！",Toast.LENGTH_LONG).show();
                     return;
                 }
                 invokingGD(currentPoint.getLocation_lat(),currentPoint.getLocation_long());
@@ -1309,6 +1287,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 isMaintenanceAdd = true;
                 showMaintenanceDialog(MAINTENANCE_TYPE_ASSIST);
                 break;
+            case R.id.line_history:
+                Intent historyIntent = new Intent(getActivity(),HistoryActivity.class);
+                historyIntent.putExtra("history_id",currentLine.getId());
+                historyIntent.putExtra("history_type",Constants.TYPE_HISTORY_LINE);
+                startActivity(historyIntent);
+                break;
+            case R.id.point_history:
+                Intent pointHistoryIntent = new Intent(getActivity(),HistoryActivity.class);
+                pointHistoryIntent.putExtra("history_id",currentPoint.getId());
+                pointHistoryIntent.putExtra("history_type",Constants.TYPE_HISTORY_POINT);
+                startActivity(pointHistoryIntent);
+                break;
             case R.id.maintenance_close:
                 if(maintenanceDialog  != null){
                     maintenanceDialog.dismiss();
@@ -1320,14 +1310,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //判断经度
                 String lng = maintenanceLng.getText().toString();
                 if(TextUtils.isEmpty(lng)){
-                    Toast.makeText(MainActivity.this,"经度不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),"经度不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
                     return;
                 }
 
                 //判断纬度
                 String lat = maintenanceLat.getText().toString();
                 if(TextUtils.isEmpty(lat)){
-                    Toast.makeText(MainActivity.this,"纬度不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),"纬度不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
                     return;
                 }
 
@@ -1342,14 +1332,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 maintenanceDialog.dismiss();
                             }
                             Log.d(TAG, "获取辅助点id为:" + resultBean.getId());
-                            Toast.makeText(MainActivity.this,"辅助点添加成功",Toast.LENGTH_LONG).show();
+                            Toast.makeText(getActivity(),"辅助点添加成功",Toast.LENGTH_LONG).show();
                             getSinglePoint(resultBean.getId()+"");
                             getSingleLine(currentLine.getId()+"");
                         }else if(resultBean.getResult() == 2){
                             if(null == resultBean.getDesc()||"".equals(resultBean.getDesc())){
-                                Toast.makeText(MainActivity.this,"提交失败",Toast.LENGTH_LONG).show();
+                                Toast.makeText(getActivity(),"提交失败",Toast.LENGTH_LONG).show();
                             }else{
-                                Toast.makeText(MainActivity.this,resultBean.getDesc(),Toast.LENGTH_LONG).show();
+                                Toast.makeText(getActivity(),resultBean.getDesc(),Toast.LENGTH_LONG).show();
                             }
                         }
                     }
@@ -1357,7 +1347,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void fail(Throwable e) {
                         Log.d(TAG, "fail: "+e.getMessage());
-                        Toast.makeText(MainActivity.this,"服务器出现问题，稍后重试！",Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity(),"服务器出现问题，稍后重试！",Toast.LENGTH_LONG).show();
                     }
                 });
                 break;
@@ -1366,35 +1356,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //判断名称
                 String mName = maintenanceName.getText().toString();
                 if(TextUtils.isEmpty(mName)){
-                    Toast.makeText(MainActivity.this,"名称不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),"名称不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
                     return;
                 }
 
                 //判断经度
                 String mLongitudeStr = maintenanceLng.getText().toString();
                 if(TextUtils.isEmpty(mLongitudeStr)){
-                    Toast.makeText(MainActivity.this,"经度不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),"经度不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
                     return;
                 }
 
                 //判断纬度
                 String mLatitudeStr = maintenanceLat.getText().toString();
                 if(TextUtils.isEmpty(mLatitudeStr)){
-                    Toast.makeText(MainActivity.this,"纬度不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),"纬度不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
                     return;
                 }
 
                 //判断名称
                 String mRemark = maintenanceRemark.getText().toString();
                 if(TextUtils.isEmpty(mRemark)){
-                    Toast.makeText(MainActivity.this,"备注不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),"备注不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
                     return;
                 }
 
                 HttpUtils.getInstance().saveLineTagInfo(0,0,mName, mRemark,currentLine.getId(),4,mLatitudeStr, mLongitudeStr, maintenanceLocalPath, new OnResponseListener() {
                     @Override
                     public void success(final retrofit2.Response responseMapBean) {
-                        runOnUiThread(new Runnable() {
+                        getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 ResponseBean resultBean = ( ResponseBean)responseMapBean.body();
@@ -1407,72 +1397,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     getSingleLine(currentLine.getId()+"");
                                 }else if(resultBean.getResult() == 2){
                                     if(null == resultBean.getDesc()||"".equals(resultBean.getDesc())){
-                                        Toast.makeText(MainActivity.this,"提交失败",Toast.LENGTH_LONG).show();
+                                        Toast.makeText(getActivity(),"提交失败",Toast.LENGTH_LONG).show();
                                     }else{
-                                        Toast.makeText(MainActivity.this,resultBean.getDesc(),Toast.LENGTH_LONG).show();
-                                    }
-                                }
-                            }
-                        });
-                    }
-
-                        @Override
-                        public void fail(Throwable e) {
-                            Log.d(TAG, "fail: "+e.getMessage());
-                            Toast.makeText(MainActivity.this,"服务器出现问题，稍后重试！",Toast.LENGTH_LONG).show();
-                        }
-                    });
-
-                break;
-            case R.id.maintenance_add_serious:
-
-                //判断名称
-                String mName1 = maintenanceName.getText().toString();
-                if(TextUtils.isEmpty(mName1)){
-                    Toast.makeText(MainActivity.this,"名称不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                //判断经度
-                String mLongitudeStr1 = maintenanceLng.getText().toString();
-                if(TextUtils.isEmpty(mLongitudeStr1)){
-                    Toast.makeText(MainActivity.this,"经度不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                //判断纬度
-                String mLatitudeStr1 = maintenanceLat.getText().toString();
-                if(TextUtils.isEmpty(mLatitudeStr1)){
-                    Toast.makeText(MainActivity.this,"纬度不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                //判断名称
-                String mRemark1 = maintenanceRemark.getText().toString();
-                if(TextUtils.isEmpty(mRemark1)){
-                    Toast.makeText(MainActivity.this,"备注不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                HttpUtils.getInstance().saveLineTagInfo(0,0,mName1, mRemark1,currentLine.getId(),3,mLatitudeStr1, mLongitudeStr1, maintenanceLocalPath, new OnResponseListener() {
-                    @Override
-                    public void success(final retrofit2.Response responseMapBean) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                ResponseBean resultBean = ( ResponseBean)responseMapBean.body();
-                                if(resultBean.getResult() == 1){
-                                    if(maintenanceDialog  != null && maintenanceDialog.isShowing()){
-                                        maintenanceDialog.dismiss();
-                                    }
-                                    Log.d(TAG, "获取维修点id为:" + resultBean.getTagId());
-                                    getSinglePoint(resultBean.getTagId()+"");
-                                    getSingleLine(currentLine.getId()+"");
-                                }else if(resultBean.getResult() == 2){
-                                    if(null == resultBean.getDesc()||"".equals(resultBean.getDesc())){
-                                        Toast.makeText(MainActivity.this,"提交失败",Toast.LENGTH_LONG).show();
-                                    }else{
-                                        Toast.makeText(MainActivity.this,resultBean.getDesc(),Toast.LENGTH_LONG).show();
+                                        Toast.makeText(getActivity(),resultBean.getDesc(),Toast.LENGTH_LONG).show();
                                     }
                                 }
                             }
@@ -1482,7 +1409,70 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void fail(Throwable e) {
                         Log.d(TAG, "fail: "+e.getMessage());
-                        Toast.makeText(MainActivity.this,"服务器出现问题，稍后重试！",Toast.LENGTH_LONG).show();
+                        Toast.makeText(getActivity(),"服务器出现问题，稍后重试！",Toast.LENGTH_LONG).show();
+                    }
+                });
+
+                break;
+            case R.id.maintenance_add_serious:
+
+                //判断名称
+                String mName1 = maintenanceName.getText().toString();
+                if(TextUtils.isEmpty(mName1)){
+                    Toast.makeText(getActivity(),"名称不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                //判断经度
+                String mLongitudeStr1 = maintenanceLng.getText().toString();
+                if(TextUtils.isEmpty(mLongitudeStr1)){
+                    Toast.makeText(getActivity(),"经度不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                //判断纬度
+                String mLatitudeStr1 = maintenanceLat.getText().toString();
+                if(TextUtils.isEmpty(mLatitudeStr1)){
+                    Toast.makeText(getActivity(),"纬度不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                //判断名称
+                String mRemark1 = maintenanceRemark.getText().toString();
+                if(TextUtils.isEmpty(mRemark1)){
+                    Toast.makeText(getActivity(),"备注不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                HttpUtils.getInstance().saveLineTagInfo(0,0,mName1, mRemark1,currentLine.getId(),3,mLatitudeStr1, mLongitudeStr1, maintenanceLocalPath, new OnResponseListener() {
+                    @Override
+                    public void success(final retrofit2.Response responseMapBean) {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                ResponseBean resultBean = ( ResponseBean)responseMapBean.body();
+                                if(resultBean.getResult() == 1){
+                                    if(maintenanceDialog  != null && maintenanceDialog.isShowing()){
+                                        maintenanceDialog.dismiss();
+                                    }
+                                    Log.d(TAG, "获取维修点id为:" + resultBean.getTagId());
+                                    getSinglePoint(resultBean.getTagId()+"");
+                                    getSingleLine(currentLine.getId()+"");
+                                }else if(resultBean.getResult() == 2){
+                                    if(null == resultBean.getDesc()||"".equals(resultBean.getDesc())){
+                                        Toast.makeText(getActivity(),"提交失败",Toast.LENGTH_LONG).show();
+                                    }else{
+                                        Toast.makeText(getActivity(),resultBean.getDesc(),Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void fail(Throwable e) {
+                        Log.d(TAG, "fail: "+e.getMessage());
+                        Toast.makeText(getActivity(),"服务器出现问题，稍后重试！",Toast.LENGTH_LONG).show();
                     }
                 });
 
@@ -1506,7 +1496,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     maintenanceLng.setText(String.valueOf(currentLocation.getLongitude()));
                 }
                 break;
-                default:
+            default:
         }
     }
 
@@ -1524,11 +1514,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void configRemoteData(List<Image> images){
         for (final Image cur: images) {
-            ImageView current = new ImageView(MainActivity.this);
+            ImageView current = new ImageView(getActivity());
             current.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(MainActivity.this,ImageActivity.class);
+                    Intent intent = new Intent(getActivity(),ImageActivity.class);
                     intent.putExtra("http",cur.getPath());
                     startActivity(intent);
                 }
@@ -1546,7 +1536,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void takePic(){
         // 跳转到系统的拍照界面
         Intent intentToTakePhoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        currentFileName = Common.getInstance().getFilePath(MainActivity.this);
+        currentFileName = Common.getInstance().getFilePath(getActivity());
         intentToTakePhoto.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(new File(currentFileName)));
         if(currentImageType == TYPE_MAIN){
             startActivityForResult(intentToTakePhoto, REQUEST_CODE_TAKE_PICTURE);
@@ -1560,11 +1550,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.d(TAG, "=========================checkCameraPermission called!=========================");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             Log.d(TAG, "=========================checkCameraPermission called!111111111111111111111111=========================");
-            int storagePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            int cameraPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+            int storagePermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            int cameraPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA);
             if (cameraPermission != PackageManager.PERMISSION_GRANTED || storagePermission != PackageManager.PERMISSION_GRANTED) {
                 //没有获取权限，发起申请
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA}, 2);
+                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA}, 2);
             } else {
                 //doing everything what you want
                 takePic();
@@ -1778,7 +1768,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             markerOption.position(latLng);
             String type = "";
             for (DataType currentType:pointTypeList
-                 ) {
+                    ) {
                 if(currentType.getOptionValue() == current.getType()){
                     type = currentType.getOptionText();
                 }
@@ -1902,7 +1892,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Spinner spinnerTerminalType = null;
     private Spinner spinnerLineType = null;
     private MultiSelectionSpinner spinnerDeviceType = null;
-    private  Button confirmBtn = null;
+    private Button confirmBtn = null;
+    private Button pointHistoryBtn = null;
     private  Button naviBtn = null;
     private Button locateBtn = null;
     private Button takePicBtn = null;
@@ -1952,7 +1943,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         View view = getLayoutInflater().inflate(R.layout.popup_list2, null);
         if(pointDialog == null ){
 
-            pointDialog = new BottomSheetDialog(this);
+            pointDialog = new BottomSheetDialog(getActivity());
 
             pointDialog.setContentView(view);
             pointDialog.setCancelable(false);
@@ -1976,6 +1967,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             confirmBtn = view.findViewById(R.id.confirm);
             stateBtn = view.findViewById(R.id.state);
             naviBtn = view.findViewById(R.id.navi);
+            pointHistoryBtn = view.findViewById(R.id.point_history);
 
             tvEmpty = view.findViewById(R.id.empty_text);
             Button cancelBtn = view.findViewById(R.id.cancel);
@@ -2030,6 +2022,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             takePicBtn.setOnClickListener(this);
             choosePicBtn.setOnClickListener(this);
             naviBtn.setOnClickListener(this);
+            pointHistoryBtn.setOnClickListener(this);
             cancelBtn.setOnClickListener(this);
         }
 
@@ -2193,7 +2186,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         for (int i=0;i<dataList.size();i++){
             typeData[i] = dataList.get(i).getOptionText();
         }
-        ArrayAdapter<String> adapter=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_multiple_choice,typeData);
+        ArrayAdapter<String> adapter=new ArrayAdapter<String>(getActivity(),android.R.layout.simple_list_item_multiple_choice,typeData);
         spinner.setAdapter(adapter);
         switch (type){
             case CURRENT_TYPE_POINT:
@@ -2270,12 +2263,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button btnLineState;
     private Button btnLineCreatePoint;
     private Button btnLineCreateAssistPoint;
+    private Button btnLineHistory;
 
     private void showLineBottomDialog() {
         View view = getLayoutInflater().inflate(R.layout.popup_line, null);
         if(lineDialog == null ){
 
-            lineDialog = new BottomSheetDialog(this);
+            lineDialog = new BottomSheetDialog(getActivity());
 
             lineDialog.setContentView(view);
             lineDialog.setCancelable(false);
@@ -2306,12 +2300,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             btnLineState = view.findViewById(R.id.line_state);
             btnLineCreatePoint = view.findViewById(R.id.line_create_point);
             btnLineCreateAssistPoint = view.findViewById(R.id.line_create_assist_point);
+            btnLineHistory = view.findViewById(R.id.line_history);
 
 
             btnLineConfirm.setOnClickListener(this);
             btnLineState.setOnClickListener(this);
             btnLineCreatePoint.setOnClickListener(this);
             btnLineCreateAssistPoint.setOnClickListener(this);
+            btnLineHistory.setOnClickListener(this);
         }
         etLineName.setText(currentLine.getName());
         etLineNum.setText(currentLine.getLineCount()+"");
@@ -2364,7 +2360,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         View view = getLayoutInflater().inflate(R.layout.popup_maintenance, null);
         if(maintenanceDialog == null){
 
-            maintenanceDialog = new BottomSheetDialog(this);
+            maintenanceDialog = new BottomSheetDialog(getActivity());
 
             maintenanceDialog.setContentView(view);
             maintenanceDialog.setCancelable(false);
@@ -2466,11 +2462,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             if(currentPoint.getImages() != null && currentPoint.getImages().size() > 0){
                 for (final Image cur: currentPoint.getImages()) {
-                    ImageView current = new ImageView(MainActivity.this);
+                    ImageView current = new ImageView(getActivity());
                     current.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            Intent intent = new Intent(MainActivity.this,ImageActivity.class);
+                            Intent intent = new Intent(getActivity(),ImageActivity.class);
                             intent.putExtra("http",cur.getPath());
                             startActivity(intent);
                         }
@@ -2518,29 +2514,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    //退出时的时间
-    private long mExitTime;
-    //对返回键进行监听
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            exit();
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
-    }
-
-    public void exit() {
-        if ((System.currentTimeMillis() - mExitTime) > 2000) {
-            Toast.makeText(MainActivity.this, "再按一次退出", Toast.LENGTH_SHORT).show();
-            mExitTime = System.currentTimeMillis();
-        } else {
-            finish();
-            System.exit(0);
-        }
-    }
-
     public void invokingGD(double lat, double lon){
 
         String params = "androidamap://navi?sourceApplication=amap&lat="+lat+"&lon="+lon+ "&dev=0";
@@ -2553,7 +2526,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(intent);
             Log.d(TAG, "高德地图客户端已经安装") ;
         }else{
-            Toast.makeText(this, "没有安装高德地图客户端", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "没有安装高德地图客户端", Toast.LENGTH_SHORT).show();
         }
     }
     /**
@@ -2565,22 +2538,84 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return new File("/data/data/" + packageName).exists();
     }
 
+
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if ( resultCode == RESULT_OK) {
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        Log.d(TAG, "onAttach: ");
+
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        //通过请求码进行筛选
+        switch (requestCode) {
+            case 1:
+                Log.d(TAG, "onRequestPermissionsResult: 1");
+                //条件符合说明获取运行时权限成功
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    initial(currentView);
+                } else {
+                    //用户拒绝获取权限，则Toast出一句话提醒用户
+                    Toast.makeText(getActivity(), "应用未开启定位权限，请开启后重试", Toast.LENGTH_LONG).show();
+                }
+                break;
+            case 2:
+                Log.d(TAG, "onRequestPermissionsResult: 2");
+                int length = grantResults.length;
+                boolean isOk = false;
+                for (int i = 0; i < length; i++) {
+                    int permission = grantResults[i];
+                    if(permission == PackageManager.PERMISSION_GRANTED){
+                        isOk = true;
+                    }else{
+                        isOk = false;
+                        break;
+                    }
+                }
+
+                if(isOk){
+                    takePic();
+                }else {
+                    //用户拒绝获取权限，则Toast出一句话提醒用户
+                    Toast.makeText(getActivity(), "应用未开启拍照权限，请开启后重试", Toast.LENGTH_LONG).show();
+                }
+                break;
+            case 3:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    enterCheckActivity();
+                } else {
+                    //用户拒绝获取权限，则Toast出一句话提醒用户
+                    Toast.makeText(getActivity(), "应用未开启权限，请开启后重试", Toast.LENGTH_LONG).show();
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if ( resultCode == Activity.RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_CODE_TAKE_PICTURE:
 
                     Bitmap originalBmp = BitmapFactory.decodeFile(currentFileName);
 
-                    final String oriPath = Common.getInstance().saveBitmap(MainActivity.this,originalBmp);
+                    final String oriPath = Common.getInstance().saveBitmap(getActivity(),originalBmp);
                     Log.d(TAG, "onActivityResult: path is" + oriPath+",angle is:" + Common.getInstance().readPictureDegree(oriPath));
                     imageLocalPath.add(oriPath);
-                    ImageView cur = new ImageView(MainActivity.this);
+                    ImageView cur = new ImageView(getActivity());
                     cur.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            Intent intent = new Intent(MainActivity.this,ImageActivity.class);
+                            Intent intent = new Intent(getActivity(),ImageActivity.class);
                             intent.putExtra("path",oriPath);
                             startActivity(intent);
                         }
@@ -2595,15 +2630,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         //该uri是上一个Activity返回的
                         imageUri = data.getData();
                         if(imageUri!=null) {
-                            Bitmap bit = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri));
-                            final String path = Common.getInstance().saveBitmap(MainActivity.this,bit);
+                            Bitmap bit = BitmapFactory.decodeStream(getActivity().getContentResolver().openInputStream(imageUri));
+                            final String path = Common.getInstance().saveBitmap(getActivity(),bit);
                             Log.d(TAG, "onActivityResult: path is" + path);
                             imageLocalPath.add(path);
-                            ImageView choose = new ImageView(MainActivity.this);
+                            ImageView choose = new ImageView(getActivity());
                             choose.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    Intent intent = new Intent(MainActivity.this,ImageActivity.class);
+                                    Intent intent = new Intent(getActivity(),ImageActivity.class);
                                     intent.putExtra("path",path);
                                     startActivity(intent);
                                 }
@@ -2629,13 +2664,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 case REQUEST_CODE_MAINTENANCE_TAKE_PICTURE:
                     Bitmap originalBmp1 = BitmapFactory.decodeFile(currentFileName);
 
-                    final String path = Common.getInstance().saveBitmap(MainActivity.this,originalBmp1);
+                    final String path = Common.getInstance().saveBitmap(getActivity(),originalBmp1);
                     maintenanceLocalPath.add(path);
-                    ImageView cur1 = new ImageView(MainActivity.this);
+                    ImageView cur1 = new ImageView(getActivity());
                     cur1.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            Intent intent = new Intent(MainActivity.this,ImageActivity.class);
+                            Intent intent = new Intent(getActivity(),ImageActivity.class);
                             intent.putExtra("path",path);
                             startActivity(intent);
                         }
@@ -2650,15 +2685,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         //该uri是上一个Activity返回的
                         imageUri = data.getData();
                         if(imageUri!=null) {
-                            Bitmap bit = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri));
-                            final String path2 = Common.getInstance().saveBitmap(MainActivity.this,bit);
+                            Bitmap bit = BitmapFactory.decodeStream(getActivity().getContentResolver().openInputStream(imageUri));
+                            final String path2 = Common.getInstance().saveBitmap(getActivity(),bit);
                             Log.d(TAG, "onActivityResult: path is" + path2);
                             maintenanceLocalPath.add(path2);
-                            ImageView choose = new ImageView(MainActivity.this);
+                            ImageView choose = new ImageView(getActivity());
                             choose.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    Intent intent = new Intent(MainActivity.this,ImageActivity.class);
+                                    Intent intent = new Intent(getActivity(),ImageActivity.class);
                                     intent.putExtra("path",path2);
                                     startActivity(intent);
                                 }
@@ -2690,56 +2725,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         getSinglePoint(pointId1+"");
                     }
                     break;
-                    default:
+                default:
             }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        //通过请求码进行筛选
-        switch (requestCode) {
-            case 1:
-                //条件符合说明获取运行时权限成功
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    initial();
-                } else {
-                    //用户拒绝获取权限，则Toast出一句话提醒用户
-                    Toast.makeText(this, "应用未开启定位权限，请开启后重试", Toast.LENGTH_LONG).show();
-                }
-                break;
-            case 2:
-
-                int length = grantResults.length;
-                boolean isOk = false;
-                for (int i = 0; i < length; i++) {
-                    int permission = grantResults[i];
-                    if(permission == PackageManager.PERMISSION_GRANTED){
-                        isOk = true;
-                    }else{
-                        isOk = false;
-                        break;
-                    }
-                }
-
-                if(isOk){
-                    takePic();
-                }else {
-                    //用户拒绝获取权限，则Toast出一句话提醒用户
-                    Toast.makeText(this, "应用未开启拍照权限，请开启后重试", Toast.LENGTH_LONG).show();
-                }
-                break;
-            case 3:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    enterCheckActivity();
-                } else {
-                    //用户拒绝获取权限，则Toast出一句话提醒用户
-                    Toast.makeText(this, "应用未开启权限，请开启后重试", Toast.LENGTH_LONG).show();
-                }
-                break;
-            default:
-                break;
         }
     }
 }
