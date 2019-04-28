@@ -56,6 +56,21 @@
             style="@style/CustomEditText"/>
     </LinearLayout>
     <LinearLayout
+        android:id="@+id/layout_auditor_line"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:text="审核人"
+            style="@style/CustomTextView" />
+
+        <Spinner
+            android:id="@+id/spinner_line_auditor_list"
+            android:layout_marginLeft="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
+    <LinearLayout
         android:layout_width="match_parent"
         android:orientation="horizontal"
         android:layout_height="wrap_content">

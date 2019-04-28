@@ -13,11 +13,15 @@ import map.test.testmap.Constants;
 import map.test.testmap.model.IUserBiz;
 import map.test.testmap.model.Notice;
 import map.test.testmap.model.OnResponseListener;
+import map.test.testmap.model.Point;
 import map.test.testmap.model.ResponseBean;
 import map.test.testmap.model.ResponseCheckHistory;
 import map.test.testmap.model.ResponseHistory;
+import map.test.testmap.model.ResponseTaskBean;
+import map.test.testmap.model.ResponseTaskUserBean;
 import map.test.testmap.model.User;
 import map.test.testmap.model.UserPermission;
+import map.test.testmap.mvvm.data.model.TaskDetailBean;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
@@ -40,7 +44,7 @@ public class HttpUtils {
             @Override
             public void log(String message) {
                 //打印retrofit日志
-                Log.i("http","返回数据为 = "+message);
+                Log.i("http","交互数据为 = "+message);
             }
         });
 
@@ -103,6 +107,38 @@ public class HttpUtils {
     public void  logOut(int userId, final OnResponseListener listener){
         Call<ResponseBean> permissionInfo = userBiz.logOut(userId);
         permissionInfo.enqueue(new retrofit2.Callback<ResponseBean>() {
+            @Override
+            public void onResponse(Call<ResponseBean> call, retrofit2.Response<ResponseBean> response) {
+                listener.success(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBean> call, Throwable t) {
+                listener.fail(t);
+            }
+        });
+    }
+
+    public void  scanQRCode(String loginSign,String login, final OnResponseListener listener){
+        Log.d(TAG, "confirmQRCode: loginSign:" + loginSign+",login"+login);
+        Call<ResponseBean> QRCodeInfo = userBiz.scanQRCode(loginSign,login);
+        QRCodeInfo.enqueue(new retrofit2.Callback<ResponseBean>() {
+            @Override
+            public void onResponse(Call<ResponseBean> call, retrofit2.Response<ResponseBean> response) {
+                listener.success(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBean> call, Throwable t) {
+                listener.fail(t);
+            }
+        });
+    }
+
+    public void  confirmQRCode(String loginSign,String login,final OnResponseListener listener){
+        Log.d(TAG, "confirmQRCode: loginSign:" + loginSign+",login"+login);
+        Call<ResponseBean> confirmQRCodeInfo = userBiz.confirmQRCode(loginSign,login);
+        confirmQRCodeInfo.enqueue(new retrofit2.Callback<ResponseBean>() {
             @Override
             public void onResponse(Call<ResponseBean> call, retrofit2.Response<ResponseBean> response) {
                 listener.success(response);
@@ -199,19 +235,47 @@ public class HttpUtils {
         });
     }
 
-    public void saveCheckInfo(int id,int checkId,int status,String remark,List<String> imagePaths,final OnResponseListener listener){
+    public void putBackTask(int checkId,String remark,List<String> imagePaths,final OnResponseListener listener){
+
+        Map<String,RequestBody> params = new HashMap<>();
+
+        params.put("checkId",toRequestBody(checkId+""));
+        params.put("remark",toRequestBody(remark));
+
+        for (int i = 0; i < imagePaths.size(); i++) {
+            File file = new File(imagePaths.get(i));
+            params.put("images\";filename=\""+file.getName(),RequestBody.create(OkHttpClientManager.MEDIA_TYPE_JPG,file));
+        }
+
+        Call<ResponseBean> backTaskInfo = userBiz.putBackTask(params);
+        backTaskInfo.enqueue(new retrofit2.Callback<ResponseBean>() {
+            @Override
+            public void onResponse(Call<ResponseBean> call, retrofit2.Response<ResponseBean> response) {
+                listener.success(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBean> call, Throwable t) {
+                listener.fail(t);
+            }
+        });
+    }
+
+    public void saveCheckInfo(int id,int checkId,int status,String remark,String userId,List<String> imagePaths,final OnResponseListener listener){
 
         Map<String,RequestBody> params = new HashMap<>();
 
         params.put("tag_id",toRequestBody(id+""));
         params.put("checkId",toRequestBody(checkId+""));
         params.put("status",toRequestBody(status+""));
+        params.put("putUserIds",toRequestBody(userId));
         params.put("remark",toRequestBody(remark));
 
         Log.d(TAG, "saveCheckInfo: "+imagePaths.size());
 
         for (int i = 0; i < imagePaths.size(); i++) {
             File file = new File(imagePaths.get(i));
+            Log.d(TAG, "saveCheckInfo path is: "+imagePaths.get(i)+",and file exists is:"+ file.exists());
             params.put("images\";filename=\""+file.getName(),RequestBody.create(OkHttpClientManager.MEDIA_TYPE_JPG,file));
         }
 
@@ -233,10 +297,11 @@ public class HttpUtils {
         return RequestBody.create(MediaType.parse("text/plain"),value);
     }
 
-    public void saveLineTagInfo(int id,int tagCheckId,String name,String remark,int lineId,int status,String location_lat,String location_long,List<String> imagePaths,final OnResponseListener listener){
+    public void saveLineTagInfo(int userId,int id,int tagCheckId,String name,String remark,int lineId,int status,String location_lat,String location_long,List<String> imagePaths,final OnResponseListener listener){
         Map<String,RequestBody> params = new HashMap<>();
 
         params.put("id",toRequestBody(id+""));
+        params.put("putUserIds",toRequestBody(userId+""));
         params.put("name",toRequestBody(name));
         params.put("location_lat",toRequestBody(location_lat));
         params.put("location_long",toRequestBody(location_long));
@@ -306,6 +371,83 @@ public class HttpUtils {
 
             @Override
             public void onFailure(Call<ResponseBean<ResponseHistory>> call, Throwable t) {
+                listener.fail(t);
+            }
+        });
+    }
+
+    public Response<ResponseBean<ResponseTaskBean>> getTaskList() throws IOException{
+        Call<ResponseBean<ResponseTaskBean>> taskList = userBiz.getTaskList();
+        return taskList.execute();
+    }
+
+    public void getNextUserList(final OnResponseListener listener){
+        Call<ResponseBean<ResponseTaskUserBean>> userListInfo = userBiz.getNextUserList();
+        userListInfo.enqueue(new retrofit2.Callback<ResponseBean<ResponseTaskUserBean>>() {
+            @Override
+            public void onResponse(Call<ResponseBean<ResponseTaskUserBean>> call, retrofit2.Response<ResponseBean<ResponseTaskUserBean>> response) {
+                listener.success(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBean<ResponseTaskUserBean>> call, Throwable t) {
+                listener.fail(t);
+            }
+        });
+    }
+
+    /**
+     * 获取任务详细信息
+     * @param checkId 标记点id
+     */
+    public Response<ResponseBean<TaskDetailBean>> getTaskDetail(int checkId) throws IOException{
+        Call<ResponseBean<TaskDetailBean>> taskDetailInfo = userBiz.getTaskDetail(checkId);
+        return taskDetailInfo.execute();
+    }
+
+    /**
+     * 获取标记点详细信息
+     * @param id 标记点id
+     */
+    public Response<ResponseBean<Point>> getPointDetail(int id) throws IOException{
+        Call<ResponseBean<Point>> pointDetailInfo = userBiz.getPointDetail(id);
+        return pointDetailInfo.execute();
+    }
+
+    /**
+     * 编辑发布任务接口
+     * @param id 需要编辑的任务id
+     * @param status    任务的状态
+     * @param remark 任务的备注信息
+     * @param userId    任务发布的检修人员id
+     * @param imagePaths 图片地址
+     * @param listener  接口回调
+     */
+    public void editTagCheck(int id,int status,String remark,int userId,List<String> imagePaths,final OnResponseListener listener){
+
+        Map<String,RequestBody> params = new HashMap<>();
+
+        params.put("id",toRequestBody(id+""));
+        params.put("status",toRequestBody(status+""));
+        params.put("putUserId",toRequestBody(userId+""));
+        params.put("remark",toRequestBody(remark));
+
+        Log.d(TAG, "editTagCheck: "+imagePaths.size());
+
+        for (int i = 0; i < imagePaths.size(); i++) {
+            File file = new File(imagePaths.get(i));
+            params.put("images\";filename=\""+file.getName(),RequestBody.create(OkHttpClientManager.MEDIA_TYPE_JPG,file));
+        }
+
+        Call<ResponseBean> editTagCheckBean = userBiz.editTagCheck(params);
+        editTagCheckBean.enqueue(new retrofit2.Callback<ResponseBean>() {
+            @Override
+            public void onResponse(Call<ResponseBean> call, retrofit2.Response<ResponseBean> response) {
+                listener.success(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBean> call, Throwable t) {
                 listener.fail(t);
             }
         });

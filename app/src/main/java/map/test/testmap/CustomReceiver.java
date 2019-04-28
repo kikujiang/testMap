@@ -3,7 +3,9 @@ package map.test.testmap;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.support.design.internal.BottomNavigationMenuView;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.tencent.android.tpush.XGPushBaseReceiver;
@@ -15,8 +17,21 @@ import com.tencent.android.tpush.XGPushTextMessage;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.List;
+
+import map.test.testmap.model.Notice;
+import map.test.testmap.model.OnResponseListener;
+import map.test.testmap.model.ResponseBean;
+import map.test.testmap.utils.BadgeUtil;
+import map.test.testmap.utils.HttpUtils;
+import q.rorbin.badgeview.QBadgeView;
+
 public class CustomReceiver extends XGPushBaseReceiver {
     public static final String LogTag = "CustomReceiver";
+
+//    public static int MsgCount = 0;
+
+    private Context mContext;
 
     // 通知展示
     @Override
@@ -25,7 +40,91 @@ public class CustomReceiver extends XGPushBaseReceiver {
         if (context == null || notifiShowedRlt == null) {
             return;
         }
-        Log.d("LC", "+++++++++++++++++++++++++++++展示通知的回调");
+        this.mContext = context;
+//        MsgCount++;
+//        BadgeUtil.setBadgeCount(context,MsgCount);
+        getNotice();
+        Log.d(LogTag, "+++++++++++++++++++++++++++++展示通知的回调");
+    }
+
+    private void getNotice(){
+        HttpUtils.getInstance().getNotice(new OnResponseListener() {
+            @Override
+            public void success(retrofit2.Response responseMapBean) {
+                if(responseMapBean == null){
+                    Log.d(LogTag, "服务器返回对象为空");
+                    return;
+                }
+
+                ResponseBean<Notice> current = (ResponseBean<Notice>)responseMapBean.body();
+
+                if(current.getResult() == Constants.RESULT_OK){
+
+                    final List<Notice> noticeList = current.getList();
+                    Log.d(LogTag, "run: ");
+                    if(noticeList.size() > 0){
+                        int initial = Constants.messageId;
+                        int count = 0;
+
+                        for (Notice item:noticeList) {
+                            int id = item.getId();
+
+                            if(initial < id && initial != 0){
+                                count++;
+                            }
+
+                            if(Constants.messageId < id){
+                                Constants.messageId = id;
+                            }
+                        }
+
+                        if(count > 0){
+                            showBadgeView(2,count);
+                        }
+
+                    }
+
+                    Log.d(LogTag, "success: message max id is:" + Constants.messageId);
+                }
+            }
+
+            @Override
+            public void fail(Throwable e) {
+                Log.d(LogTag, "fail: "+e.getMessage());
+            }
+        });
+    }
+
+
+    /**
+     * BottomNavigationView显示角标
+     *
+     * @param viewIndex tab索引
+     * @param showNumber 显示的数字，小于等于0是将不显示
+     */
+    private void showBadgeView(int viewIndex, int showNumber) {
+        // 具体child的查找和view的嵌套结构请在源码中查看
+        // 从bottomNavigationView中获得BottomNavigationMenuView
+        BottomNavigationMenuView menuView = (BottomNavigationMenuView) NaviMain.navigation.getChildAt(0);
+        // 从BottomNavigationMenuView中获得childview, BottomNavigationItemView
+        // 获得viewIndex对应子tab
+        View view = menuView.getChildAt(2);
+        // 从子tab中获得其中显示图片的ImageView
+        View icon = view.findViewById(android.support.design.R.id.icon);
+        // 获得图标的宽度
+        int iconWidth = icon.getWidth();
+        // 获得tab的宽度/2
+        int tabWidth = view.getWidth() / 2;
+        // 计算badge要距离右边的距离
+        int spaceWidth = tabWidth - iconWidth;
+
+        // 显示badegeview
+        if (NaviMain.badgeView == null){
+            NaviMain.badgeView = new QBadgeView(this.mContext);
+            NaviMain.badgeView.bindTarget(view);
+        }
+        NaviMain.badgeView.setBadgeNumber(showNumber);
+        BadgeUtil.setBadgeCount(this.mContext,showNumber);
     }
 
     //反注册的回调

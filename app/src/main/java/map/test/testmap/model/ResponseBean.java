@@ -15,6 +15,26 @@ public class ResponseBean<T> {
     private int id;
     private int tagId;
 
+    private String versionCode;
+    private String appPath;
+
+
+    public String getVersionCode() {
+        return versionCode;
+    }
+
+    public void setVersionCode(String versionCode) {
+        this.versionCode = versionCode;
+    }
+
+    public String getAppPath() {
+        return appPath;
+    }
+
+    public void setAppPath(String appPath) {
+        this.appPath = appPath;
+    }
+
     public T getObject() {
         return object;
     }

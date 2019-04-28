@@ -42,6 +42,15 @@ public class Line {
     private String posTypeStr;
     private List<Point> checkPoints;
     private String statusIconColor;
+    private String mac1;
+    private String mac2;
+    private String ip1;
+    private String ip2;
+    private String ip_onu;
+    private String stationName;
+    private String l_name;
+    private float lineLength;
+
 
     public int getId() {
         return id;
@@ -59,20 +68,8 @@ public class Line {
         this.name = name;
     }
 
-    public String getLineNo() {
-        return lineNo;
-    }
-
-    public void setLineNo(String lineNo) {
-        this.lineNo = lineNo;
-    }
-
     public int getLineCount() {
         return lineCount;
-    }
-
-    public void setLineCount(int lineCount) {
-        this.lineCount = lineCount;
     }
 
     public double getLineHeight() {
@@ -91,20 +88,8 @@ public class Line {
         this.type = type;
     }
 
-    public int getHasBox() {
-        return hasBox;
-    }
-
-    public void setHasBox(int hasBox) {
-        this.hasBox = hasBox;
-    }
-
     public String getCreateTime() {
         return createTime;
-    }
-
-    public void setCreateTime(String createTime) {
-        this.createTime = createTime;
     }
 
     public String getRemark() {
@@ -115,68 +100,16 @@ public class Line {
         this.remark = remark;
     }
 
-    public double getTag_begin_location_lat() {
-        return tag_begin_location_lat;
-    }
-
-    public void setTag_begin_location_lat(double tag_begin_location_lat) {
-        this.tag_begin_location_lat = tag_begin_location_lat;
-    }
-
-    public double getTag_begin_location_long() {
-        return tag_begin_location_long;
-    }
-
-    public void setTag_begin_location_long(double tag_begin_location_long) {
-        this.tag_begin_location_long = tag_begin_location_long;
-    }
-
-    public double getTag_end_location_lat() {
-        return tag_end_location_lat;
-    }
-
-    public void setTag_end_location_lat(double tag_end_location_lat) {
-        this.tag_end_location_lat = tag_end_location_lat;
-    }
-
-    public double getTag_end_location_long() {
-        return tag_end_location_long;
-    }
-
-    public void setTag_end_location_long(double tag_end_location_long) {
-        this.tag_end_location_long = tag_end_location_long;
-    }
-
-    public Point getTag_end() {
-        return tag_end;
-    }
-
-    public void setTag_end(Point tag_end) {
-        this.tag_end = tag_end;
-    }
-
     public String getTypeStr() {
         return typeStr;
-    }
-
-    public void setTypeStr(String typeStr) {
-        this.typeStr = typeStr;
     }
 
     public String getPosTypeStr() {
         return posTypeStr;
     }
 
-    public void setPosTypeStr(String posTypeStr) {
-        this.posTypeStr = posTypeStr;
-    }
-
     public List<Point> getCheckPoints() {
         return checkPoints;
-    }
-
-    public void setCheckPoints(List<Point> checkPoints) {
-        this.checkPoints = checkPoints;
     }
 
     public int getStatus() {
@@ -187,19 +120,39 @@ public class Line {
         this.status = status;
     }
 
-    public String getStatusStr() {
-        return statusStr;
-    }
-
-    public void setStatusStr(String statusStr) {
-        this.statusStr = statusStr;
-    }
-
     public String getStatusIconColor() {
         return statusIconColor;
     }
 
-    public void setStatusIconColor(String statusIconColor) {
-        this.statusIconColor = statusIconColor;
+    public String getMac1() {
+        return mac1;
+    }
+
+    public String getMac2() {
+        return mac2;
+    }
+
+    public String getIp1() {
+        return ip1;
+    }
+
+    public String getIp2() {
+        return ip2;
+    }
+
+    public String getIp_onu() {
+        return ip_onu;
+    }
+
+    public String getStationName() {
+        return stationName;
+    }
+
+    public String getL_name() {
+        return l_name;
+    }
+
+    public float getLineLength() {
+        return lineLength;
     }
 }

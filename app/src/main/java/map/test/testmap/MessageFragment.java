@@ -2,6 +2,7 @@ package map.test.testmap;
 
 
 import android.os.Bundle;
+import android.support.design.internal.BottomNavigationMenuView;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
@@ -22,6 +23,7 @@ import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.ResponseBean;
 import map.test.testmap.utils.Common;
 import map.test.testmap.utils.HttpUtils;
+import q.rorbin.badgeview.QBadgeView;
 
 
 /**
@@ -120,7 +122,10 @@ public class MessageFragment extends Fragment {
         super.onHiddenChanged(hidden);
         if(!hidden){
             Log.d(TAG, "onHiddenChanged: called");
+            list.setAdapter(null);
             getNotice();
         }
     }
+
+
 }

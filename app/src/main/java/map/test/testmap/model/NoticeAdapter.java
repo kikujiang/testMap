@@ -36,7 +36,6 @@ public class NoticeAdapter extends RecyclerView.Adapter<NoticeAdapter.MyHolder> 
         Notice item = list.get (position);
         holder.tvTitle.setText (item.getNotice_title());
         String content = item.getNotice_content();
-        content.replace("//<///br//>","\n");
         Log.d("map", "content is:"+content);
         holder.tvContent.setText (content);
         holder.tvTime.setText (item.getNotice_time());

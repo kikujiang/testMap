@@ -23,10 +23,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,7 +46,9 @@ import map.test.testmap.model.LineState;
 import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.ResponseBean;
 import map.test.testmap.model.ResponseCheckHistory;
+import map.test.testmap.model.ResponseTaskUserBean;
 import map.test.testmap.model.State;
+import map.test.testmap.model.User;
 import map.test.testmap.utils.Common;
 import map.test.testmap.utils.HttpUtils;
 import map.test.testmap.utils.MyViewPagerAdapter;
@@ -68,6 +73,8 @@ public class LineStateHistoryActivity extends AppCompatActivity implements View.
     private Button btnFinish;
     private Button btnTakePic;
     private Button btnSelectPic;
+    private LinearLayout auditorLayout;
+    private Spinner spinnerVerifyUser;
 
     private ViewPager pager = null;
     private TextView tvEmpty = null;
@@ -84,8 +91,11 @@ public class LineStateHistoryActivity extends AppCompatActivity implements View.
 
     private int lastId;
     private int pointId;
+    private int verifyId = -1;
     private boolean isModify;
     private boolean isVerify;
+    //审核人列表
+    private List<User> verifyUserList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,6 +126,8 @@ public class LineStateHistoryActivity extends AppCompatActivity implements View.
         tvEmpty = findViewById(R.id.check_empty_text);
         pager = findViewById(R.id.check_viewPager);
         loadingLayout = findViewById(R.id.loading);
+        auditorLayout = findViewById(R.id.layout_auditor_line);
+        spinnerVerifyUser = findViewById(R.id.spinner_line_auditor_list);
 
         btnModifyNormal = findViewById(R.id.check_modify_normal);
         btnModifyNormal.setOnClickListener(this);
@@ -132,6 +144,7 @@ public class LineStateHistoryActivity extends AppCompatActivity implements View.
     }
 
     private void setLayoutFalse(){
+        auditorLayout.setVisibility(View.GONE);
         btnTakePic.setVisibility(View.GONE);
         btnSelectPic.setVisibility(View.GONE);
         btnModifySerious.setVisibility(View.GONE);
@@ -163,6 +176,74 @@ public class LineStateHistoryActivity extends AppCompatActivity implements View.
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
+    private void initSpinner(final Spinner spinner, List<User> dataList){
+        Log.d(TAG, "initSpinner: " + dataList.size());
+        String[] typeData =new String[dataList.size()];
+        for (int i=0;i<dataList.size();i++){
+            typeData[i] = dataList.get(i).getUsername();
+        }
+        ArrayAdapter<String> adapter=new ArrayAdapter<String>(LineStateHistoryActivity.this,android.R.layout.simple_list_item_multiple_choice,typeData);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String currentText = (String)spinner.getSelectedItem();
+                Log.d(TAG, "审核人是: " + currentText);
+                for (User cur : verifyUserList) {
+                    if(cur.getUsername().equals(currentText)){
+                        verifyId = cur.getId();
+                        Log.d(TAG, "审核人id: " + verifyId);
+                    }
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+    }
+
+    private void getUserList(){
+        HttpUtils.getInstance().getNextUserList(new OnResponseListener() {
+            @Override
+            public void success(final Response responseMapBean) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ResponseBean<ResponseTaskUserBean> data = ( ResponseBean<ResponseTaskUserBean>)responseMapBean.body();
+
+                        if(data.getResult() == 1){
+                            verifyUserList = data.getObject().getTagLineCheckUserList2();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                    initSpinner(spinnerVerifyUser,verifyUserList);
+                                    if(verifyUserList.size()>0){
+                                        spinnerVerifyUser.setSelection(0);
+                                        verifyId = verifyUserList.get(0).getId();
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void fail(final Throwable e) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(LineStateHistoryActivity.this,e.getMessage(),Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         Log.d(TAG, "onCreateOptionsMenu: called!");
@@ -187,6 +268,7 @@ public class LineStateHistoryActivity extends AppCompatActivity implements View.
 
     private void getDataFromServer(){
         showLoading(true);
+        getUserList();
         HttpUtils.getInstance().getLineCheckHistoryInfo(lineId, new OnResponseListener() {
             @Override
             public void success(final Response responseMapBean) {
@@ -260,9 +342,9 @@ public class LineStateHistoryActivity extends AppCompatActivity implements View.
         });
     }
 
-    public void saveCheckInfo(int status,String remark,List<String> imagePath){
+    public void saveCheckInfo(int userId,int status,String remark,List<String> imagePath){
         Log.d(TAG, "saveCheckInfo: "+" checkId:"+currentState.getCheckId()+",tag id:"+currentState.getTagId());
-        HttpUtils.getInstance().saveCheckInfo(currentState.getTagId(), currentState.getCheckId(),status,remark,imagePath, new OnResponseListener() {
+        HttpUtils.getInstance().saveCheckInfo(currentState.getTagId(), currentState.getCheckId(),status,remark,userId+"",imagePath, new OnResponseListener() {
             @Override
             public void success(Response responseMapBean) {
                 ResponseBean data = ( ResponseBean)responseMapBean.body();
@@ -304,18 +386,22 @@ public class LineStateHistoryActivity extends AppCompatActivity implements View.
         switch (v.getId()){
             case R.id.check_modify_normal:
                 String remark1 = checkRemark.getText().toString();
-                saveCheckInfo(4,remark1,imageLocalPath);
+                saveCheckInfo(0,4,remark1,imageLocalPath);
                 break;
             case R.id.check_modify_serious:
                 String remark2 = checkRemark.getText().toString();
-                saveCheckInfo(3,remark2,imageLocalPath);
+                saveCheckInfo(0,3,remark2,imageLocalPath);
                 break;
             case R.id.check_finish:
                 String remark3 = checkRemark.getText().toString();
                 if(btnFinish.getText().toString().equals("修复完成")){
-                    saveCheckInfo(5,remark3,imageLocalPath);
+                    if(verifyId == -1){
+                        Toast.makeText(LineStateHistoryActivity.this,"审核人不能为空，请选择后在重试！",Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    saveCheckInfo(verifyId,5,remark3,imageLocalPath);
                 }else if(btnFinish.getText().toString().equals("审核通过")){
-                    saveCheckInfo(1,remark3,imageLocalPath);
+                    saveCheckInfo(0,1,remark3,imageLocalPath);
                 }
                 break;
             case R.id.check_take_pic:
@@ -357,6 +443,7 @@ public class LineStateHistoryActivity extends AppCompatActivity implements View.
                 case 3:
                 case 4:
                     if(isModify){
+                        auditorLayout.setVisibility(View.VISIBLE);
                         btnModifySerious.setVisibility(View.GONE);
                         btnModifyNormal.setVisibility(View.GONE);
                         btnFinish.setText("修复完成");
@@ -367,6 +454,7 @@ public class LineStateHistoryActivity extends AppCompatActivity implements View.
                     break;
                 case 5:
                     if(isVerify){
+                        auditorLayout.setVisibility(View.GONE);
                         btnModifySerious.setVisibility(View.VISIBLE);
                         btnModifyNormal.setVisibility(View.VISIBLE);
                         btnFinish.setVisibility(View.VISIBLE);

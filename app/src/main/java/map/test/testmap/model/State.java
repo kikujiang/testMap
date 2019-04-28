@@ -38,6 +38,7 @@ public class State implements Parcelable {
     private String createUserName;
     private String createTime;
     private String modifyUserName;
+    private String putUserName;
     private String modifyTime;
     private String remark;
     private int tagId;
@@ -56,6 +57,7 @@ public class State implements Parcelable {
         createUserName = in.readString();
         createTime = in.readString();
         modifyUserName = in.readString();
+        putUserName = in.readString();
         modifyTime = in.readString();
         remark = in.readString();
         tagId = in.readInt();
@@ -89,6 +91,7 @@ public class State implements Parcelable {
         dest.writeString(createUserName);
         dest.writeString(createTime);
         dest.writeString(modifyUserName);
+        dest.writeString(putUserName);
         dest.writeString(modifyTime);
         dest.writeString(remark);
         dest.writeInt(tagId);
@@ -189,5 +192,9 @@ public class State implements Parcelable {
 
     public void setCheckId(int checkId) {
         this.checkId = checkId;
+    }
+
+    public String getPutUserName() {
+        return putUserName;
     }
 }

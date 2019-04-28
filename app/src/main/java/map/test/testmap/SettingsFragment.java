@@ -19,6 +19,7 @@ import map.test.testmap.model.ResponseBean;
 import map.test.testmap.model.User;
 import map.test.testmap.utils.Common;
 import map.test.testmap.utils.HttpUtils;
+import map.test.testmap.utils.PreferencesUtils;
 
 
 /**
@@ -187,6 +188,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
                                 Constants.isExistAlready = true;
                                 Toast.makeText(getActivity(),"退出成功",Toast.LENGTH_LONG).show();
                                 Intent loginIntent = new Intent(getActivity(),LoginActivity.class);
+                                PreferencesUtils.putString(getActivity(),"account",null);
+                                PreferencesUtils.putString(getActivity(),"password",null);
                                 startActivity(loginIntent);
                                 getActivity().finish();
                             }
@@ -223,11 +226,13 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
                 }
 
                 if(current.getResult() == Constants.RESULT_OK){
-                    int serverVersion = current.getId();
+
+                    int serverVersion = current.getVersionCode() == null?current.getId():Integer.parseInt(current.getVersionCode());
                     int currentVersion = Common.getInstance().getVersionCode(getActivity());
 
                     if(currentVersion < serverVersion){
-                        download(current.getDesc());
+                        String downloadPath = current.getAppPath() == null?current.getDesc():current.getAppPath();
+                        download(downloadPath);
                     }else{
                         Toast.makeText(getActivity(),"当前是最新版本",Toast.LENGTH_LONG).show();
                     }

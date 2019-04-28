@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+        <variable
+            name="detail"
+            type="map.test.testmap.mvvm.data.model.TaskDetailBean"/>
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:text="任务名称"
+                style="@style/CustomTextView" />
+
+            <TextView
+                android:layout_marginLeft="5dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@{detail.name}"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_auditor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:text="提交人"
+                style="@style/CustomTextView" />
+
+            <TextView
+                android:layout_marginLeft="5dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@{detail.createUserName}"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_height="wrap_content">
+            <TextView
+                android:text="执行人"
+                style="@style/CustomTextView" />
+            <TextView
+                android:text="@{detail.putUserName}"
+                style="@style/CustomEditText"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_height="wrap_content">
+            <TextView
+                android:text="提交时间"
+                style="@style/CustomTextView" />
+            <TextView
+                android:text="@{detail.createTime}"
+                style="@style/CustomEditText" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_height="wrap_content">
+            <TextView
+                android:text="当前状态"
+                style="@style/CustomTextView" />
+            <TextView
+                android:text="@{detail.statusStr}"
+                style="@style/CustomEditText"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_height="wrap_content">
+            <TextView
+                android:text="是否延期"
+                style="@style/CustomTextView" />
+            <TextView
+                android:id="@+id/overtime"
+                style="@style/CustomEditText"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:layout_height="wrap_content">
+            <TextView
+                android:text="检修备注"
+                style="@style/CustomTextView" />
+            <TextView
+                android:text="@{detail.remark}"
+                style="@style/CustomEditText"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layerType="software"
+            android:orientation="horizontal">
+            <android.support.v4.view.ViewPager
+                android:id="@+id/pager"
+                android:layout_width="wrap_content"
+                android:layout_height="200dp"
+                android:clipChildren="false"/>
+        </LinearLayout>
+    </LinearLayout>
+</layout>

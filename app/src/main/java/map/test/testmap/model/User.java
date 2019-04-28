@@ -1,5 +1,8 @@
 package map.test.testmap.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * 操作员对象
  *{
@@ -32,7 +35,7 @@ package map.test.testmap.model;
  *         "status": 0
  *
  */
-public class User {
+public class User implements Parcelable{
     private String username;
     private String userAccount;
     private String password;
@@ -40,6 +43,47 @@ public class User {
     private int id;
     private String phone;
     private String email;
+    private String loginTag;
+
+    protected User(Parcel in) {
+        username = in.readString();
+        userAccount = in.readString();
+        password = in.readString();
+        phone = in.readString();
+        level = in.readInt();
+        id = in.readInt();
+        email = in.readString();
+        loginTag = in.readString();
+    }
+
+    public static final Parcelable.Creator<User> CREATOR = new Parcelable.Creator<User>() {
+        @Override
+        public User createFromParcel(Parcel in) {
+            return new User(in);
+        }
+
+        @Override
+        public User[] newArray(int size) {
+            return new User[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(id);
+        dest.writeString(username);
+        dest.writeString(userAccount);
+        dest.writeString(password);
+        dest.writeString(phone);
+        dest.writeString(email);
+        dest.writeString(loginTag);
+        dest.writeInt(level);
+    }
 
     public String getUsername() {
         return username;
@@ -100,5 +144,9 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getLoginTag() {
+        return loginTag;
     }
 }

@@ -1,21 +1,39 @@
 package map.test.testmap;
 
+import java.util.List;
+
+import map.test.testmap.model.DataType;
+
 public class Constants {
 
+    public static int messageId = 0;
     public static final int RESULT_OK = 1;
     public static final int RESULT_FAIL = 2;
     public static final int REQUEST_CODE = 1000;
     public static final int REQUEST_LINE_CODE = 1001;
     public static final int TYPE_HISTORY_POINT = 10010;
     public static final int TYPE_HISTORY_LINE = 10011;
+
+    public static List<DataType> pointTypeList = null;
+    public static List<DataType> pointTerminalTypeList = null;
+    public static List<DataType> pointLineTypeList = null;
+    public static List<DataType> pointDeviceTypeList = null;
+
+    public static final int TYPE_TASK_PUBLISH = 100001;
+    public static final int TYPE_TASK_TO_BE_FINISH = 100002;
+    public static final int TYPE_TASK_TO_BE_VERIFY = 100003;
+    public static final int TYPE_TASK_COMPLETED = 100004;
+
     public static String channelId = "";
     public static boolean isLogin = false;
     public static int userId = 0;
+    public static String userName = "";
+    public static String loginTag = "";
 //    public static final String WEB_URL = "http://172.19.26.52:8080/em";
 //    public static final String TEST_SPLITTER = "em";
 //    public static final String TEST_SPLITTER = "";
 //    public static final String WEB_URL = "http://172.17.4.5:8080";
-//    public static final String WEB_URL = "http://10.206.0.28";
+//    public static final String WEB_URL = "http://10.206.2.164:8081";
     //正式环境
     public static final String WEB_URL = "http://119.3.71.206";
     private static final String SPLITTER = "/app/";
@@ -30,6 +48,14 @@ public class Constants {
      * 登陆
      */
     public static final String TAG_LOGIN = SPLITTER + "loginClient";
+    /**
+     * 登陆
+     */
+    public static final String TAG_LOGIN_QRCODE = SPLITTER + "login";
+    /**
+     * 登陆
+     */
+    public static final String TAG_LOGIN_QRCODE_CONFIRM = SPLITTER + "loginOK";
     /**
      * 登出
      */
@@ -46,6 +72,10 @@ public class Constants {
      * 获取标记点类型列表
      */
     public static final String TAG_GET_POINT_TYPE = "/tagAction"+SPLITTER+"getTagTypeList";
+    /**
+     * 获取变电所点类型列表
+     */
+    public static final String TAG_GET_CONSTANT_TYPE = "/tagAction"+SPLITTER+"getConstantTypeList";
     /**
      * 获取标记点终端类型列表
      */
@@ -128,4 +158,31 @@ public class Constants {
      * 获取维修点历史记录
      */
     public static final String TAG_GET_NOTICE = "/noticeAction"+SPLITTER+"getLatestNotice";
+
+    /**
+     * 获取任务列表
+     */
+    public static final String TAG_GET_TASK_LIST = "/tagAction"+SPLITTER+"getCheckTaskList";
+
+    /**
+     * 获取下一步人员列表
+     */
+    public static final String TAG_GET_NEXT_STEP_LIST = "/tagAction"+SPLITTER+"getTagCheckUserList";
+
+    /**
+     * 获取任务详情
+     */
+    public static final String TAG_GET_CHECK_TASK = "/tagAction"+SPLITTER+"/getCheckTask";
+
+    /**
+     * 编辑任务详情
+     * 	/tagAction/app/editTagCheck
+     */
+    public static final String TAG_EDIT_TAG_CHECK = "/tagAction"+SPLITTER+"/editTagCheck";
+
+    /**
+     * 任务打回
+     * 	/tagAction/app/putBackTask
+     */
+    public static final String TAG_PUT_BACK_TASK = "/tagAction"+SPLITTER+"/putBackTask";
 }

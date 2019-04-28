@@ -18,6 +18,36 @@
                 android:padding="5dp"
                 android:layout_height="wrap_content">
                 <TextView
+                    android:text="变电站："
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+                <EditText
+                    android:id="@+id/point_belong"
+                    android:layout_marginLeft="5dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:padding="5dp"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:text="电力线路名称："
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+                <EditText
+                    android:id="@+id/point_line"
+                    android:layout_marginLeft="5dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:padding="5dp"
+                android:layout_height="wrap_content">
+                <TextView
                     android:text="名称："
                     android:gravity="center"
                     android:layout_width="wrap_content"
@@ -66,7 +96,7 @@
                 android:padding="5dp"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="终端选项："
+                    android:text="终端状态："
                     android:layout_width="wrap_content"
                     android:gravity="center"
                     android:layout_height="match_parent" />
@@ -82,7 +112,7 @@
                 android:padding="5dp"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="光缆选项："
+                    android:text="光缆状态："
                     android:layout_width="wrap_content"
                     android:gravity="center"
                     android:layout_height="match_parent" />
@@ -92,6 +122,90 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
             </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_weight="1"
+                android:padding="5dp"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:text="IP1："
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+                <EditText
+                    android:id="@+id/edit_ip1"
+                    android:layout_marginLeft="5dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_weight="1"
+                android:padding="5dp"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:text="IP2："
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+                <EditText
+                    android:id="@+id/edit_ip2"
+                    android:layout_marginLeft="5dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:padding="5dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:text="ONU IP："
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+                <EditText
+                    android:id="@+id/et_onu"
+                    android:layout_marginLeft="5dp"
+                    android:inputType="none"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_weight="1"
+                android:padding="5dp"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:text="MAC1："
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+                <EditText
+                    android:id="@+id/edit_phone"
+                    android:layout_marginLeft="5dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_weight="1"
+                android:padding="5dp"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:text="MAC2："
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+                <EditText
+                    android:id="@+id/edit_phone1"
+                    android:layout_marginLeft="5dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </LinearLayout>
+
             <LinearLayout
                 android:id="@+id/layout_locate"
                 android:layout_width="match_parent"
@@ -130,6 +244,7 @@
                     android:layout_marginLeft="5dp"
                     android:text="定位"/>
             </LinearLayout>
+
             <LinearLayout
                 android:layout_weight="1"
                 android:layout_width="match_parent"
@@ -166,38 +281,7 @@
                     android:layout_height="200dp"
                     android:clipChildren="false"/>
             </LinearLayout>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_weight="1"
-                android:padding="5dp"
-                android:layout_height="wrap_content">
-                <TextView
-                    android:text="联系方式："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
-                <EditText
-                    android:id="@+id/edit_phone"
-                    android:layout_marginLeft="5dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_weight="1"
-                android:padding="5dp"
-                android:layout_height="wrap_content">
-                <TextView
-                    android:text="IP地址："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
-                <EditText
-                    android:id="@+id/edit_ip"
-                    android:layout_marginLeft="5dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-            </LinearLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_weight="1"

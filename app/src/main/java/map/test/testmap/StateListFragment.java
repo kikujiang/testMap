@@ -91,18 +91,18 @@ public class StateListFragment extends ListFragment {
         super.onStart();
         Log.d(ARG_DATA, "onStart: ");
 
-        if (!isAddFooter){
-            isAddFooter = true;
-            Button btnFooter = new Button(getActivity());
-            btnFooter.setText("新增故障");
-            btnFooter.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mCallback.addClick();
-                }
-            });
-            getListView().addFooterView(btnFooter);
-        }
+//        if (!isAddFooter){
+//            isAddFooter = true;
+//            Button btnFooter = new Button(getActivity());
+//            btnFooter.setText("新增故障");
+//            btnFooter.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    mCallback.addClick();
+//                }
+//            });
+//            getListView().addFooterView(btnFooter);
+//        }
     }
 
     @Override

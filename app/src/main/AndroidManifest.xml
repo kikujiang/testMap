@@ -46,30 +46,18 @@
     <uses-permission android:name="android.permission.GET_TASKS" />
     <uses-permission android:name="android.permission.READ_LOGS" />
     <uses-permission android:name="android.permission.BATTERY_STATS" />
+    <uses-permission android:name="com.huawei.android.launcher.permission.CHANGE_BADGE " />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:networkSecurityConfig="@xml/network_security_config"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <meta-data
             android:name="com.amap.api.v2.apikey"
             android:value="19ae8bd363284131a445e0c4f0f1467e" />
-
-        <activity
-            android:name=".MainActivity"
-            android:configChanges="orientation|screenSize"
-            android:launchMode="singleTask"
-            android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
 
         <service android:name="com.amap.api.location.APSService" />
 
@@ -173,7 +161,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_navi_main"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -184,10 +172,20 @@
                     android:path="/notify_detail"
                     android:scheme="xgscheme" />
             </intent-filter>
-
         </activity>
         <activity android:name=".VersionActivity" />
-        <activity android:name=".HistoryActivity"></activity>
+        <activity android:name=".HistoryActivity" />
+        <activity android:name=".PointDetailActivity" />
+        <activity android:name=".LineDetailActivity" />
+        <activity android:name=".mvvm.ui.TaskDetailActivity" />
+        <activity android:name=".TaskEditActivity" />
+        <activity android:name=".mvvm.ui.SearchActivity">
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
+
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
+        </activity>
     </application>
 
 </manifest>

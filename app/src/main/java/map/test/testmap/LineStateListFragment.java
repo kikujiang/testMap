@@ -43,7 +43,6 @@ public class LineStateListFragment extends ListFragment {
      *
      * @return A new instance of fragment StateListFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static LineStateListFragment newInstance(ArrayList<LineState> dataList) {
         LineStateListFragment fragment = new LineStateListFragment();
         Bundle data = new Bundle();

@@ -17,6 +17,11 @@
     <item
         android:id="@+id/reLocate"
         android:title="@string/locate"/>
+
+    <item
+        android:id="@+id/scan"
+        android:title="@string/scan"/>
+
     <item
         android:id="@+id/clear"
         android:visible="false"

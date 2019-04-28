@@ -35,6 +35,7 @@ import com.tencent.android.tpush.XGPushManager;
 import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.ResponseBean;
 import map.test.testmap.model.User;
+import map.test.testmap.utils.BadgeUtil;
 import map.test.testmap.utils.Common;
 import map.test.testmap.utils.HttpUtils;
 import map.test.testmap.utils.PreferencesUtils;
@@ -69,6 +70,23 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Constants.isLogin = false;
+
+
+        String account = PreferencesUtils.getString(LoginActivity.this,"account",null);
+        String password = PreferencesUtils.getString(LoginActivity.this,"password",null);
+        if(account != null && password != null){
+            Log.d(TAG, "onCreate: 1");
+            initWithApiKey();
+            loginAuto();
+            return;
+        }
+        Log.d(TAG, "onCreate: 2");
+
+        init();
+    }
+
+    private void init(){
+        initWithApiKey();
         setContentView(R.layout.activity_login);
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
@@ -98,14 +116,25 @@ public class LoginActivity extends AppCompatActivity {
         mProgressView = findViewById(R.id.login_progress);
         initView();
         checkUpdate();
-        initWithApiKey();
     }
+
 
     private void initWithApiKey() {
 //        PushManager.startWork(getApplicationContext(),
 //                PushConstants.LOGIN_TYPE_API_KEY,
 //                Utils.getMetaValue(LoginActivity.this, "api_key"));
         initWithTencent();
+    }
+
+    private void loginAuto(){
+        String account = PreferencesUtils.getString(LoginActivity.this,"account",null);
+        String password = PreferencesUtils.getString(LoginActivity.this,"password",null);
+
+
+        if(account != null && password != null){
+            mAuthTask = new UserLoginTask(account, password,1);
+            mAuthTask.execute((Void) null);
+        }
     }
 
     private void initWithTencent(){
@@ -159,11 +188,12 @@ public class LoginActivity extends AppCompatActivity {
                 }
 
                 if(current.getResult() == Constants.RESULT_OK){
-                    int serverVersion = current.getId();
+                    int serverVersion = current.getVersionCode() == null?current.getId():Integer.parseInt(current.getVersionCode());
                     int currentVersion = Common.getInstance().getVersionCode(LoginActivity.this);
 
                     if(currentVersion < serverVersion){
-                        download(current.getDesc());
+                        String downloadPath = current.getAppPath() == null?current.getDesc():current.getAppPath();
+                        download(downloadPath);
                     }
                 }
             }
@@ -297,7 +327,7 @@ public class LoginActivity extends AppCompatActivity {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
+            mAuthTask = new UserLoginTask(email, password,0);
             mAuthTask.execute((Void) null);
         }
     }
@@ -346,10 +376,12 @@ public class LoginActivity extends AppCompatActivity {
 
         private final String mAccount;
         private final String mPassword;
+        private int flag = 0;
 
-        UserLoginTask(String account, String password) {
+        UserLoginTask(String account, String password,int f) {
             mAccount = account;
             mPassword = password;
+            this.flag = f;
         }
 
         @Override
@@ -365,13 +397,20 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(final Response<ResponseBean<User>> response) {
+            Log.d(TAG, "onPostExecute: ");
             mAuthTask = null;
-            showProgress(false);
+            if(flag == 0){
+                showProgress(false);
+            }
 
             if(response == null){
                 String errMsg = "服务器请求超时！";
                 Log.e(TAG, "onPostExecute: "+ errMsg);
                 Toast.makeText(LoginActivity.this,errMsg,Toast.LENGTH_LONG).show();
+
+                if(flag == 1){
+                    init();
+                }
                 return;
             }
 
@@ -381,12 +420,21 @@ public class LoginActivity extends AppCompatActivity {
                 String errMsg = "服务器异常，请稍后再试！";
                 Log.e(TAG, "onPostExecute: "+ errMsg);
                 Toast.makeText(LoginActivity.this,errMsg,Toast.LENGTH_LONG).show();
+
+                if(flag == 1){
+                    init();
+                }
+
                 return;
             }
 
             if(currentBean.getResult() == Constants.RESULT_FAIL){
                 Log.e(TAG, "onPostExecute: "+ currentBean.getDesc());
                 Toast.makeText(LoginActivity.this,currentBean.getDesc(),Toast.LENGTH_LONG).show();
+
+                if(flag == 1){
+                    init();
+                }
                 return;
             }
 
@@ -394,6 +442,8 @@ public class LoginActivity extends AppCompatActivity {
                 Log.i(TAG, "onPostExecute: success");
                 Constants.isLogin = true;
                 Constants.userId = currentBean.getObject().getId();
+                Constants.userName = currentBean.getObject().getUsername();
+                Constants.loginTag = currentBean.getObject().getLoginTag();
                 PreferencesUtils.putString(LoginActivity.this,"account",mAccount);
                 PreferencesUtils.putString(LoginActivity.this,"password",mPassword);
                 Intent intent = new Intent(LoginActivity.this,NaviMain.class);
@@ -406,7 +456,9 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected void onCancelled() {
             mAuthTask = null;
-            showProgress(false);
+            if(flag == 0){
+                showProgress(false);
+            }
         }
     }
 }

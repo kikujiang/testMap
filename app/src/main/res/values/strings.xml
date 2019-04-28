@@ -6,6 +6,7 @@
     <string name="refresh">刷新</string>
     <string name="noPic">当前无图片</string>
     <string name="locate">当前位置</string>
+    <string name="scan">扫一扫</string>
     <string name="clear">清除数据</string>
     <string name="update">检查新版本</string>
     <string name="exit">退出当前账号</string>
@@ -26,9 +27,10 @@
         completions."
     </string>
 
-    <string name="check_name"> 检修人</string>
+    <string name="check_name"> 提交人</string>
     <string name="check_time">检修时间</string>
     <string name="check_state">检修状态</string>
+    <string name="check_maintenance">维修人员</string>
     <string name="check_remark">检修备注</string>
     <string name="check_picture">现场图片</string>
     <string name="check_add">添加维修记录</string>

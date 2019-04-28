@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -24,10 +25,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,17 +40,24 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import map.test.testmap.model.DataType;
 import map.test.testmap.model.Image;
 import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.ResponseBean;
 import map.test.testmap.model.ResponseCheckHistory;
+import map.test.testmap.model.ResponseTaskUserBean;
 import map.test.testmap.model.State;
+import map.test.testmap.model.User;
+import map.test.testmap.mvvm.data.model.ImageBean;
+import map.test.testmap.mvvm.data.model.TaskDetailBean;
 import map.test.testmap.utils.Common;
 import map.test.testmap.utils.HttpUtils;
 import map.test.testmap.utils.MyViewPagerAdapter;
+import map.test.testmap.view.MultiSelectionSpinner;
 import retrofit2.Response;
 
 public class StateActivity extends AppCompatActivity implements StateListFragment.OnTouchListener,View.OnClickListener {
@@ -62,9 +73,11 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
     private int currentType;
     private TextView checkName;
     private TextView checkTime;
+    private TextView checkCurName;
     private TextView checkState;
     private EditText checkRemark;
 
+    private Button btnModifyBack;
     private Button btnModifyNormal;
     private Button btnModifySerious;
     private Button btnFinish;
@@ -74,6 +87,7 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
 
     private ViewPager pager = null;
     private TextView tvEmpty = null;
+    private TextView tvNext = null;
     private List<ImageView> imageViews = null;
     private int pagerWidth;
 
@@ -84,8 +98,13 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
     private List<ImageView> dialogImageViews = null;
     private Toolbar toolbar;
     private LinearLayout loadingLayout;
+    private LinearLayout auditorLayout;
+    private TextView tvLastUser;
+    private MultiSelectionSpinner spinnerVerifyUser;
 
     private int pointId;
+    private String verifyId;
+
     private State currentState;
 
     //添加权限
@@ -94,18 +113,37 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
     private boolean isHistoryItemVerify;
     //修改权限
     private boolean isHistoryItemFix;
+    //修改权限
+    private boolean isTask;
+
+    private int checkId;
 
     private int lastId;
+    //执行人列表
+    private List<User> executeUserList;
+    //审核人列表
+    private List<User> verifyUserList;
+
+    private TextView layoutHistory;
+    private LinearLayout layoutList;
+
+    private LinearLayout layoutSubmit;
+    private LinearLayout layoutExecutor;
+    private LinearLayout layoutTime;
+    private LinearLayout layoutStatus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_state);
         pointId = getIntent().getIntExtra("point_id",-1);
+        checkId = getIntent().getIntExtra("checkId",-1);
         isHistoryItemADD = getIntent().getBooleanExtra("itemAdd",false);
         isHistoryItemVerify = getIntent().getBooleanExtra("itemQuery",false);
         isHistoryItemFix = getIntent().getBooleanExtra("itemFix",false);
+        isTask = getIntent().getBooleanExtra("task",false);
         Log.d(TAG, "收到的的点id为：" + pointId);
+        verifyId = "";
         init();
     }
 
@@ -118,15 +156,29 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
 
         toolbar = findViewById(R.id.id_toolbar);
         checkName = findViewById(R.id.et_name);
+        checkCurName = findViewById(R.id.et_current_name);
         checkTime = findViewById(R.id.et_time);
         checkState = findViewById(R.id.sp_state);
         checkRemark = findViewById(R.id.et_remark);
         tvEmpty = findViewById(R.id.check_empty_text);
         pager = findViewById(R.id.check_viewPager);
+        tvLastUser = findViewById(R.id.tv_last_user);
         loadingLayout = findViewById(R.id.loading);
+        auditorLayout = findViewById(R.id.layout_auditor);
+        layoutHistory = findViewById(R.id.layout_history);
+        layoutList = findViewById(R.id.fragment_list);
+        tvNext = findViewById(R.id.tv_next);
+        spinnerVerifyUser = findViewById(R.id.spinner_auditor_list);
+
+        layoutSubmit = findViewById(R.id.layout_submit);
+        layoutExecutor = findViewById(R.id.layout_executor);
+        layoutTime = findViewById(R.id.layout_time);
+        layoutStatus = findViewById(R.id.layout_status);
 
         btnModifyNormal = findViewById(R.id.check_modify_normal);
         btnModifyNormal.setOnClickListener(this);
+        btnModifyBack = findViewById(R.id.check_modify_back);
+        btnModifyBack.setOnClickListener(this);
         btnModifySerious = findViewById(R.id.check_modify_serious);
         btnModifySerious.setOnClickListener(this);
         btnFinish = findViewById(R.id.check_finish);
@@ -136,6 +188,7 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
         btnSelectPic = findViewById(R.id.check_pick_pic);
         btnAdd = findViewById(R.id.check_add_item);
         btnAdd.setOnClickListener(this);
+        btnSelectPic.setOnClickListener(this);
         currentType = REQUEST_TYPE_MAIN;
         initData();
 
@@ -143,9 +196,11 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
 
     private void setLayoutFalse(){
         btnTakePic.setVisibility(View.GONE);
+        auditorLayout.setVisibility(View.GONE);
         btnSelectPic.setVisibility(View.GONE);
         btnModifySerious.setVisibility(View.GONE);
         btnModifyNormal.setVisibility(View.GONE);
+        btnModifyBack.setVisibility(View.GONE);
         btnFinish.setVisibility(View.GONE);
         Common.getInstance().setEditTextFalse(checkRemark);
     }
@@ -157,7 +212,16 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
         initImageData();
         showPager();
         initToolBar();
-        getDataFromServer();
+        if(isTask){
+            getUserList();
+            setData(null);
+//            if(checkId != -1){
+//                new DetailTask().execute(checkId);
+//            }
+        }else{
+            getDataFromServer();
+        }
+
     }
 
     private void showLoading(boolean isShow){
@@ -196,6 +260,7 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
 
     private void getDataFromServer(){
         showLoading(true);
+        getUserList();
         HttpUtils.getInstance().getCheckHistoryInfo(pointId, new OnResponseListener() {
             @Override
             public void success(final Response responseMapBean) {
@@ -223,7 +288,7 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
                                     }
                                 }
                                 lastId = stateList.get(0).getId();
-                                setData(stateList.get(0));
+                                setData(null);
                             }else{
                                 setData(null);
                             }
@@ -247,9 +312,81 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
         });
     }
 
-    public void saveCheckInfo(int checkId,int status,String remark,List<String> imagePath){
-        Log.d(TAG, "saveCheckInfo: check id is:" + checkId);
-        HttpUtils.getInstance().saveCheckInfo(pointId, checkId,status,remark,imagePath, new OnResponseListener() {
+    private void getUserList(){
+        HttpUtils.getInstance().getNextUserList(new OnResponseListener() {
+            @Override
+            public void success(final Response responseMapBean) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ResponseBean<ResponseTaskUserBean> data = ( ResponseBean<ResponseTaskUserBean>)responseMapBean.body();
+
+                      if(data.getResult() == 1){
+                          executeUserList = data.getObject().getTagCheckUserList1();
+                          verifyUserList = data.getObject().getTagCheckUserList2();
+                          runOnUiThread(new Runnable() {
+                              @Override
+                              public void run() {
+
+                                  if(verifyUserList.size()>0){
+
+                                      String[] typeData =new String[verifyUserList.size()];
+                                      for (int i=0;i<verifyUserList.size();i++){
+                                          typeData[i] = verifyUserList.get(i).getUsername();
+                                      }
+
+                                      spinnerVerifyUser.setItems(typeData);
+                                      spinnerVerifyUser.setListener(new MultiSelectionSpinner.OnMultipleItemsSelectedListener() {
+                                          @Override
+                                          public void selectedIndices(List<Integer> indices) {
+
+                                          }
+
+                                          @Override
+                                          public void selectedStrings(List<String> strings) {
+
+                                              if(strings.size() > 0){
+                                                  String[] result = new String[strings.size()];
+                                                  int i = 0;
+                                                  for (String item:
+                                                          strings) {
+                                                      for (User user : verifyUserList){
+                                                          if(item == user.getUsername()){
+                                                              result[i] = user.getId()+"";
+                                                              i++;
+                                                          }
+                                                      }
+                                                  }
+
+                                                  verifyId = Common.getInstance().combine(result);
+                                                  Log.d(TAG, "选中的审核人id为: "+verifyId);
+                                              }
+
+                                          }
+                                      });
+
+                                  }
+                              }
+                          });
+                      }
+                    }
+                });
+            }
+
+            @Override
+            public void fail(final Throwable e) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(StateActivity.this,e.getMessage(),Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
+    }
+
+    public void putTaskBack(String remark,List<String> imagePath){
+        HttpUtils.getInstance().putBackTask(checkId,remark,imagePath, new OnResponseListener() {
             @Override
             public void success(Response responseMapBean) {
                 ResponseBean data = ( ResponseBean)responseMapBean.body();
@@ -259,8 +396,38 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
                         @Override
                         public void run() {
                             Toast.makeText(StateActivity.this,"提交成功",Toast.LENGTH_LONG).show();
-                            setLayoutFalse();
-                            getDataFromServer();
+                            finish();
+                        }
+                    });
+                }else if(data.getResult() == 2){
+                    if(null == data.getDesc()||"".equals(data.getDesc())){
+                        Toast.makeText(StateActivity.this,"提交失败",Toast.LENGTH_LONG).show();
+                    }else{
+                        Toast.makeText(StateActivity.this,data.getDesc(),Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+
+            @Override
+            public void fail(Throwable e) {
+                Toast.makeText(StateActivity.this,e.getMessage(),Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    public void saveCheckInfo(String userId,int checkId,int status,String remark,List<String> imagePath){
+        Log.d(TAG, "saveCheckInfo: check id is:" + checkId);
+        HttpUtils.getInstance().saveCheckInfo(pointId, checkId,status,remark,userId,imagePath, new OnResponseListener() {
+            @Override
+            public void success(Response responseMapBean) {
+                ResponseBean data = ( ResponseBean)responseMapBean.body();
+
+                if(data.getResult() == 1){
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(StateActivity.this,"提交成功",Toast.LENGTH_LONG).show();
+                            finish();
                         }
                     });
                 }else if(data.getResult() == 2){
@@ -291,19 +458,27 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
         switch (v.getId()){
             case R.id.check_modify_normal:
                 String remark1 = checkRemark.getText().toString();
-                saveCheckInfo(currentState.getCheckId(),4,remark1,imageLocalPath);
+                saveCheckInfo("",checkId,4,remark1,imageLocalPath);
                 break;
             case R.id.check_modify_serious:
                 String remark2 = checkRemark.getText().toString();
-                saveCheckInfo(currentState.getCheckId(),3,remark2,imageLocalPath);
+                saveCheckInfo("",checkId,3,remark2,imageLocalPath);
+                break;
+            case R.id.check_modify_back:
+                String remarkInfo= checkRemark.getText().toString();
+                putTaskBack(remarkInfo,imageLocalPath);
                 break;
             case R.id.check_finish:
                 String remark3 = checkRemark.getText().toString();
 
                 if(btnFinish.getText().toString().equals("修复完成")){
-                    saveCheckInfo(currentState.getCheckId(),5,remark3,imageLocalPath);
+                    if("".equals(verifyId)){
+                        Toast.makeText(StateActivity.this,"审核人不能为空，请选择后在重试！",Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    saveCheckInfo(verifyId,checkId,5,remark3,imageLocalPath);
                 }else if(btnFinish.getText().toString().equals("审核通过")){
-                    saveCheckInfo(currentState.getCheckId(),1,remark3,imageLocalPath);
+                    saveCheckInfo("",checkId,1,remark3,imageLocalPath);
                 }
                 break;
             case R.id.check_take_pic:
@@ -316,15 +491,23 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
                 break;
             case R.id.dialog_add_normal:
                 String remarkNormal = dialogRemark.getText().toString();
-                saveCheckInfo(0,4,remarkNormal,dialogImageLocalPath);
+                if("".equals(workerId)){
+                    Toast.makeText(StateActivity.this,"处理人不能为空，请选择后在重试！",Toast.LENGTH_LONG).show();
+                    return;
+                }
+                saveCheckInfo(workerId,0,4,remarkNormal,dialogImageLocalPath);
                 if (dialog != null && dialog.isShowing()){
                     dialog.dismiss();
                 }
                 currentType = REQUEST_TYPE_MAIN;
                 break;
             case R.id.dialog_add_serious:
+                if("".equals(workerId)){
+                    Toast.makeText(StateActivity.this,"处理人不能为空，请选择后在重试！",Toast.LENGTH_LONG).show();
+                    return;
+                }
                 String remarkSerious = dialogRemark.getText().toString();
-                saveCheckInfo(0,3,remarkSerious,dialogImageLocalPath);
+                saveCheckInfo(workerId,0,3,remarkSerious,dialogImageLocalPath);
                 if (dialog != null && dialog.isShowing()){
                     dialog.dismiss();
                 }
@@ -358,71 +541,66 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
     @Override
     public void setData(State current) {
 
-        if(current == null){
-            setLayoutFalse();
-            btnAdd.setVisibility(View.VISIBLE);
-            return;
-        }
+        if(isTask){
+            btnAdd.setVisibility(View.GONE);
+            layoutHistory.setVisibility(View.GONE);
+            layoutList.setVisibility(View.GONE);
 
-        currentState = current;
-        clearImageData();
-        btnAdd.setVisibility(View.GONE);
-        checkName.setText(current.getCreateUserName());
-        checkTime.setText(current.getCreateTime());
-        checkState.setText(current.getStatusStr());
-        checkRemark.setText(current.getRemark());
-        List<Image> images = current.getImageList();
-        if(null != images && !images.isEmpty()){
-            configRemoteData(images);
-        }
-        showPager();
-
-        if(lastId == current.getId()){
-            Common.getInstance().setEditTextTrue(checkRemark);
-            btnTakePic.setVisibility(View.VISIBLE);
-            btnSelectPic.setVisibility(View.VISIBLE);
-            btnModifySerious.setVisibility(View.VISIBLE);
-            btnModifyNormal.setVisibility(View.VISIBLE);
-            btnFinish.setVisibility(View.VISIBLE);
-
-            switch (current.getStatus()){
-                case 0:
-                case 1:
-                    setLayoutFalse();
-                    break;
-                case 3:
-                case 4:
-                    if(isHistoryItemFix){
-                        btnTakePic.setVisibility(View.VISIBLE);
-                        btnSelectPic.setVisibility(View.VISIBLE);
-                        btnModifySerious.setVisibility(View.GONE);
-                        btnModifyNormal.setVisibility(View.GONE);
-                        btnFinish.setVisibility(View.VISIBLE);
-                        Common.getInstance().setEditTextTrue(checkRemark);
-                        btnFinish.setText("修复完成");
-                    }else{
-                        setLayoutFalse();
-                        Toast.makeText(StateActivity.this,"当前无修复权限",Toast.LENGTH_LONG).show();
-                    }
-                    break;
-                case 5:
-
-                    if(isHistoryItemVerify){
-                        btnTakePic.setVisibility(View.VISIBLE);
-                        btnSelectPic.setVisibility(View.VISIBLE);
-                        btnModifySerious.setVisibility(View.VISIBLE);
-                        btnModifyNormal.setVisibility(View.VISIBLE);
-                        btnFinish.setVisibility(View.VISIBLE);
-                        Common.getInstance().setEditTextTrue(checkRemark);
-                        btnFinish.setText("审核通过");
-                    }else{
-                        setLayoutFalse();
-                        Toast.makeText(StateActivity.this,"当前无审核权限",Toast.LENGTH_LONG).show();
-                    }
-                    break;
+            if(isHistoryItemFix){
+                btnModifyBack.setVisibility(View.GONE);
+                auditorLayout.setVisibility(View.VISIBLE);
+                btnTakePic.setVisibility(View.VISIBLE);
+                btnSelectPic.setVisibility(View.VISIBLE);
+                btnModifySerious.setVisibility(View.GONE);
+                btnModifyNormal.setVisibility(View.GONE);
+                layoutSubmit.setVisibility(View.GONE);
+                layoutExecutor.setVisibility(View.GONE);
+                layoutTime.setVisibility(View.GONE);
+                layoutStatus.setVisibility(View.GONE);
+                btnFinish.setVisibility(View.VISIBLE);
+                currentState = current;
+                Common.getInstance().setEditTextTrue(checkRemark);
+                tvNext.setText("审核人");
+                btnFinish.setText("修复完成");
             }
+
+            if(isHistoryItemVerify){
+                btnModifyBack.setVisibility(View.VISIBLE);
+                btnTakePic.setVisibility(View.VISIBLE);
+                btnSelectPic.setVisibility(View.VISIBLE);
+                btnModifySerious.setVisibility(View.GONE);
+                btnModifyNormal.setVisibility(View.GONE);
+                btnFinish.setVisibility(View.VISIBLE);
+                auditorLayout.setVisibility(View.GONE);
+                layoutSubmit.setVisibility(View.GONE);
+                layoutExecutor.setVisibility(View.GONE);
+                layoutTime.setVisibility(View.GONE);
+                layoutStatus.setVisibility(View.GONE);
+                btnAdd.setVisibility(View.GONE);
+                currentState = current;
+                Common.getInstance().setEditTextTrue(checkRemark);
+                btnFinish.setText("审核通过");
+            }
+
         }else{
+            btnAdd.setVisibility(View.VISIBLE);
+            layoutHistory.setVisibility(View.VISIBLE);
+            layoutList.setVisibility(View.VISIBLE);
             setLayoutFalse();
+            if(current != null){
+                currentState = current;
+                clearImageData();
+                checkName.setText(current.getCreateUserName());
+                checkTime.setText(current.getCreateTime());
+                checkState.setText(current.getStatusStr());
+                checkRemark.setText(current.getRemark());
+                checkCurName.setText(current.getPutUserName());
+                List<Image> images = current.getImageList();
+                if(null != images && !images.isEmpty()){
+                    configRemoteData(images);
+                }
+                showPager();
+            }
         }
     }
 
@@ -441,6 +619,23 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
 
     private void configRemoteData(List<Image> images){
         for (final Image cur: images) {
+            ImageView current = new ImageView(StateActivity.this);
+            current.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(StateActivity.this,ImageActivity.class);
+                    intent.putExtra("http",cur.getPath());
+                    startActivity(intent);
+                }
+            });
+            Glide.with(this).applyDefaultRequestOptions(new RequestOptions().placeholder(R.drawable.loading).diskCacheStrategy(DiskCacheStrategy.NONE)).load(cur.getPath()).into(current);
+            imageViews.add(current);
+        }
+        Log.d(TAG, "configRemoteData: "+ imageViews.size());
+    }
+
+    private void configRemote(List<ImageBean> images){
+        for (final ImageBean cur: images) {
             ImageView current = new ImageView(StateActivity.this);
             current.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -497,7 +692,7 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
     private void choosePhoto(){
         Intent intentToPickPic = new Intent(Intent.ACTION_PICK, null);
         // 如果限制上传到服务器的图片类型时可以直接写如："image/jpeg 、 image/png等的类型" 所有类型则写 "image/*"
-        intentToPickPic.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/jpeg");
+        intentToPickPic.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
         if(currentType == REQUEST_TYPE_DIALOG){
             startActivityForResult(intentToPickPic, REQUEST_CODE_GALLERY_DIALOG);
         }else{
@@ -560,6 +755,9 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
     private Button dialogSeriousBtnAdd;
     private Button dialogBtnTakePic;
     private Button dialogBtnPickPic;
+    private MultiSelectionSpinner spinnerWorkerList;
+    private String workerId;
+
 
     private BottomSheetDialog dialog;
     private void showBottomDialog() {
@@ -580,16 +778,55 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
             dialogSeriousBtnAdd = view.findViewById(R.id.dialog_add_serious);
             dialogBtnTakePic = view.findViewById(R.id.dialog_take_pic);
             dialogBtnPickPic = view.findViewById(R.id.dialog_pick_pic);
+            spinnerWorkerList = view.findViewById(R.id.spinner_worker_list);
+
+            String[] typeData =new String[executeUserList.size()];
+            for (int i=0;i<executeUserList.size();i++){
+                typeData[i] = executeUserList.get(i).getUsername();
+            }
+
+            spinnerWorkerList.setItems(typeData);
+//            spinnerWorkerList.setSelection(0);
+            spinnerWorkerList.setListener(new MultiSelectionSpinner.OnMultipleItemsSelectedListener() {
+                @Override
+                public void selectedIndices(List<Integer> indices) {
+
+                }
+
+                @Override
+                public void selectedStrings(List<String> strings) {
+
+                    if(strings.size() > 0){
+                        String[] result = new String[strings.size()];
+                        int i = 0;
+                        for (String item:
+                                strings) {
+                            for (User user: executeUserList){
+                                if(item == user.getUsername()){
+                                    result[i] = user.getId()+"";
+                                    i++;
+                                }
+                            }
+                        }
+
+                        workerId = Common.getInstance().combine(result);
+                        Log.d(TAG, "选中的检修人id为: "+workerId);
+                    }
+
+                }
+            });
 
             dialogNormalBtnAdd.setOnClickListener(this);
             dialogSeriousBtnAdd.setOnClickListener(this);
             dialogBtnTakePic.setOnClickListener(this);
             dialogBtnPickPic.setOnClickListener(this);
         }
+        workerId = "";
         currentType = REQUEST_TYPE_DIALOG;
         showDialogPager();
         dialog.show();
     }
+
 
     private void showDialogPager(){
 
@@ -652,6 +889,112 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
             default:
                 break;
         }
+    }
+
+    class DetailTask extends AsyncTask<Integer,Void,TaskDetailBean> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected TaskDetailBean doInBackground(Integer[] ids) {
+            try{
+                int id = ids[0];
+                Log.d(TAG, "doInBackground: called and point id is:"+id);
+                Response<ResponseBean<TaskDetailBean>> response = HttpUtils.getInstance().getTaskDetail(id);
+                List<TaskDetailBean> dataList = response.body().getList();
+                for (TaskDetailBean item:dataList){
+                    if(item.getPutUserName().equals(Constants.userName)){
+                        return item;
+                    }
+                }
+                return null;
+            }catch (IOException e){
+                return null;
+            }catch (NullPointerException e){
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(TaskDetailBean bean) {
+            if(bean == null){
+                Toast.makeText(StateActivity.this,"获取任务详情失败！",Toast.LENGTH_LONG).show();
+                return;
+            }
+            super.onPostExecute(bean);
+            currentState = new State();
+            currentState.setCheckId(checkId);
+            checkName.setText(bean.getCreateUserName());
+            checkTime.setText(bean.getCreateTime());
+            checkState.setText(bean.getStatusStr());
+            checkRemark.setText(bean.getRemark());
+            checkCurName.setText(bean.getPutUserName());
+
+            Log.d(TAG, "onPostExecute: status is:" + bean.getStatus());
+
+            switch (bean.getStatus()){
+                case 0:
+                case 1:
+                    setLayoutFalse();
+                    break;
+                case 3:
+                case 4:
+                    if(isHistoryItemFix){
+                        btnModifyBack.setVisibility(View.GONE);
+                        auditorLayout.setVisibility(View.VISIBLE);
+                        btnTakePic.setVisibility(View.VISIBLE);
+                        btnSelectPic.setVisibility(View.VISIBLE);
+                        btnModifySerious.setVisibility(View.GONE);
+                        btnModifyNormal.setVisibility(View.GONE);
+                        btnFinish.setVisibility(View.VISIBLE);
+                        Common.getInstance().setEditTextTrue(checkRemark);
+                        tvNext.setText("审核人");
+                        btnFinish.setText("修复完成");
+                    }else{
+                        setLayoutFalse();
+                        Toast.makeText(StateActivity.this,"当前无修复权限",Toast.LENGTH_LONG).show();
+                    }
+                    break;
+                case 5:
+
+                    if(isHistoryItemVerify){
+                        btnModifyBack.setVisibility(View.VISIBLE);
+                        btnTakePic.setVisibility(View.VISIBLE);
+                        btnSelectPic.setVisibility(View.VISIBLE);
+                        btnModifySerious.setVisibility(View.GONE);
+                        btnModifyNormal.setVisibility(View.GONE);
+                        btnFinish.setVisibility(View.VISIBLE);
+                        auditorLayout.setVisibility(View.GONE);
+                        btnAdd.setVisibility(View.GONE);
+                        Common.getInstance().setEditTextTrue(checkRemark);
+                        btnFinish.setText("审核通过");
+                    }else{
+                        setLayoutFalse();
+                        Toast.makeText(StateActivity.this,"当前无审核权限",Toast.LENGTH_LONG).show();
+                    }
+                    break;
+            }
+
+            if(bean.getImageList() != null && bean.getImageList().size() > 0){
+                clearImageData();
+                imageViews = new ArrayList<>();
+                clearImageData();
+                List<ImageBean> images = bean.getImageList();
+                configRemote(images);
+                configPager(pager);
+                tvEmpty.setVisibility(View.GONE);
+                pager.setVisibility(View.VISIBLE);
+            }else{
+                pager.setVisibility(View.GONE);
+                tvEmpty.setVisibility(View.VISIBLE);
+            }
+
+            setData(null);
+        }
+
     }
 
     @Override
