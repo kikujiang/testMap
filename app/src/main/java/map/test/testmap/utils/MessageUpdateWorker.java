@@ -55,19 +55,18 @@ public class MessageUpdateWorker extends Worker {
 
                         for (Notice item:noticeList) {
                             int id = item.getId();
-
+                            Log.d(TAG, "id: "+id);
                             if(initial < id && initial != 0){
                                 count++;
                             }
 
-                            if(Constants.messageId < id){
-                                Constants.messageId = id;
-                            }
                         }
 
                         if(count > 0){
                             showBadgeView(2,count);
                         }
+
+                        Log.d(TAG, "count is:" + count);
 
                     }
 

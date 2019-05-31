@@ -73,9 +73,9 @@ public class CustomReceiver extends XGPushBaseReceiver {
                                 count++;
                             }
 
-                            if(Constants.messageId < id){
-                                Constants.messageId = id;
-                            }
+//                            if(Constants.messageId < id){
+//                                Constants.messageId = id;
+//                            }
                         }
 
                         if(count > 0){

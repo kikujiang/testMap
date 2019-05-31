@@ -9,6 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,18 +39,26 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.MyHolder> {
     final class MyHolder extends RecyclerView.ViewHolder {
 
         TextView tvTitle;
-        Button btnNavi;
-        Button btnDetail;
-        Button btnCheck;
-        Button btnEdit;
+        TextView tvState;
+        TextView tvTime;
+        ImageView imgState;
+        LinearLayout btnNavi;
+        LinearLayout btnCheck;
+        TextView tvCheck;
+        ImageView imgCheck;
+        LinearLayout btnEdit;
 
         public MyHolder(View view){
             super(view);
 
             tvTitle = view.findViewById(R.id.tv_name);
-            btnDetail = view.findViewById(R.id.button_detail);
+            tvTime = view.findViewById(R.id.tv_time);
+            tvState = view.findViewById(R.id.tv_state);
+            imgState = view.findViewById(R.id.tv_state_img);
             btnNavi = view.findViewById(R.id.button_navi);
             btnCheck = view.findViewById(R.id.button_check);
+            imgCheck = view.findViewById(R.id.img_check);
+            tvCheck = view.findViewById(R.id.tv_check);
             btnEdit = view.findViewById(R.id.button_edit);
         }
     }
@@ -78,14 +88,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.MyHolder> {
     public void onBindViewHolder(@NonNull final MyHolder myHolder, int i) {
         final TaskBean item = dataList.get (i);
         myHolder.tvTitle.setText (item.getName());
-
-        myHolder.btnDetail.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(context,"点击了详情按钮",Toast.LENGTH_LONG).show();
-            }
-        });
-
+        myHolder.tvTime.setText(item.getCreateTime());
         myHolder.btnNavi.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -95,20 +98,41 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.MyHolder> {
             }
         });
 
+        myHolder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent pointDetailIntent = new Intent(context,TaskDetailActivity.class);
+                pointDetailIntent.putExtra("checkId",item.getId());
+                pointDetailIntent.putExtra("pointId",item.getTag().getId());
+                context.startActivity(pointDetailIntent);
+
+            }
+        });
+
         switch (type){
             case Constants.TYPE_TASK_PUBLISH:
-                if(item.getStatus() == 3 || item.getStatus() == 4){
+                if(item.getStatus() == 3 || item.getStatus() == 5){
+                    myHolder.imgState.setImageDrawable(context.getResources().getDrawable(R.mipmap.mark_repair_2));
+                    myHolder.imgState.setVisibility(View.VISIBLE);
+                    myHolder.btnEdit.setVisibility(View.VISIBLE);
+                }else if(item.getStatus() == 4 || item.getStatus() == 2){
+                    myHolder.imgState.setImageDrawable(context.getResources().getDrawable(R.mipmap.mark_repair_1));
+                    myHolder.imgState.setVisibility(View.VISIBLE);
                     myHolder.btnEdit.setVisibility(View.VISIBLE);
                 }else{
                     myHolder.btnEdit.setVisibility(View.GONE);
+                    myHolder.imgState.setVisibility(View.GONE);
                 }
                 myHolder.btnCheck.setVisibility(View.GONE);
-                myHolder.tvTitle.setText (item.getName()+"  "+item.getStatusStr());
+                myHolder.tvState.setText(item.getStatusStr());
+
                 break;
             case Constants.TYPE_TASK_TO_BE_FINISH:
                 myHolder.btnCheck.setVisibility(View.VISIBLE);
                 myHolder.btnEdit.setVisibility(View.GONE);
-                myHolder.btnCheck.setText("修复");
+                myHolder.tvCheck.setText("修复");
+                myHolder.imgCheck.setImageDrawable(context.getResources().getDrawable(R.mipmap.icon20));
                 break;
             case Constants.TYPE_TASK_TO_BE_VERIFY:
                 if(item.isPassSelf()){
@@ -117,7 +141,8 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.MyHolder> {
                 }else{
                     myHolder.btnCheck.setVisibility(View.VISIBLE);
                     myHolder.btnEdit.setVisibility(View.GONE);
-                    myHolder.btnCheck.setText("审核");
+                    myHolder.tvCheck.setText("审核");
+                    myHolder.imgCheck.setImageDrawable(context.getResources().getDrawable(R.mipmap.icon21));
                 }
 
                 break;
@@ -134,24 +159,14 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.MyHolder> {
                 Intent stateIntent = new Intent(context,StateActivity.class);
                 stateIntent.putExtra("point_id",item.getTag().getId());
                 stateIntent.putExtra("checkId",item.getId());
-                if(myHolder.btnCheck.getText().toString().equals("修复")){
+                if(myHolder.tvCheck.getText().toString().equals("修复")){
                     stateIntent.putExtra("itemFix",true);
-                }else if(myHolder.btnCheck.getText().toString().equals("审核")){
+                }else if(myHolder.tvCheck.getText().toString().equals("审核")){
                     stateIntent.putExtra("itemQuery",true);
                 }
 
                 stateIntent.putExtra("task",true);
                 context.startActivity(stateIntent);
-            }
-        });
-
-        myHolder.btnDetail.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent pointDetailIntent = new Intent(context,TaskDetailActivity.class);
-                pointDetailIntent.putExtra("checkId",item.getId());
-                pointDetailIntent.putExtra("pointId",item.getTag().getId());
-                context.startActivity(pointDetailIntent);
             }
         });
 
@@ -164,9 +179,6 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.MyHolder> {
                 context.startActivity(stateIntent);
             }
         });
-
-
-
     }
 
     @Override

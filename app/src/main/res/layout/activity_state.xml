@@ -1,231 +1,328 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@android:color/white"
     tools:context=".StateActivity">
 
-    <FrameLayout
-        android:id="@+id/toolbar_container"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/id_toolbar"
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            app:titleTextColor="@color/textColorPrimary"
-            app:popupTheme="@style/OverFlowMenuTheme"
-            app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            android:background="@color/colorPrimary"/>
-    </FrameLayout>
-
-    <LinearLayout
-        android:layout_below="@id/toolbar_container"
-        android:id="@+id/main"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
         <LinearLayout
-            android:id="@+id/loading"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
+            <FrameLayout
+                android:id="@+id/toolbar_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <android.support.v7.widget.Toolbar
+                    android:id="@+id/id_toolbar"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    app:titleTextColor="@color/textColorPrimary"
+                    app:popupTheme="@style/OverFlowMenuTheme"
+                    app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+                    android:background="@color/colorPrimary"/>
+            </FrameLayout>
 
-            <ProgressBar
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="20dp"
-                android:indeterminateBehavior="repeat"
-                android:indeterminateDrawable="@drawable/loading" />
-
-            <TextView
+            <LinearLayout
+                android:layout_below="@id/toolbar_container"
+                android:id="@+id/main"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_marginTop="5dp"
-                android:text="加载中..." />
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/layout_auditor"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <TextView
-                android:id="@+id/tv_next"
-                android:text="审核人"
-                style="@style/CustomTextView" />
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:orientation="vertical">
+                <LinearLayout
+                    android:id="@+id/loading"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone"
+                    android:orientation="vertical">
 
-            <map.test.testmap.view.MultiSelectionSpinner
-                android:id="@+id/spinner_auditor_list"
-                android:layout_marginLeft="5dp"
+                    <ProgressBar
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="20dp"
+                        android:indeterminateBehavior="repeat"
+                        android:indeterminateDrawable="@drawable/loading" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_marginTop="5dp"
+                        android:text="加载中..." />
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/layout_auditor"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="15dp"
+                    android:paddingBottom="15dp"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/tv_next"
+                        android:text="审    核    人"
+                        style="@style/DetailTitle" />
+
+                    <map.test.testmap.view.MultiSelectionSpinner
+                        android:id="@+id/spinner_auditor_list"
+                        android:layout_marginLeft="5dp"
+                        android:background="@mipmap/spinner2"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+                </LinearLayout>
+
+                <View
+                    style="@style/DetailLine"/>
+
+                <LinearLayout
+                    android:id="@+id/layout_submit"
+                    android:layout_width="match_parent"
+
+                    android:orientation="vertical"
+                    android:layout_height="wrap_content">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="horizontal"
+                        android:paddingTop="15dp"
+                        android:paddingBottom="15dp"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:id="@+id/tv_last_user"
+                            android:text="提  交  人"
+                            style="@style/DetailTitle" />
+                        <TextView
+                            android:id="@+id/et_name"
+                            style="@style/DetailContent"/>
+                    </LinearLayout>
+
+                    <View
+                        style="@style/DetailLine"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/layout_executor"
+                    android:layout_width="match_parent"
+                    android:orientation="vertical"
+                    android:layout_height="wrap_content">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="horizontal"
+                        android:paddingTop="15dp"
+                        android:paddingBottom="15dp"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:id="@+id/tv_current_user"
+                            android:text="执  行  人"
+                            style="@style/DetailTitle" />
+                        <TextView
+                            android:id="@+id/et_current_name"
+                            style="@style/DetailContent"/>
+                    </LinearLayout>
+
+                    <View
+                        style="@style/DetailLine"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/layout_time"
+                    android:layout_width="match_parent"
+                    android:orientation="vertical"
+                    android:layout_height="wrap_content">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="horizontal"
+                        android:paddingTop="15dp"
+                        android:paddingBottom="15dp"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:text="@string/check_time"
+                            style="@style/DetailTitle" />
+                        <TextView
+                            android:id="@+id/et_time"
+                            style="@style/DetailContent" />
+                    </LinearLayout>
+
+                    <View
+                        style="@style/DetailLine"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/layout_status"
+                    android:layout_width="match_parent"
+                    android:orientation="vertical"
+                    android:layout_height="wrap_content">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="horizontal"
+                        android:paddingTop="15dp"
+                        android:paddingBottom="15dp"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:text="@string/check_state"
+                            style="@style/DetailTitle" />
+                        <TextView
+                            android:id="@+id/sp_state"
+                            style="@style/DetailContent"/>
+                    </LinearLayout>
+                    <View
+                        style="@style/DetailLine"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="15dp"
+                    android:paddingBottom="15dp"
+                    android:orientation="horizontal">
+                    <Button
+                        android:id="@+id/check_take_pic"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:background="@mipmap/icon8"/>
+                    <Button
+                        android:id="@+id/check_pick_pic"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_marginLeft="25dp"
+                        android:background="@mipmap/icon9"/>
+                </LinearLayout>
+                <LinearLayout
+
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:paddingTop="15dp"
+                    android:paddingBottom="15dp"
+                    android:layerType="software"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/check_empty_text"
+                        android:text="@string/noPic"
+                        android:gravity="center"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+                    <android.support.v4.view.ViewPager
+                        android:id="@+id/check_viewPager"
+                        android:layout_width="wrap_content"
+                        android:layout_height="200dp"
+                        android:clipChildren="false"/>
+                </LinearLayout>
+
+                <View
+                    style="@style/DetailLine"/>
+
+                <LinearLayout
+                    android:id="@+id/layout_remark"
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:paddingTop="15dp"
+                    android:paddingBottom="15dp"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:text="@string/check_remark"
+                        style="@style/DetailTitle" />
+                    <EditText
+                        android:id="@+id/et_remark"
+                        style="@style/DetailContent"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:weightSum="2"
+                    android:layout_height="wrap_content">
+
+                    <Button
+                        android:layout_width="280dp"
+                        android:layout_height="wrap_content"
+                        android:text="新增故障"
+                        android:background="@drawable/person_btn_bg"
+                        android:textColor="@android:color/white"
+                        android:textSize="15sp"
+                        android:id="@+id/check_add_item"/>
+
+                    <Button
+                        android:id="@+id/check_modify_back"
+                        android:layout_weight="1"
+                        android:background="@color/button"
+                        android:textColor="@android:color/white"
+                        android:textSize="15sp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="审核不通过"/>
+                    <Button
+                        android:id="@+id/check_modify_normal"
+                        android:layout_weight="1"
+                        android:layout_marginLeft="1dp"
+                        android:background="@color/button"
+                        android:textColor="@android:color/white"
+                        android:textSize="15sp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="重修维修（一般）"/>
+                    <Button
+                        android:id="@+id/check_modify_serious"
+                        android:layout_weight="1"
+                        android:layout_marginLeft="1dp"
+                        android:background="@color/button"
+                        android:textColor="@android:color/white"
+                        android:textSize="15sp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="重修维修（紧急）"/>
+
+                    <Button
+                        android:id="@+id/check_finish"
+                        android:layout_weight="1"
+                        android:layout_marginLeft="1dp"
+                        android:background="@color/button"
+                        android:textColor="@android:color/white"
+                        android:textSize="15sp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="排除警报"/>
+                </LinearLayout>
+
+
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/layout_history"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </LinearLayout>
+                android:layout_height="20dp"
+                android:layout_marginTop="15dp"
+                android:orientation="horizontal">
+                <View
+                    android:layout_width="5dp"
+                    android:layout_height="wrap_content"
+                    android:background="@color/button"/>
 
-        <LinearLayout
-            android:id="@+id/layout_submit"
-            android:layout_width="match_parent"
-            android:orientation="horizontal"
-            android:layout_height="wrap_content">
-            <TextView
-                android:id="@+id/tv_last_user"
-                android:text="@string/check_name"
-                style="@style/CustomTextView" />
-            <TextView
-                android:id="@+id/et_name"
-                style="@style/CustomEditText"/>
-        </LinearLayout>
+                <TextView
 
-        <LinearLayout
-            android:id="@+id/layout_executor"
-            android:layout_width="match_parent"
-            android:orientation="horizontal"
-            android:layout_height="wrap_content">
-            <TextView
-                android:id="@+id/tv_current_user"
-                android:text="执行人"
-                style="@style/CustomTextView" />
-            <TextView
-                android:id="@+id/et_current_name"
-                style="@style/CustomEditText"/>
-        </LinearLayout>
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:textStyle="bold"
+                    android:textColor="@color/button"
+                    android:layout_marginLeft="18dp"
+                    android:textSize="14sp"
+                    android:text="历史记录"/>
+            </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/layout_time"
-            android:layout_width="match_parent"
-            android:orientation="horizontal"
-            android:layout_height="wrap_content">
-            <TextView
-                android:text="@string/check_time"
-                style="@style/CustomTextView" />
-            <TextView
-                android:id="@+id/et_time"
-                style="@style/CustomEditText" />
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/layout_status"
-            android:layout_width="match_parent"
-            android:orientation="horizontal"
-            android:layout_height="wrap_content">
-            <TextView
-                android:text="@string/check_state"
-                style="@style/CustomTextView" />
-            <TextView
-                android:id="@+id/sp_state"
-                style="@style/CustomEditText"/>
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <Button
-                android:id="@+id/check_take_pic"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="拍照"/>
-            <Button
-                android:id="@+id/check_pick_pic"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:text="选择图片"/>
-        </LinearLayout>
-        <LinearLayout
-
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:layerType="software"
-            android:orientation="horizontal">
-            <TextView
-                android:id="@+id/check_empty_text"
-                android:text="@string/noPic"
-                android:gravity="center"
+            <LinearLayout
+                android:id="@+id/fragment_list"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-            <android.support.v4.view.ViewPager
-                android:id="@+id/check_viewPager"
-                android:layout_width="wrap_content"
-                android:layout_height="200dp"
-                android:clipChildren="false"/>
+                android:orientation="vertical"
+                android:layout_height="match_parent"/>
+
         </LinearLayout>
+    </ScrollView>
 
-        <LinearLayout
-            android:id="@+id/layout_remark"
-            android:layout_width="match_parent"
-            android:orientation="horizontal"
-            android:layout_height="wrap_content">
-            <TextView
-                android:text="@string/check_remark"
-                style="@style/CustomTextView" />
-            <EditText
-                android:id="@+id/et_remark"
-                style="@style/CustomEditText"/>
-        </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:weightSum="2"
-            android:layout_height="wrap_content">
 
-            <Button
-                android:id="@+id/check_modify_back"
-                android:layout_weight="1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="审核不通过"/>
-            <Button
-                android:id="@+id/check_modify_normal"
-                android:layout_weight="1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="重修维修（一般）"/>
-            <Button
-                android:id="@+id/check_modify_serious"
-                android:layout_weight="1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="重修维修（紧急）"/>
-
-            <Button
-                android:id="@+id/check_finish"
-                android:layout_weight="1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="排除警报"/>
-        </LinearLayout>
-
-        <View
-            android:background="@android:color/darker_gray"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"/>
-
-        <TextView
-            android:id="@+id/layout_history"
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            android:textStyle="bold"
-            android:text="历史记录"/>
-
-        <LinearLayout
-            android:id="@+id/fragment_list"
-            android:layout_width="match_parent"
-            android:orientation="vertical"
-            android:layout_height="match_parent"/>
-    </LinearLayout>
-
-    <Button
-        android:layout_below="@id/main"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="新增故障"
-        android:id="@+id/check_add_item"/>
-</RelativeLayout>
+</LinearLayout>

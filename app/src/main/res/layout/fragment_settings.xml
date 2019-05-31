@@ -15,97 +15,361 @@
             android:id="@+id/settings_toolbar"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            app:title="个人中心"
-            app:titleTextColor="@color/textColorPrimary"
             app:popupTheme="@style/OverFlowMenuTheme"
             app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            android:background="@color/colorPrimary"/>
+            android:background="@color/colorPrimary">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_gravity="center"
+                android:text="个人中心"
+                android:textColor="@android:color/white"
+                android:textSize="20sp" />
+        </android.support.v7.widget.Toolbar>
     </FrameLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:orientation="horizontal"
-        android:layout_height="wrap_content">
-        <TextView
-            style="@style/SettingsTextView"
-            android:text="用户名：" />
-        <TextView
-            android:id="@+id/tv_settings_name"
-            style="@style/SettingsTextView2"/>
+        android:layout_height="180dp"
+        android:orientation="vertical"
+        android:background="@color/colorPrimary">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="20dp"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_gravity="center"
+                android:src="@drawable/login2"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_weight="1"
+                android:layout_gravity="center_vertical"
+                android:orientation="vertical">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:layout_height="match_parent"
+                        android:layout_width="wrap_content"
+                        android:gravity="center_vertical"
+                        android:textSize="14sp"
+                        android:textColor="@android:color/white"
+                        android:text="用户名：" />
+                    <TextView
+                        android:id="@+id/tv_settings_name"
+                        android:textColor="@android:color/white"
+                        android:textSize="14sp"
+                        android:layout_marginLeft="5dp"
+                        android:singleLine="true"
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginTop="5dp"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:textSize="14sp"
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:textColor="@android:color/white"
+                        android:text="手    机：" />
+                    <TextView
+                        android:id="@+id/tv_settings_phone"
+                        android:textSize="14sp"
+                        android:layout_marginLeft="5dp"
+                        android:textColor="@android:color/white"
+                        android:singleLine="true"
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginTop="5dp"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:layout_height="match_parent"
+                        android:layout_width="wrap_content"
+                        android:gravity="center_vertical"
+                        android:textColor="@android:color/white"
+                        android:text="邮    箱：" />
+                    <TextView
+                        android:id="@+id/tv_settings_mail"
+                        android:textSize="14sp"
+                        android:layout_marginLeft="5dp"
+                        android:textColor="@android:color/white"
+                        android:singleLine="true"
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"/>
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_height="match_parent"
+                    android:layout_width="wrap_content"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:textColor="@android:color/white"
+                    android:text="0条" />
+                <TextView
+                    android:textColor="@android:color/white"
+                    android:textSize="10sp"
+                    android:layout_marginTop="5dp"
+                    android:text="累计维修记录"
+                    android:singleLine="true"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_height="match_parent"
+                    android:layout_width="wrap_content"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:textColor="@android:color/white"
+                    android:text="0条" />
+                <TextView
+                    android:textColor="@android:color/white"
+                    android:textSize="10sp"
+                    android:layout_marginTop="5dp"
+                    android:text="新增维修记录"
+                    android:singleLine="true"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"/>
+            </LinearLayout>
+
+            <View
+                android:layout_marginLeft="1dp"
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="@android:color/white" />
+
+            <LinearLayout
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_height="match_parent"
+                    android:layout_width="wrap_content"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:textColor="@android:color/white"
+                    android:text="0条" />
+                <TextView
+                    android:textColor="@android:color/white"
+                    android:textSize="10sp"
+                    android:layout_marginTop="5dp"
+                    android:text="累计派单"
+                    android:singleLine="true"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_height="match_parent"
+                    android:layout_width="wrap_content"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:textColor="@android:color/white"
+                    android:text="0条" />
+                <TextView
+                    android:textColor="@android:color/white"
+                    android:textSize="10sp"
+                    android:layout_marginTop="5dp"
+                    android:text="新增累计派单"
+                    android:singleLine="true"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
     </LinearLayout>
 
-    <View
-        style="@style/SettingsLine"/>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:orientation="horizontal"
-        android:layout_height="wrap_content">
-        <TextView
-            style="@style/SettingsTextView"
-            android:text="手机号码：" />
-        <TextView
-            android:id="@+id/tv_settings_phone"
-            style="@style/SettingsTextView2"/>
-    </LinearLayout>
-
-    <View
-        style="@style/SettingsLine"/>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:orientation="horizontal"
-        android:layout_height="wrap_content">
-        <TextView
-            style="@style/SettingsTextView"
-            android:text="邮箱：" />
-        <TextView
-            android:id="@+id/tv_settings_mail"
-            style="@style/SettingsTextView2" />
-    </LinearLayout>
-
-    <View
-        style="@style/SettingsLine"/>
 
     <LinearLayout
         android:id="@+id/settings_info"
         android:layout_width="match_parent"
         android:orientation="horizontal"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
         android:layout_height="wrap_content">
-        <TextView
-            style="@style/SettingsTextView"
-            android:text="版本信息" />
-        <TextView
-            android:id="@+id/tv_settings_version"
-            style="@style/SettingsTextView2" />
+
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/person3"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:orientation="vertical">
+            <TextView
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:textColor="@android:color/black"
+
+                android:text="版本信息" />
+            <TextView
+                android:layout_marginTop="5dp"
+                android:id="@+id/tv_settings_version"
+                style="@style/SettingsTextView3" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/settings_update"
+            android:layout_width="90dp"
+            android:layout_height="40dp"
+            android:text="检查新版本"
+            android:textColor="@android:color/white"
+            android:layout_marginRight="35dp"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/person_btn_bg"/>
+
     </LinearLayout>
 
     <View
+        android:layout_marginTop="20dp"
+        style="@style/SettingsLine"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center_vertical"
+            android:src="@mipmap/icon41"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:orientation="vertical">
+            <TextView
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:textColor="@android:color/black"
+                android:text="修改密码" />
+            <TextView
+                android:layout_marginTop="5dp"
+                android:text="修改用户登录密码"
+                style="@style/SettingsTextView3" />
+        </LinearLayout>
+
+
+    </LinearLayout>
+    <View
+        android:layout_marginTop="20dp"
         style="@style/SettingsLine"/>
 
     <LinearLayout
-        android:id="@+id/settings_update"
         android:layout_width="match_parent"
         android:orientation="horizontal"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
         android:layout_height="wrap_content">
-        <TextView
-            style="@style/SettingsTextView"
-            android:text="检查新版本" />
+
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/person5"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:orientation="vertical">
+            <TextView
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:textColor="@android:color/black"
+
+                android:text="注销" />
+            <TextView
+                android:layout_marginTop="5dp"
+                android:text="退出系统"
+                style="@style/SettingsTextView3" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/settings_exit"
+            android:layout_width="90dp"
+            android:layout_height="40dp"
+            android:text="立即注销"
+            android:textColor="@android:color/white"
+            android:layout_marginRight="35dp"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/person_btn_bg2"/>
+
     </LinearLayout>
 
     <View
-        style="@style/SettingsLine"/>
-
-    <LinearLayout
-        android:id="@+id/settings_exit"
-        android:layout_width="match_parent"
-        android:orientation="horizontal"
-        android:layout_height="wrap_content">
-        <TextView
-            style="@style/SettingsTextView"
-            android:text="退出当前账号" />
-    </LinearLayout>
-
-    <View
-        style="@style/SettingsLine"/>
+        android:layout_marginTop="20dp"
+        style="@style/DetailLine"/>
 </LinearLayout>

@@ -1,6 +1,7 @@
 package map.test.testmap.mvvm.ui;
 
 import android.databinding.DataBindingUtil;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -86,7 +87,10 @@ public class TaskDetailFragment extends Fragment {
             binding.list.setLayoutManager(new LinearLayoutManager(getActivity()));
             binding.list.setAdapter(adapter);
             binding.list.setItemAnimator (new DefaultItemAnimator());
-            binding.list.addItemDecoration (new DividerItemDecoration(getActivity (),DividerItemDecoration.VERTICAL));
+            DividerItemDecoration decoration = new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL);
+            Drawable drawable = getResources().getDrawable(R.drawable.divider);
+            decoration.setDrawable(drawable);
+            binding.list.addItemDecoration (decoration);
         }
 
     }

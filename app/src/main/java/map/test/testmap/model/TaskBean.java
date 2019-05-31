@@ -124,4 +124,9 @@ public class TaskBean implements Parcelable {
     public boolean isPassSelf() {
         return isPassSelf;
     }
+
+    @Override
+    public String toString() {
+        return name+":"+status+"-"+statusStr;
+    }
 }

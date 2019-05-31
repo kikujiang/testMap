@@ -33,6 +33,9 @@ public class LineStateListFragment extends ListFragment {
     // TODO: Rename and change types of parameters
     private ArrayList<LineState> list;
 
+    private LineStateAdapter mAdapter;
+    private int totalHeight = 0;  //定义总高度
+
     public LineStateListFragment() {
         // Required empty public constructor
     }
@@ -62,14 +65,29 @@ public class LineStateListFragment extends ListFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        Log.d(ARG_DATA, "onCreate: ``11111");
         if (getArguments() != null) {
             Log.d(ARG_DATA, "onCreate: ");
             list = getArguments().getParcelableArrayList("list");
-            LineStateAdapter adapter = new LineStateAdapter(getActivity(),list);
-            setListAdapter(adapter);
+            mAdapter = new LineStateAdapter(getActivity(),list);
+            setListAdapter(mAdapter);
         }
         return inflater.inflate(R.layout.fragment_state_list, container, false);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        for (int i=0;i<mAdapter.getCount();i++){
+            View listitem = mAdapter.getView(i,null,getListView());
+            listitem.measure(0,0);
+            totalHeight += listitem.getMeasuredHeight();
+        }
+        //获取到list的布局属性
+        ViewGroup.LayoutParams params = getListView().getLayoutParams();
+        //listview最终高度为item的高度+分隔线的高度，这是重新设置listview的属性
+        params.height = totalHeight + (getListView().getDividerHeight()*(mAdapter.getCount()-1));
+        //将重新设置的params再应用到listview中
+        getListView().setLayoutParams(params);
     }
 
     @Override

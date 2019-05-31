@@ -12,257 +12,283 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#ffffff"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
             android:orientation="vertical">
             <LinearLayout
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_width="match_parent"
-                android:padding="5dp"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="变电站："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:text="变  电  站"
+                    style="@style/DetailTitle"/>
                 <EditText
+                    android:layout_marginLeft="18dp"
                     android:id="@+id/point_belong"
-                    android:layout_marginLeft="5dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    style="@style/DetailContent" />
             </LinearLayout>
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_width="match_parent"
-                android:padding="5dp"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="电力线路名称："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:text="电力线路"
+                    style="@style/DetailTitle" />
                 <EditText
+                    android:layout_marginLeft="18dp"
                     android:id="@+id/point_line"
-                    android:layout_marginLeft="5dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    style="@style/DetailContent" />
             </LinearLayout>
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
                 android:layout_width="match_parent"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="名称："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:text="名        称"
+                    style="@style/DetailTitle" />
                 <EditText
+                    android:layout_marginLeft="18dp"
                     android:id="@+id/edit_name"
-                    android:layout_marginLeft="5dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    style="@style/DetailContent" />
             </LinearLayout>
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_weight="1"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="设备名称："
-                    android:layout_width="wrap_content"
-                    android:gravity="center"
-                    android:layout_height="match_parent" />
+                    android:text="设备名称"
+                    style="@style/DetailTitle" />
                 <Spinner
                     android:id="@+id/spinner_type"
-                    android:layout_marginLeft="5dp"
+                    android:background="@mipmap/spinner2"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
             </LinearLayout>
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_weight="1"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="设备类型："
-                    android:layout_width="wrap_content"
-                    android:gravity="center"
-                    android:layout_height="match_parent" />
+                    android:text="设备类型"
+                    style="@style/DetailTitle"/>
                 <map.test.testmap.view.MultiSelectionSpinner
                     android:id="@+id/spinner_device_type"
-                    android:layout_marginLeft="5dp"
+                    android:layout_marginLeft="8dp"
+                    android:background="@mipmap/spinner2"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
             </LinearLayout>
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_weight="1"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="终端状态："
-                    android:layout_width="wrap_content"
-                    android:gravity="center"
-                    android:layout_height="match_parent" />
+                    android:text="终端状态"
+                    style="@style/DetailTitle"/>
                 <Spinner
                     android:id="@+id/spinner_terminal_type"
-                    android:layout_marginLeft="5dp"
+                    android:background="@mipmap/spinner2"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
             </LinearLayout>
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_weight="1"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="光缆状态："
-                    android:layout_width="wrap_content"
-                    android:gravity="center"
-                    android:layout_height="match_parent" />
+                    android:text="光缆状态"
+                    style="@style/DetailTitle" />
                 <Spinner
                     android:id="@+id/spinner_line_type"
-                    android:layout_marginLeft="5dp"
+                    android:background="@mipmap/spinner2"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
             </LinearLayout>
 
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_weight="1"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="IP1："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:text="IP1          "
+                    style="@style/DetailTitle" />
                 <EditText
+                    android:layout_marginLeft="18dp"
                     android:id="@+id/edit_ip1"
-                    android:layout_marginLeft="5dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    style="@style/DetailContent" />
             </LinearLayout>
-
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_weight="1"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="IP2："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:text="IP2          "
+                    style="@style/DetailTitle" />
                 <EditText
+                    android:layout_marginLeft="18dp"
                     android:id="@+id/edit_ip2"
-                    android:layout_marginLeft="5dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    style="@style/DetailContent" />
             </LinearLayout>
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
                 android:layout_width="match_parent"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="ONU IP："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:text="ONU IP   "
+                    style="@style/DetailTitle" />
                 <EditText
+                    android:layout_marginLeft="18dp"
                     android:id="@+id/et_onu"
-                    android:layout_marginLeft="5dp"
-                    android:inputType="none"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    style="@style/DetailContent" />
             </LinearLayout>
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_weight="1"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="MAC1："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:text="MAC1     "
+                    style="@style/DetailTitle"/>
                 <EditText
+                    android:layout_marginLeft="18dp"
                     android:id="@+id/edit_phone"
-                    android:layout_marginLeft="5dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    style="@style/DetailContent" />
             </LinearLayout>
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_weight="1"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="MAC2："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:text="MAC2     "
+                    style="@style/DetailTitle" />
                 <EditText
+                    android:layout_marginLeft="18dp"
                     android:id="@+id/edit_phone1"
-                    android:layout_marginLeft="5dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    style="@style/DetailContent" />
             </LinearLayout>
-
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
                 android:id="@+id/layout_locate"
                 android:layout_width="match_parent"
                 android:orientation="horizontal"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content">
-                <TextView
-                    android:text="经度："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
-                <EditText
-                    android:id="@+id/edit_longitude"
-                    android:layout_weight="1"
-                    android:textSize="12sp"
-                    android:layout_marginLeft="5dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
-                <TextView
-                    android:text="纬度："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
-                <EditText
-                    android:id="@+id/edit_latitude"
-                    android:layout_weight="1"
-                    android:layout_marginLeft="5dp"
-                    android:textSize="12sp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
-                <Button
-                    android:id="@+id/locate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="5dp"
-                    android:text="定位"/>
-            </LinearLayout>
 
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="5"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical">
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="15dp"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:text="经        度"
+                            style="@style/DetailTitle"/>
+                        <EditText
+                            android:layout_marginLeft="18dp"
+                            android:id="@+id/edit_longitude"
+                            style="@style/DetailContent" />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:text="纬        度"
+                            style="@style/DetailTitle"/>
+                        <EditText
+                            android:layout_marginLeft="18dp"
+                            android:id="@+id/edit_latitude"
+                            style="@style/DetailContent" />
+                    </LinearLayout>
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:layout_height="match_parent">
+                    <Button
+                        android:id="@+id/locate"
+                        android:layout_width="97.5dp"
+                        android:layout_height="68dp"
+                        android:background="@mipmap/icon10"/>
+                </LinearLayout>
+            </LinearLayout>
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
                 android:layout_weight="1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:orientation="horizontal">
                 <Button
                     android:id="@+id/btn_take_pic"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="拍照"/>
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@mipmap/icon8"/>
                 <Button
                     android:id="@+id/btn_pick_pic"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:text="选择图片"/>
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_marginLeft="25dp"
+                    android:background="@mipmap/icon9"/>
             </LinearLayout>
             <LinearLayout
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -281,28 +307,29 @@
                     android:layout_height="200dp"
                     android:clipChildren="false"/>
             </LinearLayout>
-
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_weight="1"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="备注："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:text="备        注"
+                    style="@style/DetailTitle"/>
                 <EditText
+                    android:layout_marginLeft="18dp"
                     android:id="@+id/edit_other"
-                    android:layout_marginLeft="5dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    style="@style/DetailContent" />
             </LinearLayout>
-
+            <View
+                style="@style/DetailLine"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_weight="1"
-            android:padding="5dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
             android:orientation="horizontal"
             android:layout_height="wrap_content">
             <Button
@@ -310,7 +337,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textSize="10sp"
+                android:background="@color/button"
+                android:textColor="@android:color/white"
+                android:textSize="15sp"
                 android:text="添加"/>
 
             <Button
@@ -318,7 +347,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textSize="10sp"
+                android:layout_marginLeft="1dp"
+                android:background="@color/button"
+                android:textColor="@android:color/white"
+                android:textSize="15sp"
                 android:text="去这里" />
 
             <Button
@@ -326,21 +358,30 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textSize="10sp"
+                android:layout_marginLeft="1dp"
+                android:background="@color/button"
+                android:textColor="@android:color/white"
+                android:textSize="15sp"
                 android:text="取消"/>
             <Button
                 android:id="@+id/state"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textSize="10sp"
+                android:layout_marginLeft="1dp"
+                android:background="@color/button"
+                android:textColor="@android:color/white"
+                android:textSize="15sp"
                 android:text="维修状态"/>
             <Button
                 android:id="@+id/point_history"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textSize="10sp"
+                android:layout_marginLeft="1dp"
+                android:background="@color/button"
+                android:textColor="@android:color/white"
+                android:textSize="15sp"
                 android:text="历史记录"/>
         </LinearLayout>
         </LinearLayout>

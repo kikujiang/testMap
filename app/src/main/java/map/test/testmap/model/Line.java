@@ -37,6 +37,9 @@ public class Line {
     private double tag_begin_location_long;
     private double tag_end_location_lat;
     private double tag_end_location_long;
+
+    private int tag_begin_id;
+    private int tag_end_id;
     private Point tag_end;
     private String typeStr;
     private String posTypeStr;
@@ -154,5 +157,13 @@ public class Line {
 
     public float getLineLength() {
         return lineLength;
+    }
+
+    public int getTag_begin_id() {
+        return tag_begin_id;
+    }
+
+    public int getTag_end_id() {
+        return tag_end_id;
     }
 }

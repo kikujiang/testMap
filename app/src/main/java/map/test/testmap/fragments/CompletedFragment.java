@@ -53,7 +53,6 @@ public class CompletedFragment extends Fragment {
             recyclerView.setLayoutManager (new LinearLayoutManager(getActivity (),LinearLayoutManager.VERTICAL,false));
             recyclerView.setItemAnimator (new DefaultItemAnimator());
             recyclerView.setAdapter (adapter);
-            recyclerView.addItemDecoration (new DividerItemDecoration(getActivity (),DividerItemDecoration.VERTICAL));
             return view;
         }
 

@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@android:color/white"
     tools:context=".TaskEditActivity">
 
     <FrameLayout
@@ -48,39 +49,54 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <TextView
-            android:text="@string/check_maintenance"
-            style="@style/CustomTextView" />
-
-        <Spinner
-            android:id="@+id/spinner_worker_list"
-            android:layout_marginLeft="5dp"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-    </LinearLayout>
+        android:paddingRight="15dp"
+        android:paddingLeft="15dp"
+        android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingTop="15dp"
+        android:paddingBottom="15dp"
+        android:orientation="horizontal">
+        <TextView
+            android:text="@string/check_maintenance"
+            style="@style/DetailTitle" />
+
+        <Spinner
+            android:id="@+id/spinner_worker_list"
+            android:layout_marginLeft="5dp"
+            android:background="@mipmap/spinner2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"  />
+    </LinearLayout>
+        <View
+            style="@style/DetailLine"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="15dp"
+        android:paddingBottom="15dp"
         android:orientation="horizontal">
         <Button
             android:id="@+id/dialog_take_pic"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="拍照"/>
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@mipmap/icon8"/>
         <Button
             android:id="@+id/dialog_pick_pic"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:text="选择图片"/>
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="25dp"
+            android:background="@mipmap/icon9"/>
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:layerType="software"
+        android:paddingTop="15dp"
+        android:paddingBottom="15dp"
         android:orientation="horizontal">
         <TextView
             android:id="@+id/dialog_empty_text"
@@ -94,19 +110,24 @@
             android:layout_height="200dp"
             android:clipChildren="false"/>
     </LinearLayout>
-
+        <View
+            style="@style/DetailLine"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:orientation="horizontal"
+        android:paddingTop="15dp"
+        android:paddingBottom="15dp"
         android:layout_height="wrap_content">
         <TextView
             android:text="@string/check_remark"
-            style="@style/CustomTextView" />
+            style="@style/DetailTitle" />
         <EditText
             android:id="@+id/dialog_remark"
-            style="@style/CustomEditText"/>
+            style="@style/DetailContent"/>
     </LinearLayout>
-
+        <View
+            style="@style/DetailLine"/>
+    </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:orientation="horizontal"
@@ -118,13 +139,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="维修（一般）"/>
+            android:background="@color/button"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:text="一般维修"/>
 
         <Button
             android:id="@+id/dialog_add_serious"
             android:layout_width="wrap_content"
             android:layout_weight="1"
+            android:background="@color/button"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:layout_marginLeft="1dp"
             android:layout_height="wrap_content"
-            android:text="维修（紧急）"/>
+            android:text="紧急维修"/>
     </LinearLayout>
 </LinearLayout>

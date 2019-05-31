@@ -6,16 +6,14 @@ import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -24,6 +22,8 @@ import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,11 +31,11 @@ import android.widget.Toast;
 import com.tencent.android.tpush.XGIOperateCallback;
 import com.tencent.android.tpush.XGPushConfig;
 import com.tencent.android.tpush.XGPushManager;
+import com.tencent.bugly.crashreport.CrashReport;
 
 import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.ResponseBean;
 import map.test.testmap.model.User;
-import map.test.testmap.utils.BadgeUtil;
 import map.test.testmap.utils.Common;
 import map.test.testmap.utils.HttpUtils;
 import map.test.testmap.utils.PreferencesUtils;
@@ -44,9 +44,10 @@ import retrofit2.Response;
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 
 /**
- * A login screen that offers login via email/password.
+ * A login screen that offers login via email/password_selector.
  */
-public class LoginActivity extends AppCompatActivity {
+public class
+LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "LoginActivity";
 
@@ -61,19 +62,21 @@ public class LoginActivity extends AppCompatActivity {
     private UserLoginTask mAuthTask = null;
 
     // UI references.
-    private AutoCompleteTextView mEmailView;
+    private EditText mEmailView;
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private CheckBox mPassWordCheck;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Constants.isLogin = false;
 
+        CrashReport.initCrashReport(getApplicationContext(), "171b14d1df", false);
 
         String account = PreferencesUtils.getString(LoginActivity.this,"account",null);
-        String password = PreferencesUtils.getString(LoginActivity.this,"password",null);
+        String password = PreferencesUtils.getString(LoginActivity.this,"password_selector",null);
         if(account != null && password != null){
             Log.d(TAG, "onCreate: 1");
             initWithApiKey();
@@ -89,10 +92,22 @@ public class LoginActivity extends AppCompatActivity {
         initWithApiKey();
         setContentView(R.layout.activity_login);
         // Set up the login form.
-        mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
-        populateAutoComplete();
+        mEmailView = findViewById(R.id.email);
+//        populateAutoComplete();
 
-        mPasswordView = (EditText) findViewById(R.id.password);
+        mPasswordView = findViewById(R.id.password);
+        mPassWordCheck = findViewById(R.id.password_check);
+        mPassWordCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    mPasswordView.setInputType(InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                }else {
+                    mPasswordView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                }
+            }
+        });
+        mPassWordCheck.setChecked(false);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -128,7 +143,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void loginAuto(){
         String account = PreferencesUtils.getString(LoginActivity.this,"account",null);
-        String password = PreferencesUtils.getString(LoginActivity.this,"password",null);
+        String password = PreferencesUtils.getString(LoginActivity.this,"password_selector",null);
 
 
         if(account != null && password != null){
@@ -226,7 +241,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void initView(){
         String account = PreferencesUtils.getString(LoginActivity.this,"account",null);
-        String password = PreferencesUtils.getString(LoginActivity.this,"password",null);
+        String password = PreferencesUtils.getString(LoginActivity.this,"password_selector",null);
 
         if(account != null){
             mEmailView.setText(account);
@@ -290,9 +305,9 @@ public class LoginActivity extends AppCompatActivity {
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
-        if (mAuthTask != null) {
-            return;
-        }
+//        if (mAuthTask != null) {
+//            return;
+//        }
 
         // Reset errors.
         mEmailView.setError(null);
@@ -302,10 +317,12 @@ public class LoginActivity extends AppCompatActivity {
         String email = mEmailView.getText().toString();
         String password = mPasswordView.getText().toString();
 
+        Log.d(TAG, "attemptLogin: password " + password);
+
         boolean cancel = false;
         View focusView = null;
 
-        // Check for a valid password, if the user entered one.
+        // Check for a valid password_selector, if the user entered one.
         if (TextUtils.isEmpty(password)) {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
@@ -382,6 +399,8 @@ public class LoginActivity extends AppCompatActivity {
             mAccount = account;
             mPassword = password;
             this.flag = f;
+
+            Log.d(TAG, "UserLoginTask: acc:"+mAccount+",pwd:"+mPassword);
         }
 
         @Override
@@ -445,7 +464,7 @@ public class LoginActivity extends AppCompatActivity {
                 Constants.userName = currentBean.getObject().getUsername();
                 Constants.loginTag = currentBean.getObject().getLoginTag();
                 PreferencesUtils.putString(LoginActivity.this,"account",mAccount);
-                PreferencesUtils.putString(LoginActivity.this,"password",mPassword);
+                PreferencesUtils.putString(LoginActivity.this,"password_selector",mPassword);
                 Intent intent = new Intent(LoginActivity.this,NaviMain.class);
                 intent.putExtra("userId",currentBean.getObject().getId());
                 startActivity(intent);

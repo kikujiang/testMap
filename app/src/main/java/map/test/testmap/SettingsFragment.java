@@ -6,10 +6,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,14 +33,16 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
 
     private static final String TAG = "settings";
     
-    private LinearLayout updateLayout;
+    private Button updateLayout;
     private LinearLayout infoLayout;
-    private LinearLayout exitLayout;
+    private Button exitLayout;
     private TextView tvName;
     private TextView tvPhone;
     private TextView tvEmail;
     private TextView tvVersion;
     private int userId = -1;
+
+    private Toolbar toolbar;
 
     private static final String ARG_PARAM1 = "userId";
 
@@ -59,6 +65,17 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
         if (getArguments() != null) {
             userId = getArguments().getInt(ARG_PARAM1);
         }
+
+//        StatusBarUtil.setRootViewFitsSystemWindows(getActivity(),true);
+        //设置状态栏透明
+//        StatusBarUtil.setTranslucentStatus(getActivity());
+        //一般的手机的状态栏文字和图标都是白色的, 可如果你的应用也是纯白色的, 或导致状态栏文字看不清
+        //所以如果你是这种情况,请使用以下代码, 设置状态使用深色文字图标风格, 否则你可以选择性注释掉这个if内容
+//        if (!StatusBarUtil.setStatusBarDarkTheme(getActivity(), true)) {
+//            //如果不支持设置深色风格 为了兼容总不能让状态栏白白的看不清, 于是设置一个状态栏颜色为半透明,
+//            //这样半透明+白=灰, 状态栏的文字能看得清
+//            StatusBarUtil.setStatusBarColor(getActivity(),0x55000000);
+//        }
     }
 
     @Override
@@ -79,13 +96,24 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
         tvPhone = view.findViewById(R.id.tv_settings_phone);
         tvEmail = view.findViewById(R.id.tv_settings_mail);
         tvVersion = view.findViewById(R.id.tv_settings_version);
+        toolbar = view.findViewById(R.id.settings_toolbar);
 
         tvVersion.setText(Common.getInstance().getVersionName(getActivity()));
         updateLayout.setOnClickListener(this);
-        infoLayout.setOnClickListener(this);
+//        infoLayout.setOnClickListener(this);
         exitLayout.setOnClickListener(this);
         if(userId == Integer.MIN_VALUE){
             return;
+        }
+
+        toolbar.setTitle("");
+
+        AppCompatActivity appCompatActivity= (AppCompatActivity) getActivity();
+        appCompatActivity.setSupportActionBar(toolbar);
+        ActionBar actionBar = appCompatActivity.getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle("");
+            actionBar.setDisplayHomeAsUpEnabled(false);
         }
 
         getUserInfo();
@@ -189,7 +217,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
                                 Toast.makeText(getActivity(),"退出成功",Toast.LENGTH_LONG).show();
                                 Intent loginIntent = new Intent(getActivity(),LoginActivity.class);
                                 PreferencesUtils.putString(getActivity(),"account",null);
-                                PreferencesUtils.putString(getActivity(),"password",null);
+                                PreferencesUtils.putString(getActivity(),"password_selector",null);
                                 startActivity(loginIntent);
                                 getActivity().finish();
                             }

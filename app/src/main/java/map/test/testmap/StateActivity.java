@@ -124,7 +124,7 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
     //审核人列表
     private List<User> verifyUserList;
 
-    private TextView layoutHistory;
+    private LinearLayout layoutHistory;
     private LinearLayout layoutList;
 
     private LinearLayout layoutSubmit;
@@ -215,9 +215,6 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
         if(isTask){
             getUserList();
             setData(null);
-//            if(checkId != -1){
-//                new DetailTask().execute(checkId);
-//            }
         }else{
             getDataFromServer();
         }
@@ -249,13 +246,17 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
         switch (item.getItemId()) {
             //重写ToolBar返回按钮的行为，防止重新打开父Activity重走生命周期方法
             case android.R.id.home:
-                Intent intent = new Intent();
-                intent.putExtra("pointId",pointId);
-                setResult(RESULT_OK,intent);
-                finish();
+                setResult();
                 return true;
         }
         return true;
+    }
+
+    private void setResult(){
+        Intent intent = new Intent();
+        intent.putExtra("pointId",pointId);
+        setResult(RESULT_OK,intent);
+        finish();
     }
 
     private void getDataFromServer(){
@@ -396,7 +397,7 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
                         @Override
                         public void run() {
                             Toast.makeText(StateActivity.this,"提交成功",Toast.LENGTH_LONG).show();
-                            finish();
+                            setResult();
                         }
                     });
                 }else if(data.getResult() == 2){
@@ -427,7 +428,7 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
                         @Override
                         public void run() {
                             Toast.makeText(StateActivity.this,"提交成功",Toast.LENGTH_LONG).show();
-                            finish();
+                            setResult();
                         }
                     });
                 }else if(data.getResult() == 2){
@@ -512,6 +513,11 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
                     dialog.dismiss();
                 }
                 currentType = REQUEST_TYPE_MAIN;
+                break;
+            case R.id.dialog_close:
+                if(dialog  != null){
+                    dialog.dismiss();
+                }
                 break;
             case R.id.dialog_pick_pic:
                 currentType = REQUEST_TYPE_DIALOG;
@@ -751,8 +757,9 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
     private EditText dialogRemark;
     private TextView dialogTvEmpty;
     private ViewPager dialogPager;
-    private Button dialogNormalBtnAdd;
-    private Button dialogSeriousBtnAdd;
+    private LinearLayout dialogNormalBtnAdd;
+    private LinearLayout dialogSeriousBtnAdd;
+    private LinearLayout dialogCloseBtn;
     private Button dialogBtnTakePic;
     private Button dialogBtnPickPic;
     private MultiSelectionSpinner spinnerWorkerList;
@@ -776,6 +783,7 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
             dialogPager = view.findViewById(R.id.dialog_viewPager);
             dialogNormalBtnAdd = view.findViewById(R.id.dialog_add_normal);
             dialogSeriousBtnAdd = view.findViewById(R.id.dialog_add_serious);
+            dialogCloseBtn = view.findViewById(R.id.dialog_close);
             dialogBtnTakePic = view.findViewById(R.id.dialog_take_pic);
             dialogBtnPickPic = view.findViewById(R.id.dialog_pick_pic);
             spinnerWorkerList = view.findViewById(R.id.spinner_worker_list);
@@ -786,7 +794,7 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
             }
 
             spinnerWorkerList.setItems(typeData);
-//            spinnerWorkerList.setSelection(0);
+            spinnerWorkerList.setSelection(0);
             spinnerWorkerList.setListener(new MultiSelectionSpinner.OnMultipleItemsSelectedListener() {
                 @Override
                 public void selectedIndices(List<Integer> indices) {
@@ -795,6 +803,8 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
 
                 @Override
                 public void selectedStrings(List<String> strings) {
+
+
 
                     if(strings.size() > 0){
                         String[] result = new String[strings.size()];
@@ -820,6 +830,7 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
             dialogSeriousBtnAdd.setOnClickListener(this);
             dialogBtnTakePic.setOnClickListener(this);
             dialogBtnPickPic.setOnClickListener(this);
+            dialogCloseBtn.setOnClickListener(this);
         }
         workerId = "";
         currentType = REQUEST_TYPE_DIALOG;

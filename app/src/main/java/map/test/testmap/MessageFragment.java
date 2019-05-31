@@ -4,10 +4,13 @@ package map.test.testmap;
 import android.os.Bundle;
 import android.support.design.internal.BottomNavigationMenuView;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,6 +40,8 @@ public class MessageFragment extends Fragment {
     private TextView emptyView;
     private NoticeAdapter adapter;
 
+    private Toolbar toolbar;
+
     public MessageFragment() {
         // Required empty public constructor
     }
@@ -46,6 +51,7 @@ public class MessageFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        Log.d(TAG, "onCreateView: ");
         View view = inflater.inflate(R.layout.fragment_message, container, false);
         init(view);
         return view;
@@ -54,6 +60,15 @@ public class MessageFragment extends Fragment {
     private void init(View v){
         list = v.findViewById(R.id.notice_list);
         emptyView = v.findViewById(R.id.notice_empty);
+        toolbar = v.findViewById(R.id.settings_toolbar);
+
+        AppCompatActivity appCompatActivity= (AppCompatActivity) getActivity();
+        appCompatActivity.setSupportActionBar(toolbar);
+        ActionBar actionBar = appCompatActivity.getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle("");
+            actionBar.setDisplayHomeAsUpEnabled(false);
+        }
         getNotice();
     }
 
@@ -79,12 +94,20 @@ public class MessageFragment extends Fragment {
                         public void run() {
                             Log.d(TAG, "run: ");
                             if(noticeList.size() > 0){
+
+                                for (Notice item:noticeList) {
+                                    int id = item.getId();
+
+                                    if(Constants.messageId < id){
+                                        Constants.messageId = id;
+                                    }
+                                }
+
                                 emptyView.setVisibility(View.GONE);
                                 adapter = new NoticeAdapter(getActivity(),noticeList);
                                 list.setLayoutManager (new LinearLayoutManager(getActivity (),LinearLayoutManager.VERTICAL,false));
                                 list.setItemAnimator (new DefaultItemAnimator());
                                 list.setAdapter (adapter);
-                                list.addItemDecoration (new DividerItemDecoration(getActivity (),DividerItemDecoration.VERTICAL));
                             }else{
                                 emptyView.setVisibility(View.VISIBLE);
                             }

@@ -12,164 +12,316 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:background="@android:color/white"
         tools:context=".mvvm.ui.PointDetailFragment">
 
         <TextView
+            android:id="@+id/detail_title"
             android:layout_width="match_parent"
             android:background="@android:color/darker_gray"
-            android:text="标记点详情"
             android:textStyle="bold"
             android:textSize="14sp"
+            android:gravity="center_vertical"
             android:padding="5dp"
-            android:layout_height="wrap_content"/>
+            android:textColor="@android:color/white"
+            android:layout_height="40dp"/>
 
         <LinearLayout
+            android:id="@+id/detail_line"
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <TextView
-                android:text="名称："
-                style="@style/CustomTextView" />
+            android:layout_height="wrap_content">
 
-            <TextView
-                android:layout_marginLeft="5dp"
+            <include layout="@layout/popup_line" />
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="@{point.name}"
-                />
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="15dp"
+                    android:paddingBottom="15dp"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:text="起  始  点"
+                        style="@style/DetailTitle" />
+
+                    <TextView
+                        android:id="@+id/start"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        style="@style/DetailContent" />
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    style="@style/DetailLine"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="15dp"
+                    android:paddingBottom="15dp"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:text="结  束  点"
+                        style="@style/DetailTitle" />
+
+                    <TextView
+                        android:id="@+id/end"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        style="@style/DetailContent" />
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    style="@style/DetailLine"/>
+            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/layout_auditor"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <TextView
-                android:text="设备名称："
-                style="@style/CustomTextView" />
+            android:orientation="vertical"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp">
 
-            <TextView
-                android:layout_marginLeft="5dp"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="@{point.typeStr}"
-                />
-        </LinearLayout>
+                android:layout_height="wrap_content"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
+                android:orientation="horizontal">
+                <TextView
+                    android:text="名        称"
+                    style="@style/DetailTitle" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:orientation="horizontal"
-            android:layout_height="wrap_content">
-            <TextView
-                android:text="设备类型"
-                style="@style/CustomTextView" />
-            <TextView
-                android:id="@+id/deviceType"
-                style="@style/CustomEditText"/>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:orientation="horizontal"
-            android:layout_height="wrap_content">
-            <TextView
-                android:text="终端选项"
-                style="@style/CustomTextView" />
-            <TextView
-                android:text="@{point.ceTypeStr}"
-                style="@style/CustomEditText" />
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:orientation="horizontal"
-            android:layout_height="wrap_content">
-            <TextView
-                android:text="光缆选项"
-                style="@style/CustomTextView" />
-            <TextView
-                android:text="@{point.leTypeStr}"
-                style="@style/CustomEditText"/>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:orientation="horizontal"
-            android:layout_height="wrap_content">
-            <TextView
-                android:text="经度"
-                style="@style/CustomTextView" />
-                <!--android:text="@{point.location_long}"-->
-            <TextView
-                android:id="@+id/longitude"
-                style="@style/CustomEditText"/>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:orientation="horizontal"
-            android:layout_height="wrap_content">
-            <TextView
-                android:text="纬度"
-                style="@style/CustomTextView" />
-                <!--android:text="@{point.location_lat}"-->
-            <TextView
-                android:id="@+id/latitude"
-                style="@style/CustomEditText"/>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:orientation="horizontal"
-            android:layout_height="wrap_content">
-            <TextView
-                android:text="Mac1 地址"
-                style="@style/CustomTextView" />
-            <TextView
-                android:text="@{point.phone}"
-                style="@style/CustomEditText"/>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:orientation="horizontal"
-            android:layout_height="wrap_content">
-            <TextView
-                android:text="Mac2 地址"
-                style="@style/CustomTextView" />
-            <TextView
-                android:text="@{point.phone1}"
-                style="@style/CustomEditText"/>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:orientation="horizontal"
-            android:layout_height="wrap_content">
-            <TextView
-                android:text="IP地址"
-                style="@style/CustomTextView" />
-            <TextView
-                android:text="@{point.ip}"
-                style="@style/CustomEditText"/>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:orientation="horizontal"
-            android:layout_height="wrap_content">
-            <TextView
-                android:text="备注"
-                style="@style/CustomTextView" />
-            <TextView
-                android:text="@{point.remark}"
-                style="@style/CustomEditText"/>
-        </LinearLayout>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    style="@style/DetailContent"
+                    android:text="@{point.name}"
+                    />
+            </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/image"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:layerType="software"
-            android:orientation="horizontal">
-            <android.support.v4.view.ViewPager
-                android:id="@+id/pager"
-                android:layout_width="wrap_content"
-                android:layout_height="200dp"
-                android:clipChildren="false"/>
+
+            <LinearLayout
+                android:id="@+id/layout_point_middle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    style="@style/DetailLine"/>
+                <LinearLayout
+                    android:id="@+id/layout_auditor"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="15dp"
+                    android:paddingBottom="15dp"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:text="设备名称"
+                        style="@style/DetailTitle" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        style="@style/DetailContent"
+                        android:text="@{point.typeStr}"
+                        />
+                </LinearLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                style="@style/DetailLine"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:text="设备类型"
+                    style="@style/DetailTitle" />
+                <TextView
+                    android:id="@+id/deviceType"
+                    style="@style/DetailContent"/>
+            </LinearLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                style="@style/DetailLine"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:text="终端选项"
+                    style="@style/DetailTitle" />
+                <TextView
+                    android:text="@{point.ceTypeStr}"
+                    style="@style/DetailContent" />
+            </LinearLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                style="@style/DetailLine"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:text="光缆选项"
+                    style="@style/DetailTitle" />
+                <TextView
+                    android:text="@{point.leTypeStr}"
+                    style="@style/DetailContent"/>
+            </LinearLayout>
+
+            </LinearLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                style="@style/DetailLine"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:text="经        度"
+                    style="@style/DetailTitle" />
+                    <!--android:text="@{point.location_long}"-->
+                <TextView
+                    android:id="@+id/longitude"
+                    style="@style/DetailContent"/>
+            </LinearLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                style="@style/DetailLine"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:text="纬        度"
+                    style="@style/DetailTitle" />
+                    <!--android:text="@{point.location_lat}"-->
+                <TextView
+                    android:id="@+id/latitude"
+                    style="@style/DetailContent"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_point_bottom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    style="@style/DetailLine"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:paddingTop="15dp"
+                    android:paddingBottom="15dp"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:text="Mac1      "
+                        style="@style/DetailTitle" />
+                    <TextView
+                        android:text="@{point.phone}"
+                        style="@style/DetailContent"/>
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    style="@style/DetailLine"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:paddingTop="15dp"
+                    android:paddingBottom="15dp"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:text="Mac2      "
+                        style="@style/DetailTitle" />
+                    <TextView
+                        android:text="@{point.phone1}"
+                        style="@style/DetailContent"/>
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    style="@style/DetailLine"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:paddingTop="15dp"
+                    android:paddingBottom="15dp"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:text="IP             "
+                        style="@style/DetailTitle" />
+                    <TextView
+                        android:text="@{point.ip}"
+                        style="@style/DetailContent"/>
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    style="@style/DetailLine"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:paddingTop="15dp"
+                    android:paddingBottom="15dp"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:text="备        注"
+                        style="@style/DetailTitle" />
+                    <TextView
+                        android:text="@{point.remark}"
+                        style="@style/DetailContent"/>
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    style="@style/DetailLine"/>
+                <LinearLayout
+                    android:id="@+id/image"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layerType="software"
+                    android:paddingTop="15dp"
+                    android:paddingBottom="15dp"
+                    android:orientation="horizontal">
+                    <android.support.v4.view.ViewPager
+                        android:id="@+id/pager"
+                        android:layout_width="wrap_content"
+                        android:layout_height="200dp"
+                        android:clipChildren="false"/>
+                </LinearLayout>
+
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </layout>
