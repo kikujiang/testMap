@@ -15,8 +15,8 @@
     <string name="hello_blank_fragment">功能开发中，敬请期待！</string>
     <string name="title_activity_login">Sign in</string>
     <!-- Strings related to login -->
-    <string name="prompt_email">账号</string>
-    <string name="prompt_password">密码</string>
+    <string name="prompt_email">请输入账户名</string>
+    <string name="prompt_password">请输入密码</string>
     <string name="action_sign_in">登录</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="error_invalid_email">账号不能为空</string>
@@ -27,15 +27,15 @@
         completions."
     </string>
 
-    <string name="check_name"> 提交人</string>
+    <string name="check_name"> 提      交      人</string>
     <string name="check_time">检修时间</string>
     <string name="check_state">检修状态</string>
     <string name="check_maintenance">维修人员</string>
     <string name="check_remark">检修备注</string>
     <string name="check_picture">现场图片</string>
     <string name="check_add">添加维修记录</string>
-    <string name="check_lat">经度</string>
-    <string name="check_long">纬度</string>
+    <string name="check_lat">经          度</string>
+    <string name="check_long">纬          度</string>
 
     <string name="maintenance_line_info">所属线缆</string>
     <string name="title_activity_navi_main">NaviMain</string>

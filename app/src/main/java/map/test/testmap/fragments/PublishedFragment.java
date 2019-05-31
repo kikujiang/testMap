@@ -42,6 +42,24 @@ public class PublishedFragment extends Fragment {
     }
 
     @Override
+    public void onHiddenChanged(boolean hidden) {
+        Log.d(TAG, "PublishedFragment onHiddenChanged: ");
+        super.onHiddenChanged(hidden);
+
+        if (hidden){
+            Log.d(TAG, "PublishedFragment onHiddenChanged: "+hidden);
+        }else{
+            Log.d(TAG, "PublishedFragment onHiddenChanged: "+hidden);
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "PublishedFragment onResume: ");
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle data) {
 
@@ -57,7 +75,6 @@ public class PublishedFragment extends Fragment {
             recyclerView.setLayoutManager (new LinearLayoutManager(getActivity (),LinearLayoutManager.VERTICAL,false));
             recyclerView.setItemAnimator (new DefaultItemAnimator());
             recyclerView.setAdapter (adapter);
-            recyclerView.addItemDecoration (new DividerItemDecoration(getActivity (),DividerItemDecoration.VERTICAL));
             return view;
         }
 

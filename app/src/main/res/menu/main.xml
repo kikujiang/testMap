@@ -1,25 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <item
         android:id="@+id/search"
-        android:icon="@drawable/ic_action_action_search"
+        android:icon="@mipmap/icon32"
         android:orderInCategory="100"
         android:title="@string/search"
         app:showAsAction="always" />
     <item
         android:id="@+id/collect"
+        android:icon="@mipmap/icon30"
+        android:showAsAction="always"
+        tools:ignore="AppCompatResource"
         android:title="@string/collect"/>
     <item
         android:id="@+id/refresh"
+        android:icon="@mipmap/icon33"
+        android:showAsAction="always"
+        tools:ignore="AppCompatResource"
         android:title="@string/refresh"/>
     <item
         android:id="@+id/reLocate"
+        android:icon="@mipmap/icon31"
+        android:showAsAction="always"
+        tools:ignore="AppCompatResource"
         android:title="@string/locate"/>
 
     <item
         android:id="@+id/scan"
+        android:icon="@mipmap/icon101"
         android:title="@string/scan"/>
 
     <item

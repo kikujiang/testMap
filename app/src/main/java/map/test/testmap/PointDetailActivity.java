@@ -313,6 +313,8 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
                 spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        TextView tv = (TextView)view;
+                        tv.setTextSize(15.0f);    //设置大小
                         String currentText = (String)spinner.getSelectedItem();
                         Log.d(TAG, "onItemClick 1: " + currentText);
                         for (DataType cur : Constants.pointTypeList) {
@@ -332,6 +334,8 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
                 spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        TextView tv = (TextView)view;
+                        tv.setTextSize(15.0f);    //设置大小
                         String currentText = (String)spinner.getSelectedItem();
                         Log.d(TAG, "onItemClick 2: " + currentText);
                         for (DataType cur : Constants.pointTerminalTypeList) {
@@ -352,6 +356,8 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
 
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        TextView tv = (TextView)view;
+                        tv.setTextSize(15.0f);    //设置大小
                         String currentText = (String)spinner.getSelectedItem();
                         Log.d(TAG, "onItemClick 3: " + currentText);
                         for (DataType cur : Constants.pointLineTypeList) {

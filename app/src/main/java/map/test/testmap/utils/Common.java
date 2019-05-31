@@ -2,18 +2,24 @@ package map.test.testmap.utils;
 
 import android.app.DownloadManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
+import android.webkit.MimeTypeMap;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -311,4 +317,31 @@ public class Common {
         }
         return null;
     }
+
+    public File saveImage(Context context, Bitmap source) throws Exception{
+        String fileParentPath =
+                Environment.getExternalStorageDirectory().getAbsolutePath() + "/TestMap/Download";
+        File appDir = new File(fileParentPath);
+        if (!appDir.exists()) {
+            appDir.mkdirs();
+        }
+        //保存的文件名
+        String fileName = "map" + System.currentTimeMillis() + ".jpg";
+        //目标文件
+        File targetFile = new File(appDir, fileName);
+        //输出文件流
+        FileOutputStream fos = new FileOutputStream(targetFile);
+        // 缓冲数组
+        source.compress(Bitmap.CompressFormat.JPEG, 90, fos);
+        fos.flush();
+        fos.close();
+        //扫描媒体库
+        String extension = MimeTypeMap.getFileExtensionFromUrl(targetFile.getAbsolutePath());
+        String mimeTypes = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+        MediaScannerConnection.scanFile(context, new String[]{targetFile.getAbsolutePath()},
+                new String[]{mimeTypes},null);
+
+        return targetFile;
+    }
+
 }

@@ -6,9 +6,11 @@ import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,6 +41,7 @@ public class TaskFragment extends Fragment {
     private ViewPager pager;
     private TabLayout tab;
     private LinearLayout loadingLayout;
+    private Toolbar toolbar;
 
     public TaskFragment() {
         // Required empty public constructor
@@ -64,6 +67,16 @@ public class TaskFragment extends Fragment {
         tab = view.findViewById(R.id.task_tab);
         pager = view.findViewById(R.id.task_pager);
         loadingLayout = view.findViewById(R.id.loading);
+        toolbar = view.findViewById(R.id.task_toolbar);
+
+        AppCompatActivity appCompatActivity= (AppCompatActivity) getActivity();
+        appCompatActivity.setSupportActionBar(toolbar);
+        ActionBar actionBar = appCompatActivity.getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle("");
+            actionBar.setDisplayHomeAsUpEnabled(false);
+        }
+
         new MyTask().execute();
         return view;
     }
@@ -74,6 +87,13 @@ public class TaskFragment extends Fragment {
             Log.d(TAG, "onHiddenChanged: called");
             new MyTask().execute();
         }
+    }
+
+    @Override
+    public void onResume() {
+        Log.d(TAG, "onResume: called!");
+        super.onResume();
+        new MyTask().execute();
     }
 
     class MyTask extends AsyncTask<Void,Void,ResponseTaskBean>{
@@ -111,6 +131,27 @@ public class TaskFragment extends Fragment {
             pager.setAdapter(null);
             MyAdapter adapter = new MyAdapter(getActivity().getSupportFragmentManager(),responseTaskBean,titles);
             pager.setAdapter(adapter);
+            Log.d(TAG, "onPostExecute: "+Constants.currentIndex);
+
+            pager.setCurrentItem(Constants.currentIndex);
+
+            pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                @Override
+                public void onPageScrolled(int i, float v, int i1) {
+
+                }
+
+                @Override
+                public void onPageSelected(int i) {
+                    Log.d(TAG, "onPageSelected: "+i);
+                    Constants.currentIndex = i;
+                }
+
+                @Override
+                public void onPageScrollStateChanged(int i) {
+
+                }
+            });
             tab.setupWithViewPager(pager);
         }
     }
@@ -137,9 +178,12 @@ class MyAdapter extends FragmentStatePagerAdapter {
         completedFragment = null;
     }
 
+    private static final String TAG = "task";
+
     @Override
     public Fragment getItem(int i) {
         Fragment cur = null;
+
         switch (i){
             case 0:
                 if(publishedFragment == null){
@@ -166,6 +210,7 @@ class MyAdapter extends FragmentStatePagerAdapter {
                 cur = completedFragment;
                 break;
         }
+
         return cur;
     }
 

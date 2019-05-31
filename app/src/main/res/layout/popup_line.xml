@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:fitsSystemWindows="true"
+    android:background="#ffffff"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -11,115 +12,105 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#ffffff"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
             android:orientation="vertical">
             <LinearLayout
                 android:layout_width="match_parent"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="光缆线路名称："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:text="光缆线路"
+                    style="@style/DetailTitle" />
                 <EditText
                     android:id="@+id/et_line_name"
-                    android:layout_marginLeft="5dp"
-                    android:inputType="none"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    style="@style/DetailContent" />
             </LinearLayout>
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
                 android:layout_width="match_parent"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="电力线路名称："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:text="电力线路"
+                    style="@style/DetailTitle" />
                 <EditText
                     android:id="@+id/et_line_name2"
-                    android:layout_marginLeft="5dp"
-                    android:inputType="none"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    style="@style/DetailContent" />
             </LinearLayout>
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_weight="1"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:orientation="horizontal"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="变电站："
-                    android:layout_width="wrap_content"
-                    android:gravity="center"
-                    android:layout_height="match_parent" />
+                    android:text="变  电  站"
+                    style="@style/DetailTitle" />
                 <EditText
                     android:id="@+id/et_line_belong"
-                    android:layout_marginLeft="5dp"
-                    android:inputType="none"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    style="@style/DetailContent" />
             </LinearLayout>
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
                 android:layout_width="match_parent"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="架设类型："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:text="架设类型"
+                    style="@style/DetailTitle"  />
                 <EditText
                     android:id="@+id/et_line_type"
-                    android:layout_marginLeft="5dp"
-                    android:inputType="none"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    style="@style/DetailContent" />
             </LinearLayout>
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
                 android:layout_width="match_parent"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="光缆长度："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:text="光缆长度"
+                    style="@style/DetailTitle" />
                 <EditText
                     android:id="@+id/et_line_length"
-                    android:layout_marginLeft="5dp"
-                    android:inputType="none"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    style="@style/DetailContent" />
             </LinearLayout>
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_weight="1"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="备注："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:text="备        注"
+                    style="@style/DetailTitle"  />
                 <EditText
                     android:id="@+id/et_line_remark"
-                    android:layout_marginLeft="5dp"
-                    android:inputType="none"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    style="@style/DetailContent" />
             </LinearLayout>
+            <View
+                style="@style/DetailLine"/>
         <LinearLayout
+            android:id="@+id/line_bottom"
             android:layout_width="match_parent"
             android:layout_weight="1"
-            android:padding="5dp"
+            android:paddingTop="15dp"
             android:orientation="horizontal"
             android:layout_height="wrap_content">
 

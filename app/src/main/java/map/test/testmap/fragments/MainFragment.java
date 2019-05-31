@@ -20,6 +20,7 @@ import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
+import android.support.annotation.RestrictTo;
 import android.support.design.widget.BottomSheetDialog;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -27,6 +28,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.menu.MenuBuilder;
+import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
@@ -62,7 +65,6 @@ import com.amap.api.maps.model.animation.AlphaAnimation;
 import com.amap.api.maps.model.animation.Animation;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.FutureTarget;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.qrcode.Constant;
 import com.example.qrcode.ScannerActivity;
@@ -71,6 +73,7 @@ import com.google.gson.reflect.TypeToken;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -249,12 +252,19 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                         pointList.add(currentPoint);
                     }
 
-                    clearImageData();
-                    if(currentPoint.getImages() != null){
-                        Log.d(TAG, "handleMessage: "+ currentPoint.getImages().size());
-                        configRemoteData(currentPoint.getImages());
-                    }
+//                    clearImageData();
+//                    if(currentPoint.getImages() != null){
+//                        Log.d(TAG, "handleMessage: "+ currentPoint.getImages().size());
+//                        configRemoteData(currentPoint.getImages());
+//                    }
                     addMarker(currentPoint);
+                    if(isMarkerClick){
+                        showBottomDialog();
+                        currentMarker.setTitle(currentPoint.getName());
+                        currentMarker.setSnippet(currentPoint.getTypeStr());
+                        isMarkerClick = false;
+                    }
+
                     break;
                 case MSG_MSG_ERROR:
                     String message = (String) msg.obj;
@@ -381,9 +391,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         Intent stateIntent = new Intent(getActivity(),LineStateHistoryActivity.class);
         Log.d(TAG, "传入的点id为：" + currentLine.getId());
         stateIntent.putExtra("line_id",currentLine.getId());
-        stateIntent.putExtra("line_modify",isLineCheckFix);
-        stateIntent.putExtra("line_verify",isLineCheckVerify);
-        startActivityForResult(stateIntent,Constants.REQUEST_LINE_CODE);
+        startActivity(stateIntent);
     }
 
     /**
@@ -701,7 +709,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     }
 
     private void getPointLineType(){
-        final String url = Constants.WEB_URL + Constants.TAG_GET_POINT_LINE_TYPE;
+        final String url = Constants.WEB_URL+ Constants.TAG_GET_POINT_LINE_TYPE;
         Log.d(TAG, "请求获取点光缆类型接口"+ url);
         final Map<String,String> data = new HashMap<>();
 
@@ -802,7 +810,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
 
 //        progressBar.setVisibility(View.GONE);
-        initToolbar(toolbar,"电力地理信息",false);
+        initToolbar(toolbar,false);
         initSearchView();
         initImageData();
 
@@ -861,14 +869,20 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
     private MaterialSearchView searchView = null;
 
-    public void initToolbar(Toolbar toolbar, String title, boolean isDisplayHomeAsUp) {
+    public void initToolbar(Toolbar toolbar, boolean isDisplayHomeAsUp) {
         AppCompatActivity appCompatActivity= (AppCompatActivity) getActivity();
+        toolbar.setOverflowIcon(getActivity().getResources().getDrawable(R.mipmap.icon35));
+
+        MenuBuilder menuBuilder = (MenuBuilder) toolbar.getMenu();
+        menuBuilder.setOptionalIconsVisible(true);
+
         appCompatActivity.setSupportActionBar(toolbar);
         ActionBar actionBar = appCompatActivity.getSupportActionBar();
         if (actionBar != null) {
-            actionBar.setTitle(title);
+            actionBar.setTitle("");
             actionBar.setDisplayHomeAsUpEnabled(isDisplayHomeAsUp);
         }
+
     }
 
     @Override
@@ -876,8 +890,10 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         super.onCreateOptionsMenu(menu, inflater);
         Log.d(TAG, "onCreateOptionsMenu: called!");
         inflater.inflate(R.menu.main,menu);
+
         MenuItem item = menu.findItem(R.id.search);
         searchView.setMenuItem(item);
+        searchView.setSubmitOnClick(true);
     }
 
     @Override
@@ -944,7 +960,8 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         }
 
         aMap.setMapType(AMap.MAP_TYPE_NORMAL);
-        aMap.moveCamera(CameraUpdateFactory.zoomTo(19));
+        aMap.moveCamera(CameraUpdateFactory.zoomTo(5));
+//        aMap.moveCamera(CameraUpdateFactory.zoomTo(19));
         AMap.OnPolylineClickListener l = new AMap.OnPolylineClickListener() {
             @Override
             public void onPolylineClick(Polyline polyline) {
@@ -988,9 +1005,11 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                         currentPoint = current;
                     }
                 }
-                showBottomDialog();
-                currentMarker.setTitle(currentPoint.getName());
-                currentMarker.setSnippet(currentPoint.getTypeStr());
+
+                isMarkerClick = true;
+                getSinglePoint(currentPoint.getId()+"");
+
+
 //                getSinglePoint(currentPoint.getId()+"");
 //                currentMarker.showInfoWindow();
                 return false;
@@ -1008,6 +1027,8 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     tempStartLat = marker.getPosition().latitude;
                     tempStartLng = marker.getPosition().longitude;
                     isEmptyMarker = true;
+                }else {
+                    isEmptyMarker = false;
                 }
             }
 
@@ -1319,6 +1340,13 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 //                startActivity(pointHistoryIntent);
                 break;
             case R.id.maintenance_close:
+                if(maintenanceDialog  != null){
+                    maintenanceDialog.dismiss();
+                }
+                currentImageType = TYPE_MAIN;
+                break;
+
+            case R.id.assistant_cancel:
                 if(maintenanceDialog  != null){
                     maintenanceDialog.dismiss();
                 }
@@ -1751,6 +1779,8 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         });
     }
 
+    private boolean isMarkerClick = false;
+
     private void getSinglePoint(String pointId){
         final String url = Constants.WEB_URL + Constants.TAG_GET_SINGLE_POINT;
         Log.d(TAG, "请求获取某个点接口" + url);
@@ -1762,6 +1792,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             public void success(Response responseMapBean) {
                 try{
                     String result = responseMapBean.body().string();
+                    Log.d(TAG, "success: point is: " + result);
                     Type type = new TypeToken<ResponseBean<Point>>(){}.getType();
                     ResponseBean<Point> currentData = new Gson().fromJson(result,type);
 
@@ -1895,40 +1926,40 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             markerOption.setFlat(true);//设置marker平贴地图效果
             final Marker marker = aMap.addMarker(markerOption);
 
-            if(current.getStatusIconUrl_APP() != null && !"".equals(current.getStatusIconUrl_APP())){
-                new Thread(){
-                    @Override
-                    public void run() {
-                        Log.d(TAG, "showAllPoint: 1"+current.getStatusIconUrl_APP());
-                        try {
-
-                            FutureTarget<Bitmap> futureTarget = Glide.with(MainFragment.this)
-                                                                        .applyDefaultRequestOptions(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
-                                                                        .asBitmap().load(current.getStatusIconUrl_APP()).submit();
-
-                            Bitmap bitmap = futureTarget.get();
-
-
-                            Log.d(TAG, "showAllPoint: 1================"+bitmap.getWidth()+","+bitmap.getHeight());
-                            marker.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
-                        }catch (Exception e){
-                            Log.d(TAG, "showAllPoint: 1"+e.getMessage());
-                        }
-                    }
-                }.start();
-
-//                File file = new File("/sdcard/123.png");
-//                Log.d(TAG, "showAllPoint: 1================"+file.exists());
-//                Uri uri = Uri.fromFile(file);
-//                try {
-//                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
-//                    Log.d(TAG, "showAllPoint: 1================"+bitmap.getWidth()+","+bitmap.getHeight());
-//                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
-//                } catch (IOException e) {
-//                    Log.d(TAG, "showAllPoint: 1================"+e.getMessage());
-//                }
-
-            }else{
+//            if(current.getStatusIconUrl_APP() != null && !"".equals(current.getStatusIconUrl_APP())){
+////                new Thread(){
+////                    @Override
+////                    public void run() {
+////                        Log.d(TAG, "showAllPoint: 1"+current.getStatusIconUrl_APP());
+////                        try {
+////
+////                            FutureTarget<Bitmap> futureTarget = Glide.with(MainFragment.this)
+////                                                                        .applyDefaultRequestOptions(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
+////                                                                        .asBitmap().load(current.getStatusIconUrl_APP()).submit();
+////
+////                            Bitmap bitmap = futureTarget.get();
+////
+////
+////                            Log.d(TAG, "showAllPoint: 1================"+bitmap.getWidth()+","+bitmap.getHeight());
+////                            marker.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
+////                        }catch (Exception e){
+////                            Log.d(TAG, "showAllPoint: 1"+e.getMessage());
+////                        }
+////                    }
+////                }.start();
+//
+////                File file = new File("/sdcard/123.png");
+////                Log.d(TAG, "showAllPoint: 1================"+file.exists());
+////                Uri uri = Uri.fromFile(file);
+////                try {
+////                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
+////                    Log.d(TAG, "showAllPoint: 1================"+bitmap.getWidth()+","+bitmap.getHeight());
+////                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
+////                } catch (IOException e) {
+////                    Log.d(TAG, "showAllPoint: 1================"+e.getMessage());
+////                }
+//
+//            }else{
                 Log.d(TAG, "showAllPoint: 2");
                 switch (current.getCheckStatus()){
                     case 0:
@@ -1955,25 +1986,25 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 //                        String pointType = current.getTypeStr();
                         if(pointType.equals("变电所")){
                             marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                    .decodeResource(getResources(),R.mipmap.mark_bs)));
+                                    .decodeResource(getResources(),R.mipmap.bds)));
                         }else if(pointType.equals("环网柜")){
                             marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                    .decodeResource(getResources(),R.mipmap.mark_bs)));
+                                    .decodeResource(getResources(),R.mipmap.hwg)));
                         }else if(pointType.equals("柱上开关")){
                             marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                    .decodeResource(getResources(),R.mipmap.mark_bs)));
+                                    .decodeResource(getResources(),R.mipmap.zskg)));
                         }else if(pointType.equals("配电房")){
                             marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                    .decodeResource(getResources(),R.mipmap.mark_bs)));
+                                    .decodeResource(getResources(),R.mipmap.pdf)));
                         }else if(pointType.equals("柱上变压器")){
                             marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                    .decodeResource(getResources(),R.mipmap.mark_bs)));
+                                    .decodeResource(getResources(),R.mipmap.zzbyq)));
                         }else if(pointType.equals("开闭所")){
                             marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                    .decodeResource(getResources(),R.mipmap.mark_bs)));
+                                    .decodeResource(getResources(),R.mipmap.kbs)));
                         }else if(pointType.equals("变压器")){
                             marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                    .decodeResource(getResources(),R.mipmap.mark_bs)));
+                                    .decodeResource(getResources(),R.mipmap.byq)));
                         }else{
                             marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
                                     .decodeResource(getResources(),R.mipmap.mark_bs)));
@@ -1981,7 +2012,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                         break;
                     case 2:
                         marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.mark_warn)));
+                                .decodeResource(getResources(),R.mipmap.mark_repair_1)));
                         break;
                     case 5:
                     case 3:
@@ -1993,7 +2024,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                                 .decodeResource(getResources(),R.mipmap.mark_repair_1)));
                         break;
                 }
-            }
+//            }
 
 //            switch (current.getCheckStatus()){
 //                case 0:
@@ -2078,6 +2109,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
         searchData.toArray(sData);
         searchView.setSuggestions(sData);
+        searchView.setSuggestionIcon(getResources().getDrawable(R.mipmap.icon16));
     }
 
     private void addMarker(final Point current){
@@ -2110,48 +2142,55 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         markerOption.setFlat(true);//设置marker平贴地图效果
         currentMarker = aMap.addMarker(markerOption);
 
-        if(current.getStatusIconUrl_APP() != null && !"".equals(current.getStatusIconUrl_APP())){
-
-                new Thread(){
-                    @Override
-                    public void run() {
-                        super.run();
-                        try {
-                            Bitmap bitmap = Glide.with(getActivity()).applyDefaultRequestOptions(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.DATA)).asBitmap().load(current.getStatusIconUrl_APP()).submit().get();
-                            currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
-                        }catch (Exception e){
-                            Log.d(TAG, "addMarker exception msg: "+e.getMessage());
-                        }
-                    }
-                }.start();
-
-        }else{
+//        if(current.getStatusIconUrl_APP() != null && !"".equals(current.getStatusIconUrl_APP())){
+//
+//                new Thread(){
+//                    @Override
+//                    public void run() {
+//                        super.run();
+//                        try {
+//                            Bitmap bitmap = Glide.with(getActivity()).applyDefaultRequestOptions(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.DATA)).asBitmap().load(current.getStatusIconUrl_APP()).submit().get();
+//                            currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
+//                        }catch (Exception e){
+//                            Log.d(TAG, "addMarker exception msg: "+e.getMessage());
+//                        }
+//                    }
+//                }.start();
+//
+//        }else{
             switch (current.getCheckStatus()){
                 case 0:
                 case 1:
 
                     String pointType = current.getTypeStr();
+
+                    if(pointType == null){
+                        currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                                .decodeResource(getResources(),R.mipmap.mark_bs)));
+                        break;
+                    }
+
                     if(pointType.equals("变电所")){
                         currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.mark_bs)));
+                                .decodeResource(getResources(),R.mipmap.bds)));
                     }else if(pointType.equals("环网柜")){
                         currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.mark_bs)));
+                                .decodeResource(getResources(),R.mipmap.hwg)));
                     }else if(pointType.equals("柱上开关")){
                         currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.mark_bs)));
+                                .decodeResource(getResources(),R.mipmap.zskg)));
                     }else if(pointType.equals("配电房")){
                         currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.mark_bs)));
+                                .decodeResource(getResources(),R.mipmap.pdf)));
                     }else if(pointType.equals("柱上变压器")){
                         currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.mark_bs)));
+                                .decodeResource(getResources(),R.mipmap.zzbyq)));
                     }else if(pointType.equals("开闭所")){
                         currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.mark_bs)));
+                                .decodeResource(getResources(),R.mipmap.kbs)));
                     }else if(pointType.equals("变压器")){
                         currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.mark_bs)));
+                                .decodeResource(getResources(),R.mipmap.byq)));
                     }else{
                         currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
                                 .decodeResource(getResources(),R.mipmap.mark_bs)));
@@ -2159,7 +2198,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     break;
                 case 2:
                     currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                            .decodeResource(getResources(),R.mipmap.mark_warn)));
+                            .decodeResource(getResources(),R.mipmap.mark_repair_1)));
                     break;
                 case 5:
                 case 3:
@@ -2171,7 +2210,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                             .decodeResource(getResources(),R.mipmap.mark_repair_1)));
                     break;
             }
-        }
+//        }
         currentMarker.showInfoWindow();
         Log.d(TAG, "current point is:" + current.getLocation_long()+" and "+current.getLocation_lat());
         if(aMap.getMaxZoomLevel() >= 20){
@@ -2230,6 +2269,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     private MyViewPagerAdapter adapter = null;
     private void configPager(){
 
+        Log.d(TAG, "configPager: hahahahahahaha");
         if(adapter == null){
             pagerWidth = (int) (getResources().getDisplayMetrics().widthPixels);
             ViewGroup.LayoutParams lp = pager.getLayoutParams();
@@ -2413,89 +2453,10 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             etPointBelong.setOnClickListener(this);
         }
 
-//        if(currentPoint != null){
-//            currentType = currentPoint.getType();
-//            currentTerminalType = currentPoint.getCe_type();
-//            currentLineType = currentPoint.getLe_type();
-//            Log.d(TAG, "showPointBottomDialog: current is:" + currentType);
-//            int index = 0;
-//            for (DataType item:Constants.pointTypeList) {
-//                if(item.getOptionValue() == currentType){
-//                    break;
-//                }
-//                index++;
-//            }
-//
-//            if (index == Constants.pointTypeList.size()){
-//                index = 0;
-//            }
-//
-//            spinnerType.setSelection(index);
-//            index = 0;
-//            for (DataType item:Constants.pointTerminalTypeList) {
-//                if(item.getOptionValue() == currentTerminalType){
-//                    break;
-//                }
-//                index++;
-//            }
-//            if (index == Constants.pointTerminalTypeList.size()){
-//                index = 0;
-//            }
-//            spinnerTerminalType.setSelection(index);
-//            index = 0;
-//            for (DataType item:Constants.pointLineTypeList) {
-//                if(item.getOptionValue() == currentLineType){
-//                    break;
-//                }
-//                index++;
-//            }
-//            if (index == Constants.pointLineTypeList.size()){
-//                index = 0;
-//            }
-//            spinnerLineType.setSelection(index);
-//
-//            String devicesItems = currentPoint.getMtype();
-//
-//            if(devicesItems != null && !"".equals(devicesItems)){
-//                String[] result = Common.getInstance().splitStr(devicesItems);
-//
-//                String[] indexStr = new String[result.length];
-//                if(result.length > 0){
-//                    int i = 0;
-//                    for (String item:result){
-//                        for (DataType cur:Constants.pointDeviceTypeList) {
-//                            if(cur.getOptionValue() == Integer.valueOf(item)){
-//                                indexStr[i] = cur.getOptionText();
-//                                i++;
-//                                break;
-//                            }
-//                        }
-//                    }
-//                }
-//                spinnerDeviceType.setSelection(indexStr);
-//            }else{
-//                String[] indexStr = new String[1];
-//                indexStr[0] = Constants.pointDeviceTypeList.get(0).getOptionText();
-//                spinnerDeviceType.setSelection(indexStr);
-//                spinnerDeviceType.setSelection(0);
-//            }
-//
-//            etName.setText(currentPoint.getName());
-//            etOther.setText(currentPoint.getRemark());
-//            etPhone.setText(currentPoint.getPhone());
-//            etIP.setText(currentPoint.getIp());
-//            etPointLine.setText(currentPoint.getLineName());
-//            etPointBelong.setText(currentPoint.getStationName());
-//
-//            if(isDrag){
-//                etLatitude.setText(String.valueOf(tempLat));
-//                etLongitude.setText(String.valueOf(tempLng));
-//            }else{
-//                etLatitude.setText(String.valueOf(currentPoint.getLocation_lat()));
-//                etLongitude.setText(String.valueOf(currentPoint.getLocation_long()));
-//            }
-//
-//        }else{
+        clearImageData();
+
+        if(current != null){
+            confirmBtn.setText("添加");
             spinnerType.setSelection(0);
             spinnerTerminalType.setSelection(0);
             spinnerLineType.setSelection(0);
@@ -2512,63 +2473,99 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             etONU.setText("");
             etPointLine.setText("");
             etPointBelong.setText("");
-
-//            if(isDrag){
-//                etLatitude.setText(String.valueOf(tempLat));
-//                etLongitude.setText(String.valueOf(tempLng));
-//            }else{
-                if(current != null){
-                    etLatitude.setText(String.valueOf(current.latitude));
-                    etLongitude.setText(String.valueOf(current.longitude));
-                }else{
-                    etLatitude.setText("");
-                    etLongitude.setText("");
+            naviBtn.setVisibility(View.GONE);
+            pointHistoryBtn.setVisibility(View.GONE);
+            stateBtn.setVisibility(View.GONE);
+            etLatitude.setText(String.valueOf(current.latitude));
+            etLongitude.setText(String.valueOf(current.longitude));
+        }else{
+            naviBtn.setVisibility(View.GONE);
+            pointHistoryBtn.setVisibility(View.GONE);
+            stateBtn.setVisibility(View.GONE);
+            currentType = currentPoint.getType();
+            currentTerminalType = currentPoint.getCe_type();
+            currentLineType = currentPoint.getLe_type();
+            Log.d(TAG, "showPointBottomDialog: current is:" + currentType);
+            int index = 0;
+            for (DataType item:Constants.pointTypeList) {
+                if(item.getOptionValue() == currentType){
+                    break;
                 }
-//            }
-//        }
+                index++;
+            }
 
-//        if (isAdd){
-//            confirmBtn.setText("添加");
-//            naviBtn.setVisibility(View.GONE);
-//            stateBtn.setVisibility(View.GONE);
-//            Common.getInstance().setEditTextTrue(etName);
-//            Common.getInstance().setEditTextTrue(etOther);
-//            Common.getInstance().setEditTextTrue(etPhone);
-//            Common.getInstance().setEditTextTrue(etIP);
-//            Common.getInstance().setEditTextTrue(etLatitude);
-//            Common.getInstance().setEditTextTrue(etLongitude);
-//            takePicBtn.setVisibility(View.VISIBLE);
-//            choosePicBtn.setVisibility(View.VISIBLE);
-//            confirmBtn.setVisibility(View.VISIBLE);
-//            locateBtn.setVisibility(View.VISIBLE);
-//        }else{
-//            confirmBtn.setText("修改");
-//            naviBtn.setVisibility(View.VISIBLE);
-//            stateBtn.setVisibility(View.VISIBLE);
-//            if(isPointWrite){
-//                Common.getInstance().setEditTextTrue(etName);
-//                Common.getInstance().setEditTextTrue(etOther);
-//                Common.getInstance().setEditTextTrue(etLatitude);
-//                Common.getInstance().setEditTextTrue(etLongitude);
-//                Common.getInstance().setEditTextTrue(etPhone);
-//                Common.getInstance().setEditTextTrue(etIP);
-//                takePicBtn.setVisibility(View.VISIBLE);
-//                choosePicBtn.setVisibility(View.VISIBLE);
-//                confirmBtn.setVisibility(View.VISIBLE);
-//                locateBtn.setVisibility(View.VISIBLE);
-//            }else{
-//                Common.getInstance().setEditTextFalse(etName);
-//                Common.getInstance().setEditTextFalse(etOther);
-//                Common.getInstance().setEditTextFalse(etPhone);
-//                Common.getInstance().setEditTextFalse(etIP);
-//                Common.getInstance().setEditTextFalse(etLatitude);
-//                Common.getInstance().setEditTextFalse(etLongitude);
-//                takePicBtn.setVisibility(View.GONE);
-//                choosePicBtn.setVisibility(View.GONE);
-//                confirmBtn.setVisibility(View.GONE);
-//                locateBtn.setVisibility(View.GONE);
-//            }
-//        }
+            if (index == Constants.pointTypeList.size()){
+                index = 0;
+            }
+
+            spinnerType.setSelection(index);
+            index = 0;
+            for (DataType item:Constants.pointTerminalTypeList) {
+                if(item.getOptionValue() == currentTerminalType){
+                    break;
+                }
+                index++;
+            }
+            if (index == Constants.pointTerminalTypeList.size()){
+                index = 0;
+            }
+            spinnerTerminalType.setSelection(index);
+            index = 0;
+            for (DataType item:Constants.pointLineTypeList) {
+                if(item.getOptionValue() == currentLineType){
+                    break;
+                }
+                index++;
+            }
+            if (index == Constants.pointLineTypeList.size()){
+                index = 0;
+            }
+            spinnerLineType.setSelection(index);
+
+            String devicesItems = currentPoint.getMtype();
+
+            if(devicesItems != null && !"".equals(devicesItems)){
+                String[] result = Common.getInstance().splitStr(devicesItems);
+
+                String[] indexStr = new String[result.length];
+                if(result.length > 0){
+                    int i = 0;
+                    for (String item:result){
+                        for (DataType cur:Constants.pointDeviceTypeList) {
+                            if(cur.getOptionValue() == Integer.valueOf(item)){
+                                indexStr[i] = cur.getOptionText();
+                                i++;
+                                break;
+                            }
+                        }
+                    }
+                }
+                spinnerDeviceType.setSelection(indexStr);
+            }else{
+                String[] indexStr = new String[1];
+                indexStr[0] = Constants.pointDeviceTypeList.get(0).getOptionText();
+                spinnerDeviceType.setSelection(indexStr);
+                spinnerDeviceType.setSelection(0);
+            }
+
+            etName.setText(currentPoint.getName());
+            etOther.setText(currentPoint.getRemark());
+            etPhone.setText(currentPoint.getPhone());
+            etIP.setText(currentPoint.getIp());
+            etIP2.setText(currentPoint.getIp2());
+            etPhone1.setText(currentPoint.getPhone1());
+            etPointLine.setText(currentPoint.getL_name());
+            etPointBelong.setText(currentPoint.getStationName());
+            confirmBtn.setText("修改");
+            etONU.setText(currentPoint.getIp_onu());
+            etLatitude.setText(String.valueOf(tempLat));
+            etLongitude.setText(String.valueOf(tempLng));
+
+            if(currentPoint.getImages() != null && currentPoint.getImages().size()>0){
+                Log.d(TAG, "handleMessage: "+ currentPoint.getImages().size());
+                configRemoteData(currentPoint.getImages());
+            }
+        }
 
         showPager();
         Log.d(TAG, "showPointBottomDialog:show");
@@ -2727,14 +2724,15 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
     private ViewPager maintenancePager = null;
     private TextView maintenanceTvEmpty = null;
-    private Button maintenanceBtnClose;
-    private Button maintenanceBtnAddNormal;
+    private LinearLayout maintenanceBtnClose;
+    private LinearLayout maintenanceBtnAddNormal;
     private Button maintenanceBtnAdd;
-    private Button maintenanceBtnAddSerious;
+    private LinearLayout maintenanceBtnAddSerious;
     private Button maintenanceBtnState;
     private Button maintenanceBtnTakePic;
     private Button maintenanceBtnPickPic;
     private Button maintenanceBtnLocate;
+    private Button assistantBtnClose;
     private List<ImageView> maintenanceImageViews = null;
     private List<String> maintenanceLocalPath = null;
     private EditText maintenanceLat;
@@ -2747,6 +2745,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     private LinearLayout lineLayout;
     private LinearLayout photoLayout;
     private LinearLayout reamrkLayout;
+    private LinearLayout opeartorLayout;
 
     private void showMaintenanceDialog(int type) {
         currentImageType = TYPE_MAINTENANCE;
@@ -2766,6 +2765,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             maintenanceRemark = view.findViewById(R.id.maintenance_et_remark);
             maintenanceLine = view.findViewById(R.id.maintenance_line);
             maintenanceTvEmpty = view.findViewById(R.id.maintenance_empty_text);
+            assistantBtnClose = view.findViewById(R.id.assistant_cancel);
             maintenanceLat = view.findViewById(R.id.maintenance_edit_latitude);
             maintenanceLng = view.findViewById(R.id.maintenance_edit_longitude);
             maintenancePager = view.findViewById(R.id.maintenance_viewPager);
@@ -2781,6 +2781,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             lineLayout = view.findViewById(R.id.maintenance_line_layout);
             photoLayout = view.findViewById(R.id.photo_layout);
             reamrkLayout = view.findViewById(R.id.layout_maintenance_remark);
+            opeartorLayout = view.findViewById(R.id.layout_operator);
 
             maintenanceBtnAddNormal.setOnClickListener(this);
             maintenanceBtnAddSerious.setOnClickListener(this);
@@ -2790,6 +2791,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             maintenanceBtnPickPic.setOnClickListener(this);
             maintenanceBtnLocate.setOnClickListener(this);
             maintenanceBtnAdd.setOnClickListener(this);
+            assistantBtnClose.setOnClickListener(this);
         }
 
         if(isMaintenanceAdd){
@@ -2799,14 +2801,17 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                 maintenanceBtnAddSerious.setVisibility(View.GONE);
                 maintenanceBtnAddNormal.setVisibility(View.GONE);
                 maintenanceBtnState.setVisibility(View.GONE);
+                maintenanceBtnClose.setVisibility(View.GONE);
                 lineLayout.setVisibility(View.GONE);
                 photoLayout.setVisibility(View.GONE);
                 reamrkLayout.setVisibility(View.GONE);
                 maintenanceBtnAdd.setVisibility(View.VISIBLE);
+                assistantBtnClose.setVisibility(View.VISIBLE);
                 maintenanceName.setText("");
                 maintenanceLat.setText("");
                 maintenanceLng.setText("");
                 maintenanceBtnLocate.setVisibility(View.VISIBLE);
+                opeartorLayout.setVisibility(View.GONE);
                 Common.getInstance().setEditTextTrue(maintenanceName);
                 Common.getInstance().setEditTextTrue(maintenanceLat);
                 Common.getInstance().setEditTextTrue(maintenanceLng);
@@ -2814,8 +2819,11 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                 maintenanceBtnState.setVisibility(View.GONE);
                 lineLayout.setVisibility(View.GONE);
                 maintenanceBtnAdd.setVisibility(View.GONE);
+                assistantBtnClose.setVisibility(View.GONE);
                 photoLayout.setVisibility(View.VISIBLE);
                 reamrkLayout.setVisibility(View.VISIBLE);
+                opeartorLayout.setVisibility(View.VISIBLE);
+                maintenanceBtnClose.setVisibility(View.VISIBLE);
                 maintenanceRemark.setText("");
                 maintenanceName.setText("");
                 maintenanceLat.setText("");
@@ -2865,6 +2873,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             maintenanceBtnAdd.setVisibility(View.GONE);
             maintenanceBtnState.setVisibility(View.VISIBLE);
             lineLayout.setVisibility(View.VISIBLE);
+            opeartorLayout.setVisibility(View.VISIBLE);
             photoLayout.setVisibility(View.GONE);
             reamrkLayout.setVisibility(View.VISIBLE);
             maintenanceBtnPickPic.setVisibility(View.GONE);
@@ -3296,15 +3305,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     }
                     break;
                 case Constants.REQUEST_LINE_CODE:
-                    int lineId = data.getIntExtra("lineId",-1);
-                    int pointId1 = data.getIntExtra("pointId",-1);
-                    Log.d(TAG, "onActivityResult: 线id:" + lineId+",point id is:" + pointId1);
-//                    if(lineId != -1){
-//                        getSingleLine(lineId+"");
-//                    }
-//                    if(pointId1 != -1){
-//                        getSinglePoint(pointId1+"");
-//                    }
+
                     break;
                 default:
             }

@@ -10,102 +10,137 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:orientation="vertical"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
         android:layout_height="wrap_content">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
             android:orientation="horizontal">
             <TextView
                 android:text="任务名称"
-                style="@style/CustomTextView" />
+                style="@style/DetailTitle" />
 
             <TextView
-                android:layout_marginLeft="5dp"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                style="@style/DetailContent"
                 android:text="@{detail.name}"
                 />
         </LinearLayout>
-
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            style="@style/DetailLine"/>
         <LinearLayout
             android:id="@+id/layout_auditor"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
             android:orientation="horizontal">
             <TextView
-                android:text="提交人"
-                style="@style/CustomTextView" />
+                android:text="提  交  人"
+                style="@style/DetailTitle" />
 
             <TextView
-                android:layout_marginLeft="5dp"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                style="@style/DetailContent"
                 android:text="@{detail.createUserName}"
                 />
         </LinearLayout>
-
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            style="@style/DetailLine"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:orientation="horizontal"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
             android:layout_height="wrap_content">
             <TextView
-                android:text="执行人"
-                style="@style/CustomTextView" />
+                android:text="执  行  人"
+                style="@style/DetailTitle" />
             <TextView
                 android:text="@{detail.putUserName}"
-                style="@style/CustomEditText"/>
+                style="@style/DetailContent"/>
         </LinearLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            style="@style/DetailLine"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:orientation="horizontal"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
             android:layout_height="wrap_content">
             <TextView
                 android:text="提交时间"
-                style="@style/CustomTextView" />
+                style="@style/DetailTitle" />
             <TextView
                 android:text="@{detail.createTime}"
-                style="@style/CustomEditText" />
+                style="@style/DetailContent" />
         </LinearLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            style="@style/DetailLine"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:orientation="horizontal"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
             android:layout_height="wrap_content">
             <TextView
                 android:text="当前状态"
-                style="@style/CustomTextView" />
+                style="@style/DetailTitle" />
             <TextView
                 android:text="@{detail.statusStr}"
-                style="@style/CustomEditText"/>
+                style="@style/DetailContent"/>
         </LinearLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            style="@style/DetailLine"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:orientation="horizontal"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
             android:layout_height="wrap_content">
             <TextView
                 android:text="是否延期"
-                style="@style/CustomTextView" />
+                style="@style/DetailTitle" />
             <TextView
                 android:id="@+id/overtime"
-                style="@style/CustomEditText"/>
+                style="@style/DetailContent"/>
         </LinearLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            style="@style/DetailLine"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:orientation="horizontal"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
             android:layout_height="wrap_content">
             <TextView
                 android:text="检修备注"
-                style="@style/CustomTextView" />
+                style="@style/DetailTitle" />
             <TextView
                 android:text="@{detail.remark}"
-                style="@style/CustomEditText"/>
+                style="@style/DetailContent"/>
         </LinearLayout>
-
         <LinearLayout
             android:id="@+id/image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
             android:layerType="software"
             android:orientation="horizontal">
             <android.support.v4.view.ViewPager

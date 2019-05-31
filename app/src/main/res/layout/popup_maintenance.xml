@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:fitsSystemWindows="true"
     android:layout_width="match_parent"
@@ -11,50 +12,70 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:background="#ffffff"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
             android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:padding="5dp"
                 android:layout_weight="1"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_height="wrap_content">
                 <TextView
                     android:text="名称："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    style="@style/DetailTitle"/>
                 <EditText
                     android:id="@+id/maintenance_et_name"
-                    android:layout_marginLeft="5dp"
-                    android:inputType="none"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    style="@style/DetailContent" />
             </LinearLayout>
 
+            <View
+                style="@style/DetailLine"/>
+
             <LinearLayout
+                android:id="@+id/layout_operator"
                 android:layout_width="match_parent"
-                android:padding="5dp"
+                android:orientation="vertical"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content">
-                <TextView
-                    android:text="检修人"
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
-
-                <Spinner
-                    android:id="@+id/spinner_operator_list"
-                    android:layout_marginLeft="5dp"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:text="检修人"
+                        style="@style/DetailTitle" />
+
+                    <Spinner
+                        android:id="@+id/spinner_operator_list"
+                        android:layout_marginLeft="5dp"
+                        android:background="@mipmap/spinner2"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+                </LinearLayout>
+
+                <View
+                    style="@style/DetailLine"/>
             </LinearLayout>
 
+
+
             <LinearLayout
+                android:visibility="gone"
                 android:id="@+id/maintenance_line_layout"
                 android:layout_width="match_parent"
                 android:orientation="horizontal"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content">
                 <TextView
@@ -73,81 +94,99 @@
                 android:id="@+id/layout_locate"
                 android:layout_width="match_parent"
                 android:orientation="horizontal"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content">
-                <TextView
-                    android:text="经度："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
-                <EditText
-                    android:id="@+id/maintenance_edit_longitude"
-                    android:layout_weight="1"
-                    android:textSize="12sp"
-                    android:layout_marginLeft="5dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
-                <TextView
-                    android:text="纬度："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
-                <EditText
-                    android:id="@+id/maintenance_edit_latitude"
-                    android:layout_weight="1"
-                    android:layout_marginLeft="5dp"
-                    android:textSize="12sp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
-                <Button
-                    android:id="@+id/maintenance_locate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="5dp"
-                    android:text="定位"/>
-            </LinearLayout>
 
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="5"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical">
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="15dp"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:text="经度"
+                            style="@style/DetailTitle"/>
+                        <EditText
+                            android:id="@+id/maintenance_edit_longitude"
+                            style="@style/DetailContent" />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:text="纬度"
+                            style="@style/DetailTitle"/>
+                        <EditText
+                            android:id="@+id/maintenance_edit_latitude"
+                            style="@style/DetailContent" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:layout_height="match_parent">
+                    <Button
+                        android:id="@+id/maintenance_locate"
+                        android:layout_width="97.5dp"
+                        android:layout_height="68dp"
+                        android:background="@mipmap/icon10"/>
+                </LinearLayout>
+
+            </LinearLayout>
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
                 android:id="@+id/layout_maintenance_remark"
                 android:layout_width="match_parent"
-                android:padding="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content">
                 <TextView
                     android:text="备注："
-                    android:gravity="center"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    style="@style/DetailTitle" />
                 <EditText
                     android:id="@+id/maintenance_et_remark"
-                    android:layout_marginLeft="5dp"
-                    android:inputType="none"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    style="@style/DetailContent" />
             </LinearLayout>
-
+            <View
+                style="@style/DetailLine"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:orientation="horizontal">
                 <Button
                     android:id="@+id/maintenance_take_pic"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="拍照"/>
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@mipmap/icon8"/>
                 <Button
                     android:id="@+id/maintenance_pick_pic"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:text="选择图片"/>
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_marginLeft="25dp"
+                    android:background="@mipmap/icon9"/>
             </LinearLayout>
             <LinearLayout
                 android:id="@+id/photo_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:layerType="software"
                 android:orientation="horizontal">
                 <TextView
@@ -163,46 +202,128 @@
                     android:clipChildren="false"/>
             </LinearLayout>
 
-            <LinearLayout
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:paddingTop="15dp"
+            android:orientation="horizontal"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/maintenance_add"
                 android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:padding="5dp"
+                android:background="@color/button"
+                android:textColor="@android:color/white"
+                android:textSize="15sp"
+                android:text="新增"/>
+
+            <Button
+                android:id="@+id/assistant_cancel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginLeft="1dp"
+                android:background="@color/button"
+                android:textColor="@android:color/white"
+                android:textSize="15sp"
+                android:text="取消"/>
+
+            <LinearLayout
+                android:id="@+id/maintenance_add_normal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_height="wrap_content">
+                android:background="@color/button"
+                android:padding="15dp"
+                android:gravity="center"
+                android:layout_weight="1">
 
-                <Button
-                    android:id="@+id/maintenance_add"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textSize="14sp"
-                    android:text="新增"/>
-                <Button
-                    android:id="@+id/maintenance_add_normal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="维修（一般）"/>
-                <Button
-                    android:id="@+id/maintenance_add_serious"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="维修（紧急）"/>
-                <Button
-                    android:id="@+id/maintenance_close"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="关闭"/>
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    app:civ_border_width="5dp"
+                    app:civ_border_color="#FFFFFF"
+                    app:civ_circle_background_color="#FFFFFF"
+                    android:src="@mipmap/icon11"/>
 
-                <Button
-                    android:id="@+id/maintenance_state"
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_width="35dp"
+                    android:textSize="15sp"
+                    android:layout_marginLeft="15dp"
+                    android:textColor="@android:color/white"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="维修详情"/>
+                    android:text="一般维修"/>
             </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/maintenance_add_serious"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:background="@color/button"
+                android:padding="15dp"
+                android:gravity="center"
+                android:layout_marginLeft="1dp"
+                android:layout_weight="1">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    app:civ_border_width="5dp"
+                    app:civ_border_color="#FFFFFF"
+                    app:civ_circle_background_color="#FFFFFF"
+                    android:src="@mipmap/icon12"/>
+
+                <TextView
+                    android:layout_width="35dp"
+                    android:textSize="15sp"
+                    android:layout_marginLeft="15dp"
+                    android:textColor="@android:color/white"
+                    android:layout_height="wrap_content"
+                    android:text="紧急维修"/>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/maintenance_close"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:background="@color/button"
+                android:layout_marginLeft="1dp"
+                android:padding="15dp"
+                android:gravity="center"
+                android:layout_weight="1">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    app:civ_border_width="5dp"
+                    app:civ_border_color="#FFFFFF"
+                    app:civ_circle_background_color="#FFFFFF"
+                    android:src="@mipmap/icon13"/>
+
+                <TextView
+                    android:layout_width="35dp"
+                    android:textSize="15sp"
+                    android:layout_marginLeft="15dp"
+                    android:textColor="@android:color/white"
+                    android:layout_height="wrap_content"
+                    android:text="关闭"/>
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/maintenance_state"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="维修详情"/>
+        </LinearLayout>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

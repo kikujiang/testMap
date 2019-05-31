@@ -61,7 +61,7 @@ public class BadgeUtil {
         } else if (Build.MANUFACTURER.toLowerCase().contains("OPPO")) {
             setOPPOBadgeCount(context, count);
         } else {
-            Toast.makeText(context,"不支持角标提示数",Toast.LENGTH_LONG).show();
+//            Toast.makeText(context,"不支持角标提示数",Toast.LENGTH_LONG).show();
         }
     }
 

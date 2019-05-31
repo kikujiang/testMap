@@ -206,7 +206,7 @@ public class NaviMain extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        BadgeUtil.setBadgeCount(NaviMain.this,0);
+
     }
 
     /**

@@ -8,7 +8,7 @@ import android.os.Parcelable;
  *{
  * 	"username": "测试用户1",
  * 	"userAccount": "test_user",
- * 	"password": "",
+ * 	"password_selector": "",
  * 	"level": 0,
  * 	"id": 1
  *
