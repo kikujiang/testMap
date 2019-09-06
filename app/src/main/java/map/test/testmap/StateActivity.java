@@ -57,6 +57,7 @@ import map.test.testmap.mvvm.data.model.TaskDetailBean;
 import map.test.testmap.utils.Common;
 import map.test.testmap.utils.HttpUtils;
 import map.test.testmap.utils.MyViewPagerAdapter;
+import map.test.testmap.utils.PreferencesUtils;
 import map.test.testmap.view.MultiSelectionSpinner;
 import retrofit2.Response;
 
@@ -271,6 +272,15 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
                         ResponseBean<ResponseCheckHistory> data = ( ResponseBean<ResponseCheckHistory>)responseMapBean.body();
 
                         if(data.getResult() == 2){
+                            if(data.getDesc().equals("登陆已过期,请重新登陆")){
+                                Toast.makeText(StateActivity.this,"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                                PreferencesUtils.putString(StateActivity.this,"account",null);
+                                PreferencesUtils.putString(StateActivity.this,"password_selector",null);
+                                Intent intent = new Intent(StateActivity.this, LoginActivity.class);
+                                startActivity(intent);
+                                finish();
+                                return;
+                            }
                             stateList = new ArrayList<>();
                             showListFragment();
                         }else if(data.getResult() == 1){
@@ -369,6 +379,14 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
                                   }
                               }
                           });
+                      }else if(data.getDesc().equals("登陆已过期,请重新登陆")){
+                          Toast.makeText(StateActivity.this,"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                          PreferencesUtils.putString(StateActivity.this,"account",null);
+                          PreferencesUtils.putString(StateActivity.this,"password_selector",null);
+                          Intent intent = new Intent(StateActivity.this, LoginActivity.class);
+                          startActivity(intent);
+                          finish();
+                          return;
                       }
                     }
                 });
@@ -401,6 +419,17 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
                         }
                     });
                 }else if(data.getResult() == 2){
+
+                    if(data.getDesc().equals("登陆已过期,请重新登陆")){
+                        Toast.makeText(StateActivity.this,"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                        PreferencesUtils.putString(StateActivity.this,"account",null);
+                        PreferencesUtils.putString(StateActivity.this,"password_selector",null);
+                        Intent intent = new Intent(StateActivity.this, LoginActivity.class);
+                        startActivity(intent);
+                        finish();
+                        return;
+                    }
+
                     if(null == data.getDesc()||"".equals(data.getDesc())){
                         Toast.makeText(StateActivity.this,"提交失败",Toast.LENGTH_LONG).show();
                     }else{
@@ -432,6 +461,17 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
                         }
                     });
                 }else if(data.getResult() == 2){
+
+                    if(data.getDesc().equals("登陆已过期,请重新登陆")){
+                        Toast.makeText(StateActivity.this,"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                        PreferencesUtils.putString(StateActivity.this,"account",null);
+                        PreferencesUtils.putString(StateActivity.this,"password_selector",null);
+                        Intent intent = new Intent(StateActivity.this, LoginActivity.class);
+                        startActivity(intent);
+                        finish();
+                        return;
+                    }
+
                     if(null == data.getDesc()||"".equals(data.getDesc())){
                         Toast.makeText(StateActivity.this,"提交失败",Toast.LENGTH_LONG).show();
                     }else{
@@ -804,8 +844,6 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
                 @Override
                 public void selectedStrings(List<String> strings) {
 
-
-
                     if(strings.size() > 0){
                         String[] result = new String[strings.size()];
                         int i = 0;
@@ -932,8 +970,15 @@ public class StateActivity extends AppCompatActivity implements StateListFragmen
         @Override
         protected void onPostExecute(TaskDetailBean bean) {
             if(bean == null){
-                Toast.makeText(StateActivity.this,"获取任务详情失败！",Toast.LENGTH_LONG).show();
+                Toast.makeText(StateActivity.this,"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                PreferencesUtils.putString(StateActivity.this,"account",null);
+                PreferencesUtils.putString(StateActivity.this,"password_selector",null);
+                Intent intent = new Intent(StateActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
                 return;
+//                Toast.makeText(StateActivity.this,"获取任务详情失败！",Toast.LENGTH_LONG).show();
+//                return;
             }
             super.onPostExecute(bean);
             currentState = new State();

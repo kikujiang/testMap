@@ -72,6 +72,8 @@
                 <Spinner
                     android:id="@+id/spinner_type"
                     android:background="@mipmap/spinner2"
+                    android:spinnerMode="dialog"
+                    android:prompt="@string/title"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
             </LinearLayout>
@@ -90,6 +92,8 @@
                     android:id="@+id/spinner_device_type"
                     android:layout_marginLeft="8dp"
                     android:background="@mipmap/spinner2"
+                    android:spinnerMode="dialog"
+                    android:prompt="@string/title"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
             </LinearLayout>
@@ -108,6 +112,8 @@
                     android:id="@+id/spinner_terminal_type"
                     android:background="@mipmap/spinner2"
                     android:layout_width="match_parent"
+                    android:spinnerMode="dialog"
+                    android:prompt="@string/title"
                     android:layout_height="match_parent" />
             </LinearLayout>
             <View
@@ -125,7 +131,26 @@
                     android:id="@+id/spinner_line_type"
                     android:background="@mipmap/spinner2"
                     android:layout_width="match_parent"
+                    android:spinnerMode="dialog"
+                    android:prompt="@string/title"
                     android:layout_height="match_parent" />
+            </LinearLayout>
+
+            <View
+                style="@style/DetailLine"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_weight="1"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:text="管  理  员"
+                    style="@style/DetailTitle" />
+                <EditText
+                    android:layout_marginLeft="18dp"
+                    android:id="@+id/edit_manager"
+                    style="@style/DetailContent" />
             </LinearLayout>
 
             <View

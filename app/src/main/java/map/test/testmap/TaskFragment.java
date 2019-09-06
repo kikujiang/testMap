@@ -1,6 +1,7 @@
 package map.test.testmap;
 
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -16,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import java.io.IOException;
 
@@ -26,6 +28,7 @@ import map.test.testmap.fragments.ToBeVerifyFragment;
 import map.test.testmap.model.ResponseBean;
 import map.test.testmap.model.ResponseTaskBean;
 import map.test.testmap.utils.HttpUtils;
+import map.test.testmap.utils.PreferencesUtils;
 import retrofit2.Response;
 
 
@@ -108,6 +111,7 @@ public class TaskFragment extends Fragment {
             try{
                 Response<ResponseBean<ResponseTaskBean>> response = HttpUtils.getInstance().getTaskList();
                 Log.d(TAG, "doInBackground: called");
+
                 return response.body().getObject();
             }catch (IOException e){
                 return null;
@@ -116,18 +120,24 @@ public class TaskFragment extends Fragment {
 
         @Override
         protected void onPostExecute(ResponseTaskBean result) {
+
+
+            if (result == null){
+                //出现异常，强制退出
+                Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                PreferencesUtils.putString(getActivity(),"account",null);
+                PreferencesUtils.putString(getActivity(),"password_selector",null);
+                Intent intent = new Intent(getActivity(),LoginActivity.class);
+                startActivity(intent);
+                getActivity().finish();
+                return;
+            }
+
             loadingLayout.setVisibility(View.GONE);
             String[] titles = new String[]{"已发布","待修复","待审核","已完成"};
             Log.d(TAG, "onPostExecute: "+result);
-            ResponseTaskBean responseTaskBean = null;
-            if(result != null){
-                responseTaskBean = result;
-            }else {
-                responseTaskBean.setTasks1(null);
-                responseTaskBean.setTasks2(null);
-                responseTaskBean.setTasks3(null);
-                responseTaskBean.setTasks4(null);
-            }
+            ResponseTaskBean responseTaskBean = result;
+
             pager.setAdapter(null);
             MyAdapter adapter = new MyAdapter(getActivity().getSupportFragmentManager(),responseTaskBean,titles);
             pager.setAdapter(adapter);

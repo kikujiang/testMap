@@ -10,6 +10,7 @@
     <string name="clear">清除数据</string>
     <string name="update">检查新版本</string>
     <string name="exit">退出当前账号</string>
+    <string name="title">请选择</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">功能开发中，敬请期待！</string>

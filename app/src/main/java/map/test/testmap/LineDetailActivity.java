@@ -1,5 +1,6 @@
 package map.test.testmap;
 
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -28,6 +29,7 @@ import map.test.testmap.model.OnInfoListener;
 import map.test.testmap.model.ResponseBean;
 import map.test.testmap.utils.Common;
 import map.test.testmap.utils.OkHttpClientManager;
+import map.test.testmap.utils.PreferencesUtils;
 import okhttp3.Response;
 
 public class LineDetailActivity extends AppCompatActivity {
@@ -90,6 +92,7 @@ public class LineDetailActivity extends AppCompatActivity {
     private EditText etLineType;
     private EditText etLineBelong;
     private EditText etLineRemark;
+    private EditText etLineManager;
     private EditText etLineName2;
     private EditText etLineLength;
 
@@ -113,6 +116,7 @@ public class LineDetailActivity extends AppCompatActivity {
         etLineLength = findViewById(R.id.et_line_length);
 
         etLineRemark = findViewById(R.id.et_line_remark);
+        etLineManager = findViewById(R.id.et_line_manager);
 
         btnLineConfirm = findViewById(R.id.btn_ok);
         btnLineState = findViewById(R.id.line_state);
@@ -126,6 +130,7 @@ public class LineDetailActivity extends AppCompatActivity {
         Common.getInstance().setEditTextFalse(etLineName2);
         Common.getInstance().setEditTextFalse(etLineLength);
         Common.getInstance().setEditTextFalse(etLineRemark);
+        Common.getInstance().setEditTextFalse(etLineManager);
 
         btnLineConfirm.setVisibility(View.GONE);
         btnLineState.setVisibility(View.GONE);
@@ -180,6 +185,10 @@ public class LineDetailActivity extends AppCompatActivity {
         etLineType.setText(currentLine.getPosTypeStr());
         etLineRemark.setText(currentLine.getRemark());
 
+        if(currentLine.getManageUserName() != null){
+            etLineManager.setText(currentLine.getManageUserName());
+        }
+
         if(currentLine.getStationName() != null){
             etLineBelong.setText(currentLine.getStationName());
         }
@@ -211,6 +220,15 @@ public class LineDetailActivity extends AppCompatActivity {
                     ResponseBean<Line> currentData = new Gson().fromJson(result,type);
 
                     if(currentData.getResult() == Constants.RESULT_FAIL){
+                        if(currentData.getDesc().equals("登陆已过期,请重新登陆")){
+                            Toast.makeText(LineDetailActivity.this,"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                            PreferencesUtils.putString(LineDetailActivity.this,"account",null);
+                            PreferencesUtils.putString(LineDetailActivity.this,"password_selector",null);
+                            Intent intent = new Intent(LineDetailActivity.this, LoginActivity.class);
+                            startActivity(intent);
+                            finish();
+                            return;
+                        }
                         sendFailureMsg("保存失败，原因是："+currentData.getDesc());
                     }
 

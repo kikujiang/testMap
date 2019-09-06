@@ -20,10 +20,12 @@ import android.widget.Toast;
 
 import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.ResponseBean;
+import map.test.testmap.model.TaskInfo;
 import map.test.testmap.model.User;
 import map.test.testmap.utils.Common;
 import map.test.testmap.utils.HttpUtils;
 import map.test.testmap.utils.PreferencesUtils;
+import retrofit2.Response;
 
 
 /**
@@ -40,6 +42,12 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
     private TextView tvPhone;
     private TextView tvEmail;
     private TextView tvVersion;
+
+    private TextView tvTotal1;
+    private TextView tvTotal2;
+    private TextView tvNew1;
+    private TextView tvNew2;
+
     private int userId = -1;
 
     private Toolbar toolbar;
@@ -65,17 +73,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
         if (getArguments() != null) {
             userId = getArguments().getInt(ARG_PARAM1);
         }
-
-//        StatusBarUtil.setRootViewFitsSystemWindows(getActivity(),true);
-        //设置状态栏透明
-//        StatusBarUtil.setTranslucentStatus(getActivity());
-        //一般的手机的状态栏文字和图标都是白色的, 可如果你的应用也是纯白色的, 或导致状态栏文字看不清
-        //所以如果你是这种情况,请使用以下代码, 设置状态使用深色文字图标风格, 否则你可以选择性注释掉这个if内容
-//        if (!StatusBarUtil.setStatusBarDarkTheme(getActivity(), true)) {
-//            //如果不支持设置深色风格 为了兼容总不能让状态栏白白的看不清, 于是设置一个状态栏颜色为半透明,
-//            //这样半透明+白=灰, 状态栏的文字能看得清
-//            StatusBarUtil.setStatusBarColor(getActivity(),0x55000000);
-//        }
     }
 
     @Override
@@ -96,6 +93,10 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
         tvPhone = view.findViewById(R.id.tv_settings_phone);
         tvEmail = view.findViewById(R.id.tv_settings_mail);
         tvVersion = view.findViewById(R.id.tv_settings_version);
+        tvTotal1 = view.findViewById(R.id.settings_total);
+        tvTotal2 = view.findViewById(R.id.settings_total2);
+        tvNew1 = view.findViewById(R.id.settings_new);
+        tvNew2 = view.findViewById(R.id.settings_new2);
         toolbar = view.findViewById(R.id.settings_toolbar);
 
         tvVersion.setText(Common.getInstance().getVersionName(getActivity()));
@@ -117,6 +118,63 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
         }
 
         getUserInfo();
+        getTaskInfo();
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+
+        if(!hidden){
+            getTaskInfo();
+        }
+
+    }
+
+    private void getTaskInfo(){
+        HttpUtils.getInstance().getTaskInfo(new OnResponseListener() {
+            @Override
+            public void success(Response responseMapBean) {
+                if(responseMapBean == null){
+                    Log.d(TAG, "responseMapBean is null!" );
+                    return;
+                }
+
+                ResponseBean<TaskInfo> taskInfo = (ResponseBean<TaskInfo>)responseMapBean.body();
+                if(taskInfo.getResult() == Constants.RESULT_FAIL){
+                    if(taskInfo.getDesc().equals("登陆已过期,请重新登陆")){
+                        Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                        PreferencesUtils.putString(getActivity(),"account",null);
+                        PreferencesUtils.putString(getActivity(),"password_selector",null);
+                        Intent intent = new Intent(getActivity(),LoginActivity.class);
+                        startActivity(intent);
+                        getActivity().finish();
+                        return;
+                    }
+                    Log.d(TAG, "fali: "+ taskInfo);
+
+                }
+
+                if(taskInfo.getResult() == Constants.RESULT_OK){
+                    final TaskInfo curTaskInfo = taskInfo.getObject();
+
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            tvTotal1.setText(curTaskInfo.getCheckSum()+"条");
+                            tvTotal2.setText(curTaskInfo.getPublishSum()+"条");
+                            tvNew1.setText(curTaskInfo.getCheckAdd()+"条");
+                            tvNew2.setText(curTaskInfo.getPublishAdd()+"条");
+                        }
+                    });
+
+                }
+            }
+
+            @Override
+            public void fail(Throwable e) {
+            }
+        });
     }
 
     /**
@@ -135,6 +193,16 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
                 final ResponseBean<User> current = (ResponseBean<User>)responseMapBean.body();
                 if(current.getResult() == Constants.RESULT_FAIL){
                     Log.d(TAG, "success: "+ current);
+
+                    if(current.getDesc().equals("登陆已过期,请重新登陆")){
+                        Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                        PreferencesUtils.putString(getActivity(),"account",null);
+                        PreferencesUtils.putString(getActivity(),"password_selector",null);
+                        Intent intent = new Intent(getActivity(),LoginActivity.class);
+                        startActivity(intent);
+                        getActivity().finish();
+                        return;
+                    }
                 }
 
                 if(current.getResult() == Constants.RESULT_OK){
@@ -199,6 +267,17 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
 
                 ResponseBean current = (ResponseBean)responseMapBean.body();
                 if(current.getResult() == Constants.RESULT_FAIL){
+
+                    if(current.getDesc().equals("登陆已过期,请重新登陆")){
+                        Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                        PreferencesUtils.putString(getActivity(),"account",null);
+                        PreferencesUtils.putString(getActivity(),"password_selector",null);
+                        Intent intent = new Intent(getActivity(),LoginActivity.class);
+                        startActivity(intent);
+                        getActivity().finish();
+                        return;
+                    }
+
                     Log.d(TAG, "fail: "+current);
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
@@ -250,6 +329,17 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
                 ResponseBean current = (ResponseBean)responseMapBean.body();
                 if(current.getResult() == Constants.RESULT_FAIL){
                     Log.d(TAG, "fail message is:" + current.getDesc());
+
+                    if(current.getDesc().equals("登陆已过期,请重新登陆")){
+                        Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                        PreferencesUtils.putString(getActivity(),"account",null);
+                        PreferencesUtils.putString(getActivity(),"password_selector",null);
+                        Intent intent = new Intent(getActivity(),LoginActivity.class);
+                        startActivity(intent);
+                        getActivity().finish();
+                        return;
+                    }
+
                     Toast.makeText(getActivity(),current.getDesc(),Toast.LENGTH_LONG).show();
                 }
 

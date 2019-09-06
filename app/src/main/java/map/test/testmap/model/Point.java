@@ -5,6 +5,8 @@ import android.os.Parcelable;
 
 import com.google.gson.annotations.SerializedName;
 
+import org.litepal.crud.LitePalSupport;
+
 import java.util.List;
 
 /**
@@ -23,10 +25,12 @@ import java.util.List;
  * 	"remark": "rtretreter",
  * 	"id": 4
  * 	"checkStatus": 0,
- *             "tagCheckId": 0,
+ *  "tagCheckId": 0,
  * }
  */
-public class Point implements Parcelable {
+public class Point extends LitePalSupport implements Parcelable {
+
+    private String manageUserName;
 
     private String name;
     private String tagNo;
@@ -42,7 +46,8 @@ public class Point implements Parcelable {
     private String createTime;
     private User createUser;
     private String remark;
-    private int id;
+    @SerializedName("id")
+    private int pointId;
     private int tagCheckId;
     private int checkStatus;
     private int lineId;
@@ -83,7 +88,7 @@ public class Point implements Parcelable {
         createTime = in.readString();
         createUser = in.readParcelable(User.class.getClassLoader());
         remark = in.readString();
-        id = in.readInt();
+        pointId = in.readInt();
         tagCheckId = in.readInt();
         checkStatus = in.readInt();
         lineId = in.readInt();
@@ -136,7 +141,7 @@ public class Point implements Parcelable {
         dest.writeString(stationName);
         dest.writeParcelable(createUser,flags);
         dest.writeString(remark);
-        dest.writeInt(id);
+        dest.writeInt(pointId);
         dest.writeInt(tagCheckId);
         dest.writeInt(checkStatus);
         dest.writeInt(lineId);
@@ -218,11 +223,11 @@ public class Point implements Parcelable {
     }
 
     public int getId() {
-        return id;
+        return pointId;
     }
 
     public void setId(int id) {
-        this.id = id;
+        this.pointId = id;
     }
 
     public List<Image> getImages() {
@@ -385,8 +390,16 @@ public class Point implements Parcelable {
         this.l_name = l_name;
     }
 
+    public String getManageUserName() {
+        return manageUserName;
+    }
+
+    public void setManageUserName(String manageUserName) {
+        this.manageUserName = manageUserName;
+    }
+
     @Override
     public String toString() {
-        return "id is:"+ id+"name is:" + name;
+        return "id is:"+ pointId+"name is:" + name;
     }
 }

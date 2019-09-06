@@ -49,6 +49,7 @@ import map.test.testmap.mvvm.data.model.TaskDetailBean;
 import map.test.testmap.utils.Common;
 import map.test.testmap.utils.HttpUtils;
 import map.test.testmap.utils.MyViewPagerAdapter;
+import map.test.testmap.utils.PreferencesUtils;
 import map.test.testmap.view.MultiSelectionSpinner;
 import retrofit2.Response;
 
@@ -191,6 +192,17 @@ public class TaskEditActivity extends AppCompatActivity implements View.OnClickL
                         }
                     });
                 }else if(data.getResult() == 2){
+
+                    if(data.getDesc().equals("登陆已过期,请重新登陆")){
+                        Toast.makeText(TaskEditActivity.this,"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                        PreferencesUtils.putString(TaskEditActivity.this,"account",null);
+                        PreferencesUtils.putString(TaskEditActivity.this,"password_selector",null);
+                        Intent intent = new Intent(TaskEditActivity.this, LoginActivity.class);
+                        startActivity(intent);
+                        finish();
+                        return;
+                    }
+
                     if(null == data.getDesc()||"".equals(data.getDesc())){
                         Toast.makeText(TaskEditActivity.this,"提交失败",Toast.LENGTH_LONG).show();
                     }else{

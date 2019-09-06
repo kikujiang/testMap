@@ -36,13 +36,23 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
 import map.test.testmap.model.Image;
+import map.test.testmap.model.Line;
 import map.test.testmap.model.LineState;
+import map.test.testmap.model.OnInfoListener;
 import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.ResponseBean;
 import map.test.testmap.model.ResponseCheckHistory;
@@ -52,6 +62,8 @@ import map.test.testmap.model.User;
 import map.test.testmap.utils.Common;
 import map.test.testmap.utils.HttpUtils;
 import map.test.testmap.utils.MyViewPagerAdapter;
+import map.test.testmap.utils.OkHttpClientManager;
+import map.test.testmap.utils.PreferencesUtils;
 import retrofit2.Response;
 
 public class LineStateHistoryActivity extends AppCompatActivity implements LineStateListFragment.OnTouchListener {
@@ -64,8 +76,13 @@ public class LineStateHistoryActivity extends AppCompatActivity implements LineS
     private TextView checkRemark;
     private TextView checkLat;
     private TextView checkLong;
+    private TextView checkStart;
+    private TextView checkEnd;
+    private TextView checkDeviceName;
 
     private LineState currentState;
+
+    private Line currentLine = null;
 
     private ViewPager pager = null;
     private TextView tvEmpty = null;
@@ -108,6 +125,9 @@ public class LineStateHistoryActivity extends AppCompatActivity implements LineS
         checkLong = findViewById(R.id.check_long);
         tvEmpty = findViewById(R.id.check_empty_text);
         pager = findViewById(R.id.check_viewPager);
+        checkStart = findViewById(R.id.check_start);
+        checkEnd = findViewById(R.id.check_end);
+        checkDeviceName = findViewById(R.id.sp_name);
         loadingLayout = findViewById(R.id.loading);
         initData();
 
@@ -157,8 +177,45 @@ public class LineStateHistoryActivity extends AppCompatActivity implements LineS
         return true;
     }
 
+
+    private void getSingleLine(){
+        final String url = Constants.WEB_URL + Constants.TAG_GET_SINGLE_LINE;
+        Log.d(TAG, "请求获取某条线接口" + url);
+        final Map<String,String> data = new HashMap<>();
+        data.put("id",lineId+"");
+        Log.d(TAG, "getSingleLine data is:" + data.toString());
+        OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
+            @Override
+            public void success(okhttp3.Response responseMapBean) {
+                try{
+                    String result = responseMapBean.body().string();
+
+                    Type type = new TypeToken<ResponseBean<Line>>(){}.getType();
+                    final ResponseBean<Line> currentData = new Gson().fromJson(result,type);
+
+                    if(currentData.getResult() == Constants.RESULT_FAIL){
+                        Log.d(TAG, "fail:" + currentData.getDesc());
+                    }
+
+                    if(currentData.getResult() == Constants.RESULT_OK){
+                        currentLine = currentData.getObject();
+                        Log.d(TAG, "收到消息为："+ result);
+                    }
+                }catch (Exception e){
+                    Log.d(TAG, "fail:" + e.getMessage());
+                }
+            }
+
+            @Override
+            public void fail(Exception e) {
+                Log.d(TAG, "fail:" + e.getMessage());
+            }
+        });
+    }
+
     private void getDataFromServer(){
         showLoading(true);
+        getSingleLine();
         HttpUtils.getInstance().getLineCheckHistoryInfo(lineId, new OnResponseListener() {
             @Override
             public void success(final Response responseMapBean) {
@@ -168,6 +225,15 @@ public class LineStateHistoryActivity extends AppCompatActivity implements LineS
                         ResponseBean<ResponseCheckHistory> data = ( ResponseBean<ResponseCheckHistory>)responseMapBean.body();
 
                         if(data.getResult() == 2){
+                            if(data.getDesc().equals("登陆已过期,请重新登陆")){
+                                Toast.makeText(LineStateHistoryActivity.this,"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                                PreferencesUtils.putString(LineStateHistoryActivity.this,"account",null);
+                                PreferencesUtils.putString(LineStateHistoryActivity.this,"password_selector",null);
+                                Intent intent = new Intent(LineStateHistoryActivity.this, LoginActivity.class);
+                                startActivity(intent);
+                                finish();
+                                return;
+                            }
                             stateList = new ArrayList<>();
                             showListFragment();
                         }else if(data.getResult() == 1){
@@ -254,6 +320,12 @@ public class LineStateHistoryActivity extends AppCompatActivity implements LineS
             configRemoteData(images);
         }
         showPager();
+
+        if(currentLine != null){
+            checkStart.setText(currentLine.getTag_begin_name()+"");
+            checkEnd.setText(currentLine.getTag_end_name()+"");
+            checkDeviceName.setText(currentLine.getName());
+        }
     }
 
     @Override

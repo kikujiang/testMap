@@ -11,6 +11,7 @@ import android.widget.TextView;
 import java.util.List;
 
 import map.test.testmap.R;
+import map.test.testmap.utils.Common;
 
 public class HistoryAdapter extends BaseAdapter {
 
@@ -55,7 +56,9 @@ public class HistoryAdapter extends BaseAdapter {
 
         ResponseHistory current = historyData.get(position);
         holder.time.setText(current.getOperate_time());
-        holder.content.setText(current.getOperate_content());
+
+        String content = Common.getInstance().stripHtml(current.getOperate_content());
+        holder.content.setText(content);
         holder.user.setText(current.getOperate_userName());
         holder.image.setVisibility(View.GONE);
 

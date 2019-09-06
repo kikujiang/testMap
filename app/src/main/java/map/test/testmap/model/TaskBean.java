@@ -41,12 +41,16 @@ public class TaskBean implements Parcelable {
     private boolean isLineCheck;
     private boolean isPassSelf;
     private int publishItemId;
+    private long taskTime;
+    private int checkStatus;
 
     protected TaskBean(Parcel in) {
         id = in.readInt();
         name = in.readString();
         status = in.readInt();
+        checkStatus = in.readInt();
         publishItemId = in.readInt();
+        taskTime = in.readLong();
         statusStr = in.readString();
         createTime = in.readString();
         desc = in.readString();
@@ -78,8 +82,10 @@ public class TaskBean implements Parcelable {
         dest.writeInt(publishItemId);
         dest.writeString(name);
         dest.writeInt(status);
+        dest.writeInt(checkStatus);
         dest.writeString(statusStr);
         dest.writeString(createTime);
+        dest.writeLong(taskTime);
         dest.writeByte((byte)(isLineCheck ?1:0));
         dest.writeByte((byte)(isPassSelf ?1:0));
         dest.writeParcelable(tag,flags);
@@ -123,6 +129,14 @@ public class TaskBean implements Parcelable {
 
     public boolean isPassSelf() {
         return isPassSelf;
+    }
+
+    public long getTaskTime() {
+        return taskTime;
+    }
+
+    public int getCheckStatus() {
+        return checkStatus;
     }
 
     @Override

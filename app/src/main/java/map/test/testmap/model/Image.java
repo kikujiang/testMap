@@ -3,7 +3,9 @@ package map.test.testmap.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Image implements Parcelable {
+import org.litepal.crud.LitePalSupport;
+
+public class Image extends LitePalSupport implements Parcelable {
     private String name;
     private String path;
 

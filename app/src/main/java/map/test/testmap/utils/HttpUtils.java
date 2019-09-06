@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import map.test.testmap.Constants;
 import map.test.testmap.model.IUserBiz;
@@ -19,11 +18,14 @@ import map.test.testmap.model.ResponseCheckHistory;
 import map.test.testmap.model.ResponseHistory;
 import map.test.testmap.model.ResponseTaskBean;
 import map.test.testmap.model.ResponseTaskUserBean;
+import map.test.testmap.model.TaskInfo;
 import map.test.testmap.model.User;
 import map.test.testmap.model.UserPermission;
 import map.test.testmap.mvvm.data.model.TaskDetailBean;
+import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
@@ -50,6 +52,17 @@ public class HttpUtils {
 
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(loggingInterceptor)
+                .addInterceptor(new Interceptor() {
+                    @Override
+                    public okhttp3.Response intercept(Chain chain) throws IOException {
+                        Request request = chain.request()
+                                .newBuilder()
+                                .removeHeader("User-Agent")//移除旧的
+                                .addHeader("User-Agent", Common.getInstance().getUserAgent())//添加真正的头部
+                                .build();
+                        return chain.proceed(request);
+                    }
+                })
                 .build();
 
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -190,8 +203,8 @@ public class HttpUtils {
      * 获取消息信息
      * @param listener
      */
-    public void getNotice(final OnResponseListener listener){
-        Call<ResponseBean<Notice>> noticeInfo = userBiz.getNoticeInfo();
+    public void getNotice(long time,final OnResponseListener listener){
+        Call<ResponseBean<Notice>> noticeInfo = userBiz.getNoticeInfo(time);
         noticeInfo.enqueue(new retrofit2.Callback<ResponseBean<Notice>>() {
             @Override
             public void onResponse(Call<ResponseBean<Notice>> call, retrofit2.Response<ResponseBean<Notice>> response) {
@@ -230,6 +243,26 @@ public class HttpUtils {
 
             @Override
             public void onFailure(Call<ResponseBean<ResponseCheckHistory>> call, Throwable t) {
+                listener.fail(t);
+            }
+        });
+    }
+
+    /**
+     * 设置指定消息为已读
+     * @param id 消息id
+     * @param listener
+     */
+    public void submitNotice(int id,final OnResponseListener listener){
+        Call<ResponseBean> info = userBiz.submitNotice(id);
+        info.enqueue(new retrofit2.Callback<ResponseBean>() {
+            @Override
+            public void onResponse(Call<ResponseBean> call, retrofit2.Response<ResponseBean> response) {
+                listener.success(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBean> call, Throwable t) {
                 listener.fail(t);
             }
         });
@@ -412,6 +445,25 @@ public class HttpUtils {
     public Response<ResponseBean<Point>> getPointDetail(int id) throws IOException{
         Call<ResponseBean<Point>> pointDetailInfo = userBiz.getPointDetail(id);
         return pointDetailInfo.execute();
+    }
+
+    /**
+     * 获取任务统计消息
+     * @param listener
+     */
+    public void getTaskInfo(final OnResponseListener listener){
+        Call<ResponseBean<TaskInfo>> userListInfo = userBiz.getTaskInfo();
+        userListInfo.enqueue(new retrofit2.Callback<ResponseBean<TaskInfo>>() {
+            @Override
+            public void onResponse(Call<ResponseBean<TaskInfo>> call, retrofit2.Response<ResponseBean<TaskInfo>> response) {
+                listener.success(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBean<TaskInfo>> call, Throwable t) {
+                listener.fail(t);
+            }
+        });
     }
 
     /**

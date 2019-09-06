@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.text.DateFormat;
 import java.util.ArrayList;
 
 import map.test.testmap.Constants;
@@ -87,8 +88,16 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.MyHolder> {
     @Override
     public void onBindViewHolder(@NonNull final MyHolder myHolder, int i) {
         final TaskBean item = dataList.get (i);
+
+        if(item.getName().equals("刚刚")){
+            Log.d("task", "刚刚 data is: "+item.getStatus());
+        }
+
         myHolder.tvTitle.setText (item.getName());
-        myHolder.tvTime.setText(item.getCreateTime());
+
+        String taskTime = Common.getInstance().getDateFromLong(item.getTaskTime());
+        myHolder.tvTime.setText(taskTime);
+
         myHolder.btnNavi.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -112,11 +121,12 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.MyHolder> {
 
         switch (type){
             case Constants.TYPE_TASK_PUBLISH:
-                if(item.getStatus() == 3 || item.getStatus() == 5){
+                Log.d("http", "status: "+item.getCheckStatus());
+                if(item.getCheckStatus() == 3 || item.getCheckStatus() == 0){
                     myHolder.imgState.setImageDrawable(context.getResources().getDrawable(R.mipmap.mark_repair_2));
                     myHolder.imgState.setVisibility(View.VISIBLE);
                     myHolder.btnEdit.setVisibility(View.VISIBLE);
-                }else if(item.getStatus() == 4 || item.getStatus() == 2){
+                }else if(item.getCheckStatus() == 4){
                     myHolder.imgState.setImageDrawable(context.getResources().getDrawable(R.mipmap.mark_repair_1));
                     myHolder.imgState.setVisibility(View.VISIBLE);
                     myHolder.btnEdit.setVisibility(View.VISIBLE);
@@ -129,12 +139,24 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.MyHolder> {
 
                 break;
             case Constants.TYPE_TASK_TO_BE_FINISH:
+                if(item.getCheckStatus() == 3 || item.getCheckStatus() == 0){
+                    myHolder.imgState.setImageDrawable(context.getResources().getDrawable(R.mipmap.mark_repair_2));
+                }else if(item.getCheckStatus() == 4){
+                    myHolder.imgState.setImageDrawable(context.getResources().getDrawable(R.mipmap.mark_repair_1));
+                }
                 myHolder.btnCheck.setVisibility(View.VISIBLE);
                 myHolder.btnEdit.setVisibility(View.GONE);
                 myHolder.tvCheck.setText("修复");
+                myHolder.tvState.setText(item.getStatusStr());
                 myHolder.imgCheck.setImageDrawable(context.getResources().getDrawable(R.mipmap.icon20));
                 break;
             case Constants.TYPE_TASK_TO_BE_VERIFY:
+                if(item.getCheckStatus() == 3 || item.getCheckStatus() == 0){
+                    myHolder.imgState.setImageDrawable(context.getResources().getDrawable(R.mipmap.mark_repair_2));
+                }else if(item.getCheckStatus() == 4){
+                    myHolder.imgState.setImageDrawable(context.getResources().getDrawable(R.mipmap.mark_repair_1));
+                }
+
                 if(item.isPassSelf()){
                     myHolder.btnCheck.setVisibility(View.GONE);
                     myHolder.btnEdit.setVisibility(View.GONE);
@@ -144,11 +166,19 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.MyHolder> {
                     myHolder.tvCheck.setText("审核");
                     myHolder.imgCheck.setImageDrawable(context.getResources().getDrawable(R.mipmap.icon21));
                 }
-
+                myHolder.tvState.setText(item.getStatusStr());
                 break;
             case Constants.TYPE_TASK_COMPLETED:
+
+                if(item.getCheckStatus() == 3 || item.getCheckStatus() == 0){
+                    myHolder.imgState.setImageDrawable(context.getResources().getDrawable(R.mipmap.mark_repair_2));
+                }else if(item.getCheckStatus() == 4){
+                    myHolder.imgState.setImageDrawable(context.getResources().getDrawable(R.mipmap.mark_repair_1));
+                }
+
                 myHolder.btnCheck.setVisibility(View.GONE);
                 myHolder.btnEdit.setVisibility(View.GONE);
+                myHolder.tvState.setText(item.getStatusStr());
                 break;
             default:
         }

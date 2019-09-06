@@ -35,6 +35,8 @@
                     android:id="@+id/spinner_worker_list"
                     android:layout_marginLeft="5dp"
                     android:background="@mipmap/spinner2"
+                    android:spinnerMode="dialog"
+                    android:prompt="@string/title"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
             </LinearLayout>

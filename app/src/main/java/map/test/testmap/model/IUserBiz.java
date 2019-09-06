@@ -70,8 +70,16 @@ public interface IUserBiz {
     @POST(Constants.TAG_SAVE_ASSIST_POINT)
     Call<ResponseBean> saveAssistPoint(@Field("name") String name,@Field("location_long") double location_long,@Field("location_lat") double location_lat,@Field("lineId") int lineId);
 
-    @GET(Constants.TAG_GET_NOTICE)
-    Call<ResponseBean<Notice>> getNoticeInfo();
+    @FormUrlEncoded
+    @POST(Constants.TAG_GET_NOTICE)
+    Call<ResponseBean<Notice>> getNoticeInfo(@Field("time") long time);
+
+    @GET(Constants.TAG_GET_TASK_INFO)
+    Call<ResponseBean<TaskInfo>> getTaskInfo();
+
+    @FormUrlEncoded
+    @POST(Constants.TAG_SET_NOTICE)
+    Call<ResponseBean> submitNotice(@Field("id") int id);
 
     @GET(Constants.TAG_GET_TASK_LIST)
     Call<ResponseBean<ResponseTaskBean>> getTaskList();

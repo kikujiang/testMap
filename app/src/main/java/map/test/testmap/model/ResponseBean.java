@@ -14,6 +14,7 @@ public class ResponseBean<T> {
     private String desc;
     private int id;
     private int tagId;
+    private long time;
 
     private String versionCode;
     private String appPath;
@@ -81,5 +82,13 @@ public class ResponseBean<T> {
 
     public void setTagId(int tagId) {
         this.tagId = tagId;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
     }
 }

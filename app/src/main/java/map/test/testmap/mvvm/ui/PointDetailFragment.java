@@ -62,6 +62,7 @@ public class PointDetailFragment extends Fragment {
     private EditText etLineLength;
     private TextView tvStart;
     private TextView tvEnd;
+    private TextView tvDetailTitle;
     private LinearLayout bottomLayout;
 
     public PointDetailFragment() {
@@ -134,8 +135,8 @@ public class PointDetailFragment extends Fragment {
                                     etLineName2.setText(currentLine.getL_name());
                                 }
 
-                                tvStart.setText(currentLine.getTag_begin_id()+"");
-                                tvEnd.setText(currentLine.getTag_end_id()+"");
+                                tvStart.setText(currentLine.getTag_begin_name()+"");
+                                tvEnd.setText(currentLine.getTag_end_name()+"");
                             }
                         });
 
@@ -172,6 +173,7 @@ public class PointDetailFragment extends Fragment {
         etLineRemark = view.findViewById(R.id.et_line_remark);
         tvStart = view.findViewById(R.id.start);
         tvEnd = view.findViewById(R.id.end);
+        tvDetailTitle = view.findViewById(R.id.detail_title_prefix);
         Common.getInstance().setEditTextFalse(etLineName);
         Common.getInstance().setEditTextFalse(etLineType);
         Common.getInstance().setEditTextFalse(etLineBelong);
@@ -222,6 +224,7 @@ public class PointDetailFragment extends Fragment {
 
             if(bean.getType() == 101 || bean.getType() == 102){
                 binding.detailTitle.setText("线路详情");
+                tvDetailTitle.setText("故  障  点");
                 binding.detailLine.setVisibility(View.VISIBLE);
                 bottomLayout.setVisibility(View.GONE);
                 binding.layoutPointMiddle.setVisibility(View.GONE);
@@ -230,6 +233,7 @@ public class PointDetailFragment extends Fragment {
                 getSingleLine(bean.getLineId()+"");
             }else{
                 binding.detailTitle.setText("标记点详情");
+                tvDetailTitle.setText("名        称");
                 binding.detailLine.setVisibility(View.GONE);
                 if(bean.getImages() != null && bean.getImages().size() > 0){
                     imageViews = new ArrayList<>();

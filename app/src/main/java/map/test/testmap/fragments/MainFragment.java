@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.DatabaseUtils;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -20,7 +21,6 @@ import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
-import android.support.annotation.RestrictTo;
 import android.support.design.widget.BottomSheetDialog;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -29,7 +29,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.menu.MenuBuilder;
-import android.support.v7.widget.ShareActionProvider;
+import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
@@ -72,8 +72,9 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
+import org.litepal.LitePal;
+
 import java.io.File;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,6 +86,7 @@ import map.test.testmap.HistoryActivity;
 import map.test.testmap.ImageActivity;
 import map.test.testmap.LineDetailActivity;
 import map.test.testmap.LineStateHistoryActivity;
+import map.test.testmap.LoginActivity;
 import map.test.testmap.PointDetailActivity;
 import map.test.testmap.R;
 import map.test.testmap.StateActivity;
@@ -102,9 +104,11 @@ import map.test.testmap.model.UserPermission;
 import map.test.testmap.model.UserPermissionDetail;
 import map.test.testmap.mvvm.ui.SearchActivity;
 import map.test.testmap.utils.Common;
+import map.test.testmap.utils.DataBaseUtils;
 import map.test.testmap.utils.HttpUtils;
 import map.test.testmap.utils.MyViewPagerAdapter;
 import map.test.testmap.utils.OkHttpClientManager;
+import map.test.testmap.utils.PreferencesUtils;
 import map.test.testmap.view.MultiSelectionSpinner;
 import okhttp3.Response;
 
@@ -120,7 +124,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "userId";
 
-    private static final String TAG = "map";
+    private static final String TAG = "map123";
     public static final int CURRENT_TYPE_POINT = 1;
     public static final int CURRENT_TYPE_POINT_TERMINAL = 2;
     public static final int CURRENT_TYPE_POINT_LINE = 3;
@@ -568,9 +572,10 @@ public class MainFragment extends Fragment implements View.OnClickListener{
      */
     private void getALLPoint(){
         final String url = Constants.WEB_URL + Constants.TAG_GET_ALL_POINT;
-        Log.d(TAG, "请求获取所有点信息接口" + url);
         final Map<String,String> data = new HashMap<>();
-        aMap.clear();
+        long time = PreferencesUtils.getLong(getActivity(),Constants.POINT_FLAG,0L);
+        data.put("time",time+"");
+        Log.d(TAG, "请求获取所有点信息接口" + url+",时间戳是:"+time);
         OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
             @Override
             public void success(Response responseMapBean) {
@@ -581,13 +586,89 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     ResponseBean<Point> currentData = new Gson().fromJson(result,type);
 
                     if(currentData.getResult() == Constants.RESULT_FAIL){
+                        if(currentData.getDesc().equals("登陆已过期,请重新登陆")){
+                            Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                            PreferencesUtils.putString(getActivity(),"account",null);
+                            PreferencesUtils.putString(getActivity(),"password_selector",null);
+                            Intent intent = new Intent(getActivity(), LoginActivity.class);
+                            startActivity(intent);
+                            getActivity().finish();
+                            return;
+                        }
                         sendFailureMsg(currentData.getDesc());
                         return;
                     }
 
                     if (currentData.getResult() == Constants.RESULT_OK){
-                        pointList = currentData.getList();
-                        Log.d(TAG, "收到消息为："+ result+"/n 当前标记点数量是：" + pointList.size());
+                        PreferencesUtils.putLong(getActivity(),Constants.POINT_FLAG,currentData.getTime());
+                        Log.d(TAG, ",时间戳是:"+currentData.getTime());
+                        List<Point> currentPointList = currentData.getList();
+                        for (Point item:
+                             currentPointList) {
+                            Point cur = DataBaseUtils.getInstance().findPoint(item.getId());
+                            if(cur == null){
+                                DataBaseUtils.getInstance().insertPoint(item);
+                            }else{
+                                DataBaseUtils.getInstance().updatePoint(item);
+                            }
+                        }
+                        Log.d(TAG, "getALLPoint 收到消息为："+ result+"/n 当前更新标记点的数量是：" + currentPointList.size());
+                        getCurrentPointList();
+                    }
+                }catch (Exception e){
+                    sendErrorMsg(e);
+                }
+            }
+
+            @Override
+            public void fail(Exception e) {
+                sendErrorMsg(e);
+            }
+        });
+    }
+
+    private void getCurrentPointList(){
+
+        if(pointList == null){
+            pointList = new ArrayList<>();
+        }else{
+            pointList.clear();
+        }
+
+        final String url = Constants.WEB_URL + Constants.TAG_GET_USER_POINT;
+        Log.d(TAG, "getCurrentPointList 请求获取当前可查看点信息接口" + url);
+        final Map<String,String> data = new HashMap<>();
+        OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
+            @Override
+            public void success(Response responseMapBean) {
+                try{
+                    String result = responseMapBean.body().string();
+                    Type type = new TypeToken<ResponseBean<Integer>>(){}.getType();
+
+                    ResponseBean<Integer> currentData = new Gson().fromJson(result,type);
+
+                    if(currentData.getResult() == Constants.RESULT_FAIL){
+                        if(currentData.getDesc().equals("登陆已过期,请重新登陆")){
+                            Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                            PreferencesUtils.putString(getActivity(),"account",null);
+                            PreferencesUtils.putString(getActivity(),"password_selector",null);
+                            Intent intent = new Intent(getActivity(), LoginActivity.class);
+                            startActivity(intent);
+                            getActivity().finish();
+                            return;
+                        }
+                        Log.d(TAG, "getCurrentPointList 当前无数据");
+                        mHandler.sendEmptyMessage(MSG_GET_ALL_POINT_END);
+                        return;
+                    }
+
+                    if (currentData.getResult() == Constants.RESULT_OK){
+                        List<Integer> idList = currentData.getList();
+                        for (Integer id:idList){
+                            Point item = DataBaseUtils.getInstance().findPoint(id);
+                            pointList.add(item);
+                        }
+                        Log.d(TAG, "getCurrentPointList 收到消息为："+ result+"/n 当前标记点数量是：" + pointList.size());
                         mHandler.sendEmptyMessage(MSG_GET_ALL_POINT_END);
                     }
                 }catch (Exception e){
@@ -604,9 +685,10 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
     private void getALLLine(){
         final String url = Constants.WEB_URL + Constants.TAG_GET_ALL_LINE;
-        Log.d(TAG, "请求获取所有线接口" + url);
         final Map<String,String> data = new HashMap<>();
-
+        long time = PreferencesUtils.getLong(getActivity(),Constants.LINE_FLAG,0L);
+        Log.d(TAG, "请求获取当前查看所有线接口" + url+",时间戳是:"+time);
+        data.put("time",time+"");
         OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
             @Override
             public void success(Response responseMapBean) {
@@ -617,19 +699,103 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     ResponseBean<Line> currentData = new Gson().fromJson(result,type);
 
                     if(currentData.getResult() == Constants.RESULT_FAIL){
+                        if(currentData.getDesc().equals("登陆已过期,请重新登陆")){
+                            Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                            PreferencesUtils.putString(getActivity(),"account",null);
+                            PreferencesUtils.putString(getActivity(),"password_selector",null);
+                            Intent intent = new Intent(getActivity(), LoginActivity.class);
+                            startActivity(intent);
+                            getActivity().finish();
+                            return;
+                        }
                         sendFailureMsg(currentData.getDesc());
                         return;
                     }
 
                     if (currentData.getResult() == Constants.RESULT_OK){
-                        lineList = currentData.getList();
-                        Log.d(TAG, "收到消息为："+ result+"\n 当前线数量是：" + lineList.size());
-                        mHandler.sendEmptyMessage(MSG_GET_ALL_LINE_END);
+                        PreferencesUtils.putLong(getActivity(),Constants.LINE_FLAG,currentData.getTime());
+                        List<Line> currentLineList = currentData.getList();
+                        for (Line item:
+                                currentLineList) {
+                            String path = "";
+                            if (item.getCheckPoints() != null && item.getCheckPoints().size()> 0){
+                                for (Point pp:
+                                     item.getCheckPoints()) {
+                                    path += pp.getLocation_lat()+","+pp.getLocation_long()+";";
+                                }
+                            }
+                            item.setPath(path);
+
+                            Line cur = DataBaseUtils.getInstance().findLine(item.getId());
+                            if(cur == null){
+                                DataBaseUtils.getInstance().insertLine(item);
+                            }else{
+                                DataBaseUtils.getInstance().updateLine(item);
+                            }
+                        }
+
+                        Log.d(TAG, "getALLLine 收到消息为："+ result+"\n 当前线数量是：" + currentLineList.size());
+                        getCurrentLineList();
                     }
                 }catch (Exception e){
                     sendErrorMsg(e);
                 }
                 Log.d(TAG,"success: "+responseMapBean.body().toString());
+            }
+
+            @Override
+            public void fail(Exception e) {
+                sendErrorMsg(e);
+            }
+        });
+    }
+
+    private void getCurrentLineList(){
+        if(lineList == null){
+            lineList = new ArrayList<>();
+        }else{
+            lineList.clear();
+        }
+
+        final String url = Constants.WEB_URL + Constants.TAG_GET_USER_LINE;
+        Log.d(TAG, "getCurrentLineList 请求获取当前可查看点信息接口" + url);
+        final Map<String,String> data = new HashMap<>();
+        OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
+            @Override
+            public void success(Response responseMapBean) {
+                try{
+                    String result = responseMapBean.body().string();
+                    Type type = new TypeToken<ResponseBean<Integer>>(){}.getType();
+
+                    ResponseBean<Integer> currentData = new Gson().fromJson(result,type);
+
+                    if(currentData.getResult() == Constants.RESULT_FAIL){
+                        if(currentData.getDesc().equals("登陆已过期,请重新登陆")){
+                            Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                            PreferencesUtils.putString(getActivity(),"account",null);
+                            PreferencesUtils.putString(getActivity(),"password_selector",null);
+                            Intent intent = new Intent(getActivity(), LoginActivity.class);
+                            startActivity(intent);
+                            getActivity().finish();
+                            return;
+                        }
+                        Log.d(TAG, "getCurrentLineList 当前无数据");
+                        mHandler.sendEmptyMessage(MSG_GET_ALL_LINE_END);
+                        return;
+                    }
+
+                    if (currentData.getResult() == Constants.RESULT_OK){
+                        List<Integer> idList = currentData.getList();
+                        for (Integer id:idList){
+                            Line item = DataBaseUtils.getInstance().findLine(id);
+                            lineList.add(item);
+                        }
+                        Log.d(TAG, "getCurrentLineList 收到消息为："+ result+"/n 当前线路数量是：" + lineList.size());
+                        mHandler.sendEmptyMessage(MSG_GET_ALL_LINE_END);
+                    }
+                }catch (Exception e){
+                    sendErrorMsg(e);
+                }
             }
 
             @Override
@@ -653,6 +819,15 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     ResponseBean<DataType> currentData = new Gson().fromJson(result,type);
 
                     if(currentData.getResult() == Constants.RESULT_FAIL){
+                        if(currentData.getDesc().equals("登陆已过期,请重新登陆")){
+                            Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                            PreferencesUtils.putString(getActivity(),"account",null);
+                            PreferencesUtils.putString(getActivity(),"password_selector",null);
+                            Intent intent = new Intent(getActivity(), LoginActivity.class);
+                            startActivity(intent);
+                            getActivity().finish();
+                            return;
+                        }
                         sendFailureMsg(currentData.getDesc());
                         return;
                     }
@@ -688,6 +863,15 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     ResponseBean<DataType> currentData = new Gson().fromJson(result,type);
 
                     if(currentData.getResult() == Constants.RESULT_FAIL){
+                        if(currentData.getDesc().equals("登陆已过期,请重新登陆")){
+                            Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                            PreferencesUtils.putString(getActivity(),"account",null);
+                            PreferencesUtils.putString(getActivity(),"password_selector",null);
+                            Intent intent = new Intent(getActivity(), LoginActivity.class);
+                            startActivity(intent);
+                            getActivity().finish();
+                            return;
+                        }
                         sendFailureMsg(currentData.getDesc());
                         return;
                     }
@@ -722,6 +906,15 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     ResponseBean<DataType> currentData = new Gson().fromJson(result,type);
 
                     if(currentData.getResult() == Constants.RESULT_FAIL){
+                        if(currentData.getDesc().equals("登陆已过期,请重新登陆")){
+                            Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                            PreferencesUtils.putString(getActivity(),"account",null);
+                            PreferencesUtils.putString(getActivity(),"password_selector",null);
+                            Intent intent = new Intent(getActivity(), LoginActivity.class);
+                            startActivity(intent);
+                            getActivity().finish();
+                            return;
+                        }
                         sendFailureMsg(currentData.getDesc());
                         return;
                     }
@@ -756,6 +949,15 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     ResponseBean<DataType> currentData = new Gson().fromJson(result,type);
 
                     if(currentData.getResult() == Constants.RESULT_FAIL){
+                        if(currentData.getDesc().equals("登陆已过期,请重新登陆")){
+                            Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                            PreferencesUtils.putString(getActivity(),"account",null);
+                            PreferencesUtils.putString(getActivity(),"password_selector",null);
+                            Intent intent = new Intent(getActivity(), LoginActivity.class);
+                            startActivity(intent);
+                            getActivity().finish();
+                            return;
+                        }
                         sendFailureMsg(currentData.getDesc());
                         return;
                     }
@@ -787,6 +989,14 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
                         if(data.getResult() == 1){
                             operatorList = data.getObject().getTagLineCheckUserList1();
+                        }else if(data.getDesc().equals("登陆已过期,请重新登陆")){
+                            Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                            PreferencesUtils.putString(getActivity(),"account",null);
+                            PreferencesUtils.putString(getActivity(),"password_selector",null);
+                            Intent intent = new Intent(getActivity(), LoginActivity.class);
+                            startActivity(intent);
+                            getActivity().finish();
+                            return;
                         }
                     }
                 });
@@ -912,7 +1122,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     currentMarker = null;
                     if(Constants.pointTypeList != null){
                         Intent pointDetailIntent = new Intent(getActivity(),PointDetailActivity.class);
-                        startActivity(pointDetailIntent);
+                        startActivityForResult(pointDetailIntent,REQUEST_CODE_POINT_DETAIL);
                     }else{
                         Toast.makeText(getActivity(),"与服务器连接失败，点击刷新重试！",Toast.LENGTH_LONG).show();
                     }
@@ -941,8 +1151,8 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     }
 
     private void scan(){
-        isScan = false;
         Intent intent = new Intent(getActivity(), ScannerActivity.class);
+        isScan = false;
         startActivityForResult(intent, REQUEST_CODE_SCAN);
     }
 
@@ -974,10 +1184,13 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                 Log.d(TAG, "onPolylineClick: "+startLat+","+startLng+",  \nend is:"+endLat+","+endLng);
 
                 for (Line cur: lineList) {
-                    if (cur.getCheckPoints().get(0).getLocation_lat() == startLat &&
-                            cur.getCheckPoints().get(0).getLocation_long() == startLng &&
-                            cur.getCheckPoints().get(cur.getCheckPoints().size()-1).getLocation_lat() == endLat &&
-                            cur.getCheckPoints().get(cur.getCheckPoints().size()-1).getLocation_long() == endLng){
+                    String path = cur.getPath();
+                    String[] pathList = path.split(";");
+                    double sLat = Double.parseDouble(pathList[0].split(",")[0]);
+                    double sLng = Double.parseDouble(pathList[0].split(",")[1]);
+                    double tLat = Double.parseDouble(pathList[pathList.length - 1].split(",")[0]);
+                    double tLng = Double.parseDouble(pathList[pathList.length - 1].split(",")[1]);
+                    if (sLat == startLat && sLng == startLng && tLat == endLat && tLng == endLng){
                         currentLine = cur;
                         currentPolyLine = polyline;
                     }
@@ -1131,7 +1344,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         super.onResume();
         //在activity执行onResume时执行mMapView.onResume ()，重新绘制加载地图
         mMapView.onResume();
-
+//        getALLPoint();
     }
     @Override
     public void onPause() {
@@ -1196,6 +1409,11 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     }else{
                         currentPoint.setPhone1("");
                     }
+                    if(!TextUtils.isEmpty(etManager.getText().toString())){
+                        currentPoint.setManageUserName(etManager.getText().toString());
+                    }else{
+                        currentPoint.setManageUserName("");
+                    }
                     if(!TextUtils.isEmpty(etIP.getText().toString())){
                         currentPoint.setIp(etIP.getText().toString());
                     }else{
@@ -1233,6 +1451,11 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                         currentPoint.setPhone(etPhone.getText().toString());
                     }else{
                         currentPoint.setPhone("");
+                    }
+                    if(!TextUtils.isEmpty(etManager.getText().toString())){
+                        currentPoint.setManageUserName(etManager.getText().toString());
+                    }else{
+                        currentPoint.setManageUserName("");
                     }
                     if(!TextUtils.isEmpty(etIP.getText().toString())){
                         currentPoint.setIp(etIP.getText().toString());
@@ -1565,6 +1788,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     Intent pointDetailIntent = new Intent(getActivity(),PointDetailActivity.class);
                     pointDetailIntent.putExtra("id",currentPoint.getId());
                     startActivityForResult(pointDetailIntent,REQUEST_CODE_POINT_DETAIL);
+                    bottomDialog.cancel();
                 }else{
                     Intent lineDetailIntent = new Intent(getActivity(),LineDetailActivity.class);
                     lineDetailIntent.putExtra("id",currentLine.getId());
@@ -1744,6 +1968,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
         data.put("tagPhone",currentPoint.getPhone());
         data.put("tagPhone1",currentPoint.getPhone1());
+        data.put("manageUser",currentPoint.getManageUserName());
 
         Log.d(TAG, "savePoint data is:" + data.toString());
         OkHttpClientManager.getInstance().sendFileToServer(url, imagePath, data, new OnInfoListener() {
@@ -1755,6 +1980,15 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     ResponseBean<ResponsePoint> currentData = new Gson().fromJson(result,type);
 
                     if(currentData.getResult() == Constants.RESULT_FAIL){
+                        if(currentData.getDesc().equals("登陆已过期,请重新登陆")){
+                            Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                            PreferencesUtils.putString(getActivity(),"account",null);
+                            PreferencesUtils.putString(getActivity(),"password_selector",null);
+                            Intent intent = new Intent(getActivity(), LoginActivity.class);
+                            startActivity(intent);
+                            getActivity().finish();
+                            return;
+                        }
                         sendFailureMsg("保存失败，原因是："+currentData.getDesc());
                         return;
                     }
@@ -1797,6 +2031,15 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     ResponseBean<Point> currentData = new Gson().fromJson(result,type);
 
                     if(currentData.getResult() == Constants.RESULT_FAIL){
+                        if(currentData.getDesc().equals("登陆已过期,请重新登陆")){
+                            Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                            PreferencesUtils.putString(getActivity(),"account",null);
+                            PreferencesUtils.putString(getActivity(),"password_selector",null);
+                            Intent intent = new Intent(getActivity(), LoginActivity.class);
+                            startActivity(intent);
+                            getActivity().finish();
+                            return;
+                        }
                         sendFailureMsg("保存失败，原因是："+currentData.getDesc());
                     }
 
@@ -1822,14 +2065,20 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             Log.d(TAG, "showAllLine: called");
             List<LatLng> latLngs = new ArrayList<>();
 
-            if(current.getCheckPoints().isEmpty()){
+            if(current.getPath() == null){
                 continue;
             }
 
-            for (Point item:current.getCheckPoints()) {
-                LatLng cur = new LatLng(item.getLocation_lat(),item.getLocation_long());
+            String path = current.getPath();
+
+            String[] group =  path.split(";");
+
+            for(int i = 0;i<group.length;i++){
+                String[] item = group[i].split(",");
+                LatLng cur = new LatLng(Double.parseDouble(item[0]),Double.parseDouble(item[1]));
                 latLngs.add(cur);
             }
+
 
             Polyline line2 = aMap.addPolyline(new PolylineOptions().
                     addAll(latLngs).setDottedLine(true).width(20).color(Color.parseColor(current.getStatusIconColor())));
@@ -1856,6 +2105,15 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     ResponseBean<Line> currentData = new Gson().fromJson(result,type);
 
                     if(currentData.getResult() == Constants.RESULT_FAIL){
+                        if(currentData.getDesc().equals("登陆已过期,请重新登陆")){
+                            Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                            PreferencesUtils.putString(getActivity(),"account",null);
+                            PreferencesUtils.putString(getActivity(),"password_selector",null);
+                            Intent intent = new Intent(getActivity(), LoginActivity.class);
+                            startActivity(intent);
+                            getActivity().finish();
+                            return;
+                        }
                         sendFailureMsg("保存失败，原因是："+currentData.getDesc());
                     }
 
@@ -1905,7 +2163,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
             String cur = current.getName() + "," +current.getId();
             searchData.add(cur);
-            Log.d(TAG, "showAllPoint: "+current.getLocation_lat()+","+current.getLocation_long());
+//            Log.d(TAG, "showAllPoint: "+current.getLocation_lat()+","+current.getLocation_long());
             if(current.getLocation_lat() == 0.0 || current.getLocation_long() == 0.0){
                 continue;
             }
@@ -1926,173 +2184,68 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             markerOption.setFlat(true);//设置marker平贴地图效果
             final Marker marker = aMap.addMarker(markerOption);
 
-//            if(current.getStatusIconUrl_APP() != null && !"".equals(current.getStatusIconUrl_APP())){
-////                new Thread(){
-////                    @Override
-////                    public void run() {
-////                        Log.d(TAG, "showAllPoint: 1"+current.getStatusIconUrl_APP());
-////                        try {
-////
-////                            FutureTarget<Bitmap> futureTarget = Glide.with(MainFragment.this)
-////                                                                        .applyDefaultRequestOptions(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
-////                                                                        .asBitmap().load(current.getStatusIconUrl_APP()).submit();
-////
-////                            Bitmap bitmap = futureTarget.get();
-////
-////
-////                            Log.d(TAG, "showAllPoint: 1================"+bitmap.getWidth()+","+bitmap.getHeight());
-////                            marker.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
-////                        }catch (Exception e){
-////                            Log.d(TAG, "showAllPoint: 1"+e.getMessage());
-////                        }
-////                    }
-////                }.start();
-//
-////                File file = new File("/sdcard/123.png");
-////                Log.d(TAG, "showAllPoint: 1================"+file.exists());
-////                Uri uri = Uri.fromFile(file);
-////                try {
-////                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), uri);
-////                    Log.d(TAG, "showAllPoint: 1================"+bitmap.getWidth()+","+bitmap.getHeight());
-////                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
-////                } catch (IOException e) {
-////                    Log.d(TAG, "showAllPoint: 1================"+e.getMessage());
-////                }
-//
-//            }else{
-                Log.d(TAG, "showAllPoint: 2");
-                switch (current.getCheckStatus()){
-                    case 0:
-                    case 1:
+            switch (current.getCheckStatus()){
+                case 0:
+                case 1:
 
-                        String pointType = current.getTypeStr();
-                        Log.d(TAG, "showAllPoint: point type "+pointType);
-                        if(pointType == null){
-                            int typeId = current.getType();
-                            Log.d(TAG, "showAllPoint point type id:"+typeId);
-                            for (DataType dataType:Constants.pointTypeList
-                                 ) {
-                                Log.d(TAG, "showAllPoint: data type "+dataType.getOptionText()+","+dataType.getOptionValue());
-                                if(typeId == dataType.getOptionValue()){
-                                    pointType = dataType.getOptionText();
-                                }
+                    String pointType = current.getTypeStr();
+                    if(pointType == null){
+                        int typeId = current.getType();
+//                            Log.d(TAG, "showAllPoint point type id:"+typeId);
+                        for (DataType dataType:Constants.pointTypeList
+                             ) {
+//                                Log.d(TAG, "showAllPoint: data type "+dataType.getOptionText()+","+dataType.getOptionValue());
+                            if(typeId == dataType.getOptionValue()){
+                                pointType = dataType.getOptionText();
                             }
                         }
-                        if(pointType == null){
-                            pointType = "";
-                        }
+                    }
+                    if(pointType == null){
+                        pointType = "";
+                    }
 
-                        Log.d(TAG, "showAllPoint: point type "+pointType);
+//                        Log.d(TAG, "showAllPoint: point type "+pointType);
 //                        String pointType = current.getTypeStr();
-                        if(pointType.equals("变电所")){
-                            marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                    .decodeResource(getResources(),R.mipmap.bds)));
-                        }else if(pointType.equals("环网柜")){
-                            marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                    .decodeResource(getResources(),R.mipmap.hwg)));
-                        }else if(pointType.equals("柱上开关")){
-                            marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                    .decodeResource(getResources(),R.mipmap.zskg)));
-                        }else if(pointType.equals("配电房")){
-                            marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                    .decodeResource(getResources(),R.mipmap.pdf)));
-                        }else if(pointType.equals("柱上变压器")){
-                            marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                    .decodeResource(getResources(),R.mipmap.zzbyq)));
-                        }else if(pointType.equals("开闭所")){
-                            marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                    .decodeResource(getResources(),R.mipmap.kbs)));
-                        }else if(pointType.equals("变压器")){
-                            marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                    .decodeResource(getResources(),R.mipmap.byq)));
-                        }else{
-                            marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                    .decodeResource(getResources(),R.mipmap.mark_bs)));
-                        }
-                        break;
-                    case 2:
+                    if(pointType.equals("变电所")){
                         marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.mark_repair_1)));
-                        break;
-                    case 5:
-                    case 3:
+                                .decodeResource(getResources(),R.mipmap.bds)));
+                    }else if(pointType.equals("环网柜")){
                         marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.mark_repair_2)));
-                        break;
-                    case 4:
+                                .decodeResource(getResources(),R.mipmap.hwg)));
+                    }else if(pointType.equals("柱上开关")){
                         marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.mark_repair_1)));
-                        break;
-                }
-//            }
-
-//            switch (current.getCheckStatus()){
-//                case 0:
-//                case 1:
-//                    String pointType = current.getTypeStr();
-//                    Log.d(TAG, "showAllPoint: point type "+pointType);
-//                    if(pointType == null){
-//                        int typeId = current.getType();
-//                        Log.d(TAG, "showAllPoint point type id:"+typeId);
-//                        for (DataType dataType:Constants.pointTypeList
-//                             ) {
-//                            Log.d(TAG, "showAllPoint: data type "+dataType.getOptionText()+","+dataType.getOptionValue());
-//                            if(typeId == dataType.getOptionValue()){
-//                                pointType = dataType.getOptionText();
-//                            }
-//                        }
-//                    }
-//                    if(pointType == null){
-//                        pointType = "";
-//                    }
-//
-//                    Log.d(TAG, "showAllPoint: point type "+pointType);
-//                    if(pointType.equals("变电所")){
-//                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-//                                .decodeResource(getResources(),R.mipmap.bds)));
-//                    }else if(pointType.equals("环网柜")){
-//                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-//                                .decodeResource(getResources(),R.mipmap.hwg)));
-//                    }else if(pointType.equals("柱上开关")){
-//                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-//                                .decodeResource(getResources(),R.mipmap.zskg)));
-//                    }else if(pointType.equals("配电房")){
-//                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-//                                .decodeResource(getResources(),R.mipmap.pdf)));
-//                    }else if(pointType.equals("柱上变压器")){
-//                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-//                                .decodeResource(getResources(),R.mipmap.zzbyq)));
-//                    }else if(pointType.equals("开闭所")){
-//                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-//                                .decodeResource(getResources(),R.mipmap.kbs)));
-//                    }else if(pointType.equals("变压器")){
-//                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-//                                .decodeResource(getResources(),R.mipmap.byq)));
-//                    }else{
-//                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-//                                .decodeResource(getResources(),R.mipmap.bds)));
-//                    }
-//                    break;
-//                case 2:
-//                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-//                            .decodeResource(getResources(),R.mipmap.normal)));
-//                    marker.setTitle(current.getName());
-//                    marker.setSnippet(current.getName());
-//                    break;
-//                case 5:
-//                case 3:
-//                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-//                            .decodeResource(getResources(),R.mipmap.serious)));
-//                    marker.setTitle(current.getName());
-//                    marker.setSnippet(current.getName());
-//                    break;
-//                case 4:
-//                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-//                            .decodeResource(getResources(),R.mipmap.normal)));
-//                    marker.setTitle(current.getName());
-//                    marker.setSnippet(current.getName());
-//                    break;
-//            }
+                                .decodeResource(getResources(),R.mipmap.zskg)));
+                    }else if(pointType.equals("配电房")){
+                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                                .decodeResource(getResources(),R.mipmap.pdf)));
+                    }else if(pointType.equals("柱上变压器")){
+                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                                .decodeResource(getResources(),R.mipmap.zzbyq)));
+                    }else if(pointType.equals("开闭所")){
+                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                                .decodeResource(getResources(),R.mipmap.kbs)));
+                    }else if(pointType.equals("变压器")){
+                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                                .decodeResource(getResources(),R.mipmap.byq)));
+                    }else{
+                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                                .decodeResource(getResources(),R.mipmap.mark_bs)));
+                    }
+                    break;
+                case 2:
+                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                            .decodeResource(getResources(),R.mipmap.mark_repair_1)));
+                    break;
+                case 5:
+                case 3:
+                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                            .decodeResource(getResources(),R.mipmap.mark_repair_2)));
+                    break;
+                case 4:
+                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                            .decodeResource(getResources(),R.mipmap.mark_repair_1)));
+                    break;
+            }
 
             Animation animation = new AlphaAnimation(0,1);
             long duration = 1000L;
@@ -2214,10 +2367,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         currentMarker.showInfoWindow();
         Log.d(TAG, "current point is:" + current.getLocation_long()+" and "+current.getLocation_lat());
         if(aMap.getMaxZoomLevel() >= 20){
-            Log.d(TAG, "addMarker: haaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
             currentMarker.setDraggable(true);
-        }else{
-
         }
 
     }
@@ -2229,6 +2379,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     private EditText etOther = null;
     private EditText etPhone = null;
     private EditText etPhone1 = null;
+    private EditText etManager = null;
     private EditText etIP = null;
     private EditText etIP2 = null;
     private EditText etONU = null;
@@ -2268,8 +2419,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
     private MyViewPagerAdapter adapter = null;
     private void configPager(){
-
-        Log.d(TAG, "configPager: hahahahahahaha");
         if(adapter == null){
             pagerWidth = (int) (getResources().getDisplayMetrics().widthPixels);
             ViewGroup.LayoutParams lp = pager.getLayoutParams();
@@ -2305,6 +2454,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     private boolean isPoint = true;
 
     private void showBottomDialog(){
+        Log.d(TAG, "onActivityResult showBottomDialog: 1");
         View bottomView = getLayoutInflater().inflate(R.layout.popup_show_bottom, null);
         if(bottomDialog == null ){
             bottomDialog = new BottomSheetDialog(getActivity());
@@ -2339,6 +2489,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                 Log.d(TAG, "showBottomDialog: point is null");
                 return;
             }else{
+                Log.d(TAG, "onActivityResult showBottomDialog: 2");
                 tvBottomTitle.setText(currentPoint.getName());
             }
         }else{
@@ -2371,6 +2522,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             etOther = view.findViewById(R.id.edit_other);
             etPhone = view.findViewById(R.id.edit_phone);
             etPhone1 = view.findViewById(R.id.edit_phone1);
+            etManager = view.findViewById(R.id.edit_manager);
             etIP = view.findViewById(R.id.edit_ip1);
             etIP2 = view.findViewById(R.id.edit_ip2);
             etONU = view.findViewById(R.id.et_onu);
@@ -2468,6 +2620,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             etOther.setText("");
             etPhone.setText("");
             etPhone1.setText("");
+            etManager.setText("");
             etIP.setText("");
             etIP2.setText("");
             etONU.setText("");
@@ -2554,6 +2707,11 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             etIP.setText(currentPoint.getIp());
             etIP2.setText(currentPoint.getIp2());
             etPhone1.setText(currentPoint.getPhone1());
+            if(currentPoint.getManageUserName() == null){
+                etManager.setText("");
+            }else{
+                etManager.setText(currentPoint.getManageUserName());
+            }
             etPointLine.setText(currentPoint.getL_name());
             etPointBelong.setText(currentPoint.getStationName());
             confirmBtn.setText("修改");
@@ -2950,6 +3108,15 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         }
     }
 
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if(!hidden){
+            getALLPoint();
+            getALLLine();
+        }
+    }
+
     public void invokingGD(double lat, double lon){
 
         String params = "androidamap://navi?sourceApplication=amap&lat="+lat+"&lon="+lon+ "&dev=0";
@@ -3129,6 +3296,15 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                                                                     getActivity().runOnUiThread(new Runnable() {
                                                                         @Override
                                                                         public void run() {
+                                                                            if(data.getDesc().equals("登陆已过期,请重新登陆")){
+                                                                                Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                                                                                PreferencesUtils.putString(getActivity(),"account",null);
+                                                                                PreferencesUtils.putString(getActivity(),"password_selector",null);
+                                                                                Intent intent = new Intent(getActivity(), LoginActivity.class);
+                                                                                startActivity(intent);
+                                                                                getActivity().finish();
+                                                                                return;
+                                                                            }
                                                                             Toast.makeText(getActivity(),data.getDesc(),Toast.LENGTH_LONG).show();
                                                                             dialog.dismiss();
                                                                         }
@@ -3163,6 +3339,15 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                                 getActivity().runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
+                                        if(data.getDesc().equals("登陆已过期,请重新登陆")){
+                                            Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                                            PreferencesUtils.putString(getActivity(),"account",null);
+                                            PreferencesUtils.putString(getActivity(),"password_selector",null);
+                                            Intent intent = new Intent(getActivity(), LoginActivity.class);
+                                            startActivity(intent);
+                                            getActivity().finish();
+                                            return;
+                                        }
                                         Toast.makeText(getActivity(),data.getDesc(),Toast.LENGTH_LONG).show();
                                     }
                                 });
@@ -3236,7 +3421,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
                         String searchWrd = matches.get(0);
                         if (!TextUtils.isEmpty(searchWrd)) {
-                            searchView.setQuery(searchWrd, false);
+                            searchView.setQuery(searchWrd, true);
                         }
                     }
                     break;
@@ -3288,7 +3473,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     break;
                 case Constants.REQUEST_CODE:
                     int pointId = data.getIntExtra("pointId",-1);
-                    Log.d(TAG, "onActivityResult: id:" + pointId);
+                    Log.d(TAG, "REQUEST_CODE onActivityResult: id:" + pointId);
                     if(pointId != -1){
                         getSinglePoint(pointId+"");
                     }
@@ -3296,7 +3481,8 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                 case REQUEST_CODE_POINT_DETAIL:
                     int pointDetailId = data.getIntExtra("id",-1);
                     int pointLineId = data.getIntExtra("lineId",-1);
-                    Log.d(TAG, "onActivityResult: id:" + pointDetailId);
+                    Log.d(TAG, "REQUEST_CODE_POINT_DETAIL onActivityResult: id:" + pointDetailId);
+                    getALLPoint();
                     if(pointDetailId != -1){
                         getSinglePoint(pointDetailId+"");
                     }

@@ -60,8 +60,10 @@ import map.test.testmap.model.ResponseBean;
 import map.test.testmap.model.ResponsePoint;
 import map.test.testmap.mvvm.ui.SearchActivity;
 import map.test.testmap.utils.Common;
+import map.test.testmap.utils.DataBaseUtils;
 import map.test.testmap.utils.MyViewPagerAdapter;
 import map.test.testmap.utils.OkHttpClientManager;
+import map.test.testmap.utils.PreferencesUtils;
 import map.test.testmap.view.MultiSelectionSpinner;
 import okhttp3.Response;
 
@@ -74,6 +76,7 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
     private EditText etPhone = null;
     private EditText etPhone1 = null;
     private EditText etIP = null;
+    private EditText etManager = null;
     private EditText etLatitude = null;
     private EditText etLongitude = null;
     private EditText etPointBelong= null;
@@ -140,6 +143,7 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
 
                     int id = (int) msg.obj;
                     Toast.makeText(PointDetailActivity.this,"保存成功！",Toast.LENGTH_LONG).show();
+                    DataBaseUtils.getInstance().insertPoint(currentPoint);
                     Intent resultIntent = new Intent();
                     resultIntent.putExtra("id",id);
 //                    if(lineId != 0){
@@ -241,6 +245,7 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
         etPhone = findViewById(R.id.edit_phone);
         etPhone1 = findViewById(R.id.edit_phone1);
         etIP = findViewById(R.id.edit_ip1);
+        etManager = findViewById(R.id.edit_manager);
 
         etLatitude = findViewById(R.id.edit_latitude);
         etLongitude = findViewById(R.id.edit_longitude);
@@ -278,6 +283,7 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
             Common.getInstance().setEditTextFalse(etName);
             Common.getInstance().setEditTextFalse(etOther);
             Common.getInstance().setEditTextFalse(etIP);
+            Common.getInstance().setEditTextFalse(etManager);
             Common.getInstance().setEditTextFalse(etLatitude);
             Common.getInstance().setEditTextFalse(etLongitude);
             Common.getInstance().setEditTextFalse(etPhone);
@@ -512,6 +518,12 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
             etOther.setText(currentPoint.getRemark());
             etPhone.setText(currentPoint.getPhone());
             etPhone1.setText(currentPoint.getPhone1());
+            if(currentPoint.getManageUserName() == null){
+                etManager.setText("");
+            }else{
+                etManager.setText(currentPoint.getManageUserName());
+            }
+
             etIP.setText(currentPoint.getIp());
             etIP2.setText(currentPoint.getIp2());
             etONU.setText(currentPoint.getIp_onu());
@@ -533,6 +545,7 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
             etOther.setText("");
             etPhone.setText("");
             etPhone1.setText("");
+            etManager.setText("");
             etIP.setText("");
             etIP2.setText("");
             etONU.setText("");
@@ -600,6 +613,12 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
                     }else{
                         currentPoint.setPhone1("");
                     }
+                    if(!TextUtils.isEmpty(etManager.getText().toString())){
+                        currentPoint.setManageUserName(etManager.getText().toString());
+                    }else{
+                        currentPoint.setManageUserName("");
+                    }
+
                     if(!TextUtils.isEmpty(etIP.getText().toString())){
                         currentPoint.setIp(etIP.getText().toString());
                     }else{
@@ -643,6 +662,13 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
                     }else{
                         currentPoint.setPhone1("");
                     }
+
+                    if(!TextUtils.isEmpty(etManager.getText().toString())){
+                        currentPoint.setManageUserName(etManager.getText().toString());
+                    }else{
+                        currentPoint.setManageUserName("");
+                    }
+
                     if(!TextUtils.isEmpty(etIP.getText().toString())){
                         currentPoint.setIp(etIP.getText().toString());
                     }else{
@@ -756,6 +782,7 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
         data.put("tagPhone1",currentPoint.getPhone1());
         data.put("stationId",stationId+"");
         data.put("l_name",currentPoint.getL_name());
+        data.put("manageUser",currentPoint.getManageUserName());
         data.put("tagIp1",currentPoint.getIp2());
         data.put("ip_onu",currentPoint.getIp_onu());
 
@@ -861,6 +888,15 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
                     ResponseBean<Point> currentData = new Gson().fromJson(result,type);
 
                     if(currentData.getResult() == Constants.RESULT_FAIL){
+                        if(currentData.getDesc().equals("登陆已过期,请重新登陆")){
+                            Toast.makeText(PointDetailActivity.this,"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                            PreferencesUtils.putString(PointDetailActivity.this,"account",null);
+                            PreferencesUtils.putString(PointDetailActivity.this,"password_selector",null);
+                            Intent intent = new Intent(PointDetailActivity.this, LoginActivity.class);
+                            startActivity(intent);
+                            finish();
+                            return;
+                        }
                         sendFailureMsg("保存失败，原因是："+currentData.getDesc());
                     }
 
@@ -964,6 +1000,15 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
                     ResponseBean<DataType> currentData = new Gson().fromJson(result,type);
 
                     if(currentData.getResult() == Constants.RESULT_FAIL){
+                        if(currentData.getDesc().equals("登陆已过期,请重新登陆")){
+                            Toast.makeText(PointDetailActivity.this,"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                            PreferencesUtils.putString(PointDetailActivity.this,"account",null);
+                            PreferencesUtils.putString(PointDetailActivity.this,"password_selector",null);
+                            Intent intent = new Intent(PointDetailActivity.this, LoginActivity.class);
+                            startActivity(intent);
+                            finish();
+                            return;
+                        }
                         sendFailureMsg(currentData.getDesc());
                         return;
                     }
@@ -999,6 +1044,15 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
                     ResponseBean<DataType> currentData = new Gson().fromJson(result,type);
 
                     if(currentData.getResult() == Constants.RESULT_FAIL){
+                        if(currentData.getDesc().equals("登陆已过期,请重新登陆")){
+                            Toast.makeText(PointDetailActivity.this,"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                            PreferencesUtils.putString(PointDetailActivity.this,"account",null);
+                            PreferencesUtils.putString(PointDetailActivity.this,"password_selector",null);
+                            Intent intent = new Intent(PointDetailActivity.this, LoginActivity.class);
+                            startActivity(intent);
+                            finish();
+                            return;
+                        }
                         sendFailureMsg(currentData.getDesc());
                         return;
                     }
@@ -1033,6 +1087,15 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
                     ResponseBean<DataType> currentData = new Gson().fromJson(result,type);
 
                     if(currentData.getResult() == Constants.RESULT_FAIL){
+                        if(currentData.getDesc().equals("登陆已过期,请重新登陆")){
+                            Toast.makeText(PointDetailActivity.this,"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                            PreferencesUtils.putString(PointDetailActivity.this,"account",null);
+                            PreferencesUtils.putString(PointDetailActivity.this,"password_selector",null);
+                            Intent intent = new Intent(PointDetailActivity.this, LoginActivity.class);
+                            startActivity(intent);
+                            finish();
+                            return;
+                        }
                         sendFailureMsg(currentData.getDesc());
                         return;
                     }
@@ -1067,6 +1130,15 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
                     ResponseBean<DataType> currentData = new Gson().fromJson(result,type);
 
                     if(currentData.getResult() == Constants.RESULT_FAIL){
+                        if(currentData.getDesc().equals("登陆已过期,请重新登陆")){
+                            Toast.makeText(PointDetailActivity.this,"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                            PreferencesUtils.putString(PointDetailActivity.this,"account",null);
+                            PreferencesUtils.putString(PointDetailActivity.this,"password_selector",null);
+                            Intent intent = new Intent(PointDetailActivity.this, LoginActivity.class);
+                            startActivity(intent);
+                            finish();
+                            return;
+                        }
                         sendFailureMsg(currentData.getDesc());
                         return;
                     }

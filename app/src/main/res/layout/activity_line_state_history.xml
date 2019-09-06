@@ -69,8 +69,10 @@
                 android:id="@+id/et_name"
                 style="@style/DetailContent"/>
         </LinearLayout>
-            <View
-                style="@style/DetailLine"/>
+
+        <View
+            style="@style/DetailLine"/>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:orientation="horizontal"
@@ -84,8 +86,10 @@
                 android:id="@+id/et_time"
                 style="@style/DetailContent" />
         </LinearLayout>
-            <View
-                style="@style/DetailLine"/>
+
+        <View
+            style="@style/DetailLine"/>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:orientation="horizontal"
@@ -100,23 +104,77 @@
                 style="@style/DetailContent" />
         </LinearLayout>
 
-            <View
-                style="@style/DetailLine"/>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:orientation="horizontal"
-                android:paddingTop="15dp"
-                android:paddingBottom="15dp"
-                android:layout_height="wrap_content">
-                <TextView
-                    android:text="纬        度"
-                    style="@style/DetailTitle" />
-                <TextView
-                    android:id="@+id/check_long"
-                    style="@style/DetailContent" />
-            </LinearLayout>
-            <View
-                style="@style/DetailLine"/>
+        <View
+            style="@style/DetailLine"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
+            android:layout_height="wrap_content">
+            <TextView
+                android:text="纬        度"
+                style="@style/DetailTitle" />
+            <TextView
+                android:id="@+id/check_long"
+                style="@style/DetailContent" />
+        </LinearLayout>
+
+        <View
+            style="@style/DetailLine"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
+            android:layout_height="wrap_content">
+            <TextView
+                android:text="起  始  点"
+                style="@style/DetailTitle" />
+            <TextView
+                android:id="@+id/check_start"
+                style="@style/DetailContent"/>
+        </LinearLayout>
+
+        <View
+            style="@style/DetailLine"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
+            android:layout_height="wrap_content">
+            <TextView
+                android:text="结  束  点"
+                style="@style/DetailTitle" />
+            <TextView
+                android:id="@+id/check_end"
+                style="@style/DetailContent"/>
+        </LinearLayout>
+
+        <View
+            style="@style/DetailLine"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:orientation="horizontal"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
+            android:layout_height="wrap_content">
+            <TextView
+                android:text="故  障  点"
+                style="@style/DetailTitle" />
+            <TextView
+                android:id="@+id/sp_name"
+                style="@style/DetailContent"/>
+        </LinearLayout>
+
+        <View
+            style="@style/DetailLine"/>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:orientation="horizontal"
@@ -130,8 +188,10 @@
                 android:id="@+id/sp_state"
                 style="@style/DetailContent"/>
         </LinearLayout>
-            <View
-                style="@style/DetailLine"/>
+
+        <View
+            style="@style/DetailLine"/>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

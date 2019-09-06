@@ -79,15 +79,6 @@ public class ImageActivity extends AppCompatActivity {
                 })
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .map(new Function<File, File>() {
-                            @Override
-                            public File apply(File file) throws Exception {
-                                return null;
-                            }
-                        })
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .delay(5 * 1000,TimeUnit.SECONDS)
-                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(new Observer<File>() {
                             @Override
                             public void onSubscribe(Disposable d) {

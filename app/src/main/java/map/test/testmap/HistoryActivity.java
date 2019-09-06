@@ -1,5 +1,6 @@
 package map.test.testmap;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -22,6 +24,7 @@ import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.ResponseBean;
 import map.test.testmap.model.ResponseHistory;
 import map.test.testmap.utils.HttpUtils;
+import map.test.testmap.utils.PreferencesUtils;
 import retrofit2.Response;
 
 public class HistoryActivity extends AppCompatActivity {
@@ -93,6 +96,15 @@ public class HistoryActivity extends AppCompatActivity {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+                                    if(current.getDesc().equals("登陆已过期,请重新登陆")){
+                                        Toast.makeText(HistoryActivity.this,"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                                        PreferencesUtils.putString(HistoryActivity.this,"account",null);
+                                        PreferencesUtils.putString(HistoryActivity.this,"password_selector",null);
+                                        Intent intent = new Intent(HistoryActivity.this, LoginActivity.class);
+                                        startActivity(intent);
+                                        finish();
+                                        return;
+                                    }
                                     loadingLayout.setVisibility(View.GONE);
                                     emptyTv.setVisibility(View.VISIBLE);
                                 }
@@ -152,6 +164,15 @@ public class HistoryActivity extends AppCompatActivity {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+                                    if(current.getDesc().equals("登陆已过期,请重新登陆")){
+                                        Toast.makeText(HistoryActivity.this,"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                                        PreferencesUtils.putString(HistoryActivity.this,"account",null);
+                                        PreferencesUtils.putString(HistoryActivity.this,"password_selector",null);
+                                        Intent intent = new Intent(HistoryActivity.this, LoginActivity.class);
+                                        startActivity(intent);
+                                        finish();
+                                        return;
+                                    }
                                     loadingLayout.setVisibility(View.GONE);
                                     emptyTv.setVisibility(View.VISIBLE);
                                 }

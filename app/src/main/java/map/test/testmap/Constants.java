@@ -7,12 +7,16 @@ import map.test.testmap.model.DataType;
 public class Constants {
 
     public static int messageId = 0;
+    public static int noticeCount = 0;
     public static final int RESULT_OK = 1;
     public static final int RESULT_FAIL = 2;
     public static final int REQUEST_CODE = 1000;
     public static final int REQUEST_LINE_CODE = 1001;
     public static final int TYPE_HISTORY_POINT = 10010;
     public static final int TYPE_HISTORY_LINE = 10011;
+
+    public static final String POINT_FLAG = "MainFragmentPoint";
+    public static final String LINE_FLAG = "MainFragmentLine";
 
     public static List<DataType> pointTypeList = null;
     public static List<DataType> pointTerminalTypeList = null;
@@ -31,6 +35,7 @@ public class Constants {
     public static String loginTag = "";
 //    public static final String WEB_URL = "http://172.19.26.52:8080/em";
 //    public static final String WEB_URL = "http://172.18.110.57:8080";
+//    public static final String WEB_URL = "http://172.18.110.57:8080";
 //    public static final String WEB_URL1 = "http://172.18.110.57:8080/em";
 //    public static final String TEST_SPLITTER = "/em";
 //    public static final String TEST_SPLITTER = "";
@@ -39,6 +44,7 @@ public class Constants {
     //正式环境
 //    public static final String WEB_URL = "http://119.3.71.206";
     private static final String SPLITTER = "/app/";
+//    private static final String SPLITTER1= "/em/app/";
 
     public static boolean isExistAlready = false;
 
@@ -102,6 +108,10 @@ public class Constants {
      */
     public static final String TAG_GET_ALL_POINT = "/tagAction"+SPLITTER+"getAllTag";
     /**
+     * 获取当前账户可查看标记点
+     */
+    public static final String TAG_GET_USER_POINT = "/tagAction"+SPLITTER+"getAllTagPermission";
+    /**
      * 获取某个标记点
      */
     public static final String TAG_GET_SINGLE_POINT ="/tagAction"+SPLITTER+"getTag";
@@ -117,6 +127,10 @@ public class Constants {
      * 获取所有线路
      */
     public static final String TAG_GET_ALL_LINE ="/tagAction"+SPLITTER+"getAllTagLine";
+    /**
+     * 获取当前账户可查看线路
+     */
+    public static final String TAG_GET_USER_LINE = "/tagAction"+SPLITTER+"getAllTagLinePermission";
     /**
      * 获取某条线路
      */
@@ -189,4 +203,15 @@ public class Constants {
      * 	/tagAction/app/putBackTask
      */
     public static final String TAG_PUT_BACK_TASK ="/tagAction"+SPLITTER+"/putBackTask";
+
+    /**
+     * 提交消息状态
+     */
+    public static final String TAG_SET_NOTICE ="/noticeAction"+SPLITTER+"/getNotice";
+
+    /**
+     * 获取任务信息
+     */
+    public static final String TAG_GET_TASK_INFO ="/tagAction"+SPLITTER+"/getCheckTaskGenData";
+
 }

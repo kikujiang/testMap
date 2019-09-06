@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class Common {
     private static final String TAG = "Common";
@@ -344,4 +345,52 @@ public class Common {
         return targetFile;
     }
 
+
+    public String getDateFromLong(long time){
+        if (time == 0f) {
+            return "";
+        }
+        Date curDate = new Date(time);
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+        return format.format(curDate);
+    }
+
+    /**
+     * 去掉字符串里面的html代码。<br>
+     * 要求数据要规范，比如大于小于号要配套,否则会被集体误杀。
+     *
+     * @param content 内容
+     * @return 去掉后的内容
+     */
+
+    public String stripHtml(String content) {
+        // <p>段落替换为换行
+        content = content.replaceAll("<p .*?>", "\r\n");
+        // <br><br/>替换为换行
+        content = content.replaceAll("<br\\s*/?>", "\n");
+        // 去掉其它的<>之间的东西
+        content = content.replaceAll("\\<.*?>", "\n");
+        // 还原HTML
+        // content = HTMLDecoder.decode(content);
+        //&ldquo;&quot;&nbsp;
+        content = content.replaceAll("&.dquo;", "\"");
+        content = content.replaceAll("&nbsp;", " ");
+        return content;
+    }
+
+    public String getUserAgent(){
+        String userAgent = "";
+        StringBuffer sb = new StringBuffer();
+        userAgent = System.getProperty("http.agent");//Dalvik/2.1.0 (Linux; U; Android 6.0.1; vivo X9L Build/MMB29M)
+
+        for (int i = 0, length = userAgent.length(); i < length; i++) {
+            char c = userAgent.charAt(i);
+            if (c <= '\u001f' || c >= '\u007f') {
+                sb.append(String.format("\\u%04x", (int) c));
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
 }

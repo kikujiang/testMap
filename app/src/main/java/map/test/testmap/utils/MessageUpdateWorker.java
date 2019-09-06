@@ -35,7 +35,7 @@ public class MessageUpdateWorker extends Worker {
     }
 
     private void getNotice(){
-        HttpUtils.getInstance().getNotice(new OnResponseListener() {
+        HttpUtils.getInstance().getNotice(0,new OnResponseListener() {
             @Override
             public void success(retrofit2.Response responseMapBean) {
                 if(responseMapBean == null){

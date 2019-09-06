@@ -24,6 +24,7 @@ import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.ResponseBean;
 import map.test.testmap.utils.BadgeUtil;
 import map.test.testmap.utils.HttpUtils;
+import map.test.testmap.utils.PreferencesUtils;
 import q.rorbin.badgeview.QBadgeView;
 
 public class CustomReceiver extends XGPushBaseReceiver {
@@ -48,7 +49,8 @@ public class CustomReceiver extends XGPushBaseReceiver {
     }
 
     private void getNotice(){
-        HttpUtils.getInstance().getNotice(new OnResponseListener() {
+        long time = PreferencesUtils.getLong(mContext,String.valueOf(Constants.userId),0L);
+        HttpUtils.getInstance().getNotice(time,new OnResponseListener() {
             @Override
             public void success(retrofit2.Response responseMapBean) {
                 if(responseMapBean == null){
@@ -59,7 +61,8 @@ public class CustomReceiver extends XGPushBaseReceiver {
                 ResponseBean<Notice> current = (ResponseBean<Notice>)responseMapBean.body();
 
                 if(current.getResult() == Constants.RESULT_OK){
-
+                    long currentTime = current.getTime();
+                    PreferencesUtils.putLong(mContext,String.valueOf(Constants.userId),currentTime);
                     final List<Notice> noticeList = current.getList();
                     Log.d(LogTag, "run: ");
                     if(noticeList.size() > 0){
@@ -72,13 +75,10 @@ public class CustomReceiver extends XGPushBaseReceiver {
                             if(initial < id && initial != 0){
                                 count++;
                             }
-
-//                            if(Constants.messageId < id){
-//                                Constants.messageId = id;
-//                            }
                         }
 
                         if(count > 0){
+                            Constants.noticeCount = count;
                             showBadgeView(2,count);
                         }
 

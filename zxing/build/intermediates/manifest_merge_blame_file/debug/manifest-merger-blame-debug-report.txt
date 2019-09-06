@@ -1,0 +1,337 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<!--
+3 Copyright (C) 2008 ZXing authors
+4
+5 Licensed under the Apache License, Version 2.0 (the "License");
+6 you may not use this file except in compliance with the License.
+7 You may obtain a copy of the License at
+8
+9      http://www.apache.org/licenses/LICENSE-2.0
+10
+11 Unless required by applicable law or agreed to in writing, software
+12 distributed under the License is distributed on an "AS IS" BASIS,
+13 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+14 See the License for the specific language governing permissions and
+15 limitations under the License.
+16-->
+17<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+18    package="com.google.zxing.client.android"
+19    android:installLocation="auto"
+20    android:versionCode="108"
+21    android:versionName="4.7.8" >
+22
+23    <uses-sdk
+24        android:minSdkVersion="19"
+24-->F:\test\testMap\zxing\src\main\AndroidManifest.xml
+25        android:targetSdkVersion="28" />
+25-->F:\test\testMap\zxing\src\main\AndroidManifest.xml
+26
+27    <uses-permission android:name="android.permission.CAMERA" />
+27-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:23:3-62
+27-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:23:20-60
+28    <uses-permission android:name="android.permission.INTERNET" />
+28-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:24:3-64
+28-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:24:20-62
+29    <uses-permission android:name="android.permission.VIBRATE" />
+29-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:25:3-63
+29-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:25:20-61
+30    <uses-permission android:name="android.permission.FLASHLIGHT" />
+30-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:26:3-66
+30-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:26:20-64
+31    <uses-permission android:name="android.permission.READ_CONTACTS" />
+31-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:27:3-69
+31-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:27:20-67
+32    <!-- unavailable in API 23 -->
+33    <uses-permission android:name="com.android.browser.permission.READ_HISTORY_BOOKMARKS" />
+33-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:29:3-90
+33-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:29:20-88
+34    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+34-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:30:3-78
+34-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:30:20-76
+35    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+35-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:31:3-73
+35-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:31:20-71
+36    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+36-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:32:3-73
+36-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:32:20-71
+37
+38    <uses-feature android:name="android.hardware.camera.any" />
+38-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:34:3-61
+38-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:34:17-59
+39    <uses-feature
+39-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:35:3-92
+40        android:name="android.hardware.camera.autofocus"
+40-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:35:17-65
+41        android:required="false" />
+41-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:35:66-90
+42    <uses-feature
+42-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:36:3-88
+43        android:name="android.hardware.camera.flash"
+43-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:36:17-61
+44        android:required="false" />
+44-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:36:62-86
+45    <uses-feature android:name="android.hardware.screen.landscape" />
+45-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:37:3-67
+45-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:37:17-65
+46    <uses-feature
+46-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:38:3-80
+47        android:name="android.hardware.wifi"
+47-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:38:17-53
+48        android:required="false" />
+48-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:38:54-78
+49
+50    <application
+50-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:40:3-134:17
+51        android:allowBackup="true"
+51-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:42:16-42
+52        android:label="@string/app_name" >
+52-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:41:16-48
+53        <activity
+53-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:43:5-81:16
+54            android:name="com.google.zxing.client.android.CaptureActivity"
+54-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:43:15-46
+55            android:clearTaskOnLaunch="true"
+55-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:45:15-47
+56            android:screenOrientation="portrait"
+56-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:44:15-51
+57            android:stateNotNeeded="true"
+57-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:46:15-44
+58            android:theme="@style/CaptureTheme"
+58-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:47:15-50
+59            android:windowSoftInputMode="stateAlwaysHidden" >
+59-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:48:15-62
+60            <intent-filter>
+60-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:49:7-52:23
+61                <action android:name="com.google.zxing.client.android.SCAN" />
+61-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:50:9-70
+61-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:50:17-68
+62
+63                <category android:name="android.intent.category.DEFAULT" />
+63-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:51:9-67
+63-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:51:19-65
+64            </intent-filter>
+65            <!-- Allow web apps to launch Barcode Scanner by linking to http://zxing.appspot.com/scan. -->
+66            <intent-filter>
+66-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:54:7-59:23
+67                <action android:name="android.intent.action.VIEW" />
+67-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:55:9-60
+67-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:55:17-58
+68
+69                <category android:name="android.intent.category.DEFAULT" />
+69-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:51:9-67
+69-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:51:19-65
+70                <category android:name="android.intent.category.BROWSABLE" />
+70-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:57:9-69
+70-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:57:19-67
+71
+72                <data
+72-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:58:9-92
+73                    android:host="zxing.appspot.com"
+73-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:58:37-69
+74                    android:path="/scan"
+74-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:58:70-90
+75                    android:scheme="http" />
+75-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:58:15-36
+76            </intent-filter>
+77            <!-- We also support a Google Product Search URL. -->
+78            <intent-filter>
+78-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:61:7-66:23
+79                <action android:name="android.intent.action.VIEW" />
+79-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:55:9-60
+79-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:55:17-58
+80
+81                <category android:name="android.intent.category.DEFAULT" />
+81-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:51:9-67
+81-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:51:19-65
+82                <category android:name="android.intent.category.BROWSABLE" />
+82-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:57:9-69
+82-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:57:19-67
+83
+84                <data
+84-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:58:9-92
+85                    android:host="www.google.com"
+85-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:58:37-69
+86                    android:path="/m/products/scan"
+86-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:58:70-90
+87                    android:scheme="http" />
+87-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:58:15-36
+88            </intent-filter>
+89            <!-- And the UK version. -->
+90            <intent-filter>
+90-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:68:7-73:23
+91                <action android:name="android.intent.action.VIEW" />
+91-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:55:9-60
+91-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:55:17-58
+92
+93                <category android:name="android.intent.category.DEFAULT" />
+93-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:51:9-67
+93-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:51:19-65
+94                <category android:name="android.intent.category.BROWSABLE" />
+94-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:57:9-69
+94-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:57:19-67
+95
+96                <data
+96-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:58:9-92
+97                    android:host="www.google.co.uk"
+97-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:58:37-69
+98                    android:path="/m/products/scan"
+98-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:58:70-90
+99                    android:scheme="http" />
+99-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:58:15-36
+100            </intent-filter>
+101            <!-- Support zxing://scan/?... like iPhone app -->
+102            <intent-filter>
+102-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:75:7-80:23
+103                <action android:name="android.intent.action.VIEW" />
+103-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:55:9-60
+103-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:55:17-58
+104
+105                <category android:name="android.intent.category.DEFAULT" />
+105-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:51:9-67
+105-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:51:19-65
+106                <category android:name="android.intent.category.BROWSABLE" />
+106-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:57:9-69
+106-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:57:19-67
+107
+108                <data
+108-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:58:9-92
+109                    android:host="scan"
+109-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:58:37-69
+110                    android:path="/"
+110-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:58:70-90
+111                    android:scheme="zxing" />
+111-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:58:15-36
+112            </intent-filter>
+113        </activity>
+114        <activity
+114-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:82:5-84:46
+115            android:name="com.google.zxing.client.android.PreferencesActivity"
+115-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:82:15-50
+116            android:label="@string/preferences_name"
+116-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:83:15-55
+117            android:stateNotNeeded="true" />
+117-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:84:15-44
+118        <activity
+118-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:85:5-103:16
+119            android:name="com.google.zxing.client.android.encode.EncodeActivity"
+119-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:85:15-52
+120            android:stateNotNeeded="true" >
+120-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:86:15-44
+121            <intent-filter>
+121-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:87:7-90:23
+122                <action android:name="com.google.zxing.client.android.ENCODE" />
+122-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:88:9-72
+122-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:88:17-70
+123
+124                <category android:name="android.intent.category.DEFAULT" />
+124-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:51:9-67
+124-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:51:19-65
+125            </intent-filter>
+126            <!-- This allows us to handle the Share button in Contacts. -->
+127            <intent-filter>
+127-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:92:7-96:23
+128                <action android:name="android.intent.action.SEND" />
+128-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:93:9-60
+128-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:93:17-58
+129
+130                <category android:name="android.intent.category.DEFAULT" />
+130-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:51:9-67
+130-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:51:19-65
+131
+132                <data android:mimeType="text/x-vcard" />
+132-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:58:9-92
+132-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:95:15-46
+133            </intent-filter>
+134            <!-- This allows us to handle sharing any plain text . -->
+135            <intent-filter>
+135-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:98:7-102:23
+136                <action android:name="android.intent.action.SEND" />
+136-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:93:9-60
+136-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:93:17-58
+137
+138                <category android:name="android.intent.category.DEFAULT" />
+138-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:51:9-67
+138-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:51:19-65
+139
+140                <data android:mimeType="text/plain" />
+140-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:58:9-92
+140-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:95:15-46
+141            </intent-filter>
+142        </activity>
+143        <activity
+143-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:104:5-112:16
+144            android:name="com.google.zxing.client.android.book.SearchBookContentsActivity"
+144-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:104:15-62
+145            android:label="@string/sbc_name"
+145-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:105:15-47
+146            android:screenOrientation="sensorLandscape"
+146-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:107:15-58
+147            android:stateNotNeeded="true" >
+147-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:106:15-44
+148            <intent-filter>
+148-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:108:7-111:23
+149                <action android:name="com.google.zxing.client.android.SEARCH_BOOK_CONTENTS" />
+149-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:109:9-86
+149-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:109:17-84
+150
+151                <category android:name="android.intent.category.DEFAULT" />
+151-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:51:9-67
+151-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:51:19-65
+152            </intent-filter>
+153        </activity>
+154        <activity
+154-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:113:5-120:16
+155            android:name="com.google.zxing.client.android.share.ShareActivity"
+155-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:113:15-50
+156            android:screenOrientation="user"
+156-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:115:15-47
+157            android:stateNotNeeded="true" >
+157-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:114:15-44
+158            <intent-filter>
+158-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:116:7-119:23
+159                <action android:name="com.google.zxing.client.android.SHARE" />
+159-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:117:9-71
+159-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:117:17-69
+160
+161                <category android:name="android.intent.category.DEFAULT" />
+161-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:51:9-67
+161-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:51:19-65
+162            </intent-filter>
+163        </activity>
+164        <activity
+164-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:121:5-123:46
+165            android:name="com.google.zxing.client.android.history.HistoryActivity"
+165-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:121:15-54
+166            android:label="@string/history_title"
+166-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:122:15-52
+167            android:stateNotNeeded="true" />
+167-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:123:15-44
+168        <activity
+168-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:124:5-126:46
+169            android:name="com.google.zxing.client.android.share.BookmarkPickerActivity"
+169-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:124:15-59
+170            android:label="@string/bookmark_picker_name"
+170-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:125:15-59
+171            android:stateNotNeeded="true" />
+171-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:126:15-44
+172        <activity
+172-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:127:5-129:46
+173            android:name="com.google.zxing.client.android.share.AppPickerActivity"
+173-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:127:15-54
+174            android:label="@string/app_picker_name"
+174-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:128:15-54
+175            android:stateNotNeeded="true" />
+175-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:129:15-44
+176        <activity
+176-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:130:5-133:46
+177            android:name="com.google.zxing.client.android.HelpActivity"
+177-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:130:15-43
+178            android:label="@string/menu_help"
+178-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:131:15-48
+179            android:screenOrientation="user"
+179-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:132:15-47
+180            android:stateNotNeeded="true" />
+180-->F:\test\testMap\zxing\src\main\AndroidManifest.xml:133:15-44
+181    </application>
+182
+183</manifest>

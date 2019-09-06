@@ -1,5 +1,9 @@
 package map.test.testmap.model;
 
+import com.google.gson.annotations.SerializedName;
+
+import org.litepal.crud.LitePalSupport;
+
 import java.util.List;
 
 /**
@@ -18,11 +22,16 @@ import java.util.List;
  * 	"tag_begin_location_long": 120.531351,
  * 	"tag_end_location_lat": 31.386173,
  * 	"tag_end_location_long": 120.513498
+ * 	"tag_begin_name":"好久"
+ * 	"tag_end_name":"记得"
  * }
  *
  */
-public class Line {
-    private int id;
+public class Line extends LitePalSupport {
+    private String manageUserName;
+    private String path;
+    @SerializedName("id")
+    private int lineId;
     private String name;
     private String lineNo;
     private int lineCount;
@@ -53,14 +62,23 @@ public class Line {
     private String stationName;
     private String l_name;
     private float lineLength;
+    private String tag_begin_name;
+    private String tag_end_name;
 
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
 
     public int getId() {
-        return id;
+        return lineId;
     }
 
     public void setId(int id) {
-        this.id = id;
+        this.lineId = id;
     }
 
     public String getName() {
@@ -165,5 +183,25 @@ public class Line {
 
     public int getTag_end_id() {
         return tag_end_id;
+    }
+
+    public String getTag_begin_name() {
+        return tag_begin_name;
+    }
+
+    public String getTag_end_name() {
+        return tag_end_name;
+    }
+
+    public void setCheckPoints(List<Point> checkPoints) {
+        this.checkPoints = checkPoints;
+    }
+
+    public String getManageUserName() {
+        return manageUserName;
+    }
+
+    public void setManageUserName(String manageUserName) {
+        this.manageUserName = manageUserName;
     }
 }

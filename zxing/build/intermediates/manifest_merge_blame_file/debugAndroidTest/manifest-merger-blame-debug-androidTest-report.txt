@@ -1,0 +1,336 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.google.zxing.client.android.test" >
+4
+5    <uses-sdk
+5-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:5:5-74
+6        android:minSdkVersion="19"
+6-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:5:15-41
+7        android:targetSdkVersion="28" />
+7-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:5:42-71
+8
+9    <instrumentation
+9-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:11:5-15:86
+10        android:name="android.test.InstrumentationTestRunner"
+10-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:11:22-75
+11        android:functionalTest="false"
+11-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:14:22-52
+12        android:handleProfiling="false"
+12-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:13:22-53
+13        android:label="Tests for com.google.zxing.client.android.test"
+13-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:15:22-84
+14        android:targetPackage="com.google.zxing.client.android.test" />
+14-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:12:22-82
+15
+16    <uses-permission android:name="android.permission.CAMERA" />
+16-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:27:5-65
+16-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:27:22-62
+17    <uses-permission android:name="android.permission.INTERNET" />
+17-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:28:5-67
+17-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:28:22-64
+18    <uses-permission android:name="android.permission.VIBRATE" />
+18-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:29:5-66
+18-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:29:22-63
+19    <uses-permission android:name="android.permission.FLASHLIGHT" />
+19-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:30:5-69
+19-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:30:22-66
+20    <uses-permission android:name="android.permission.READ_CONTACTS" /> <!-- unavailable in API 23 -->
+20-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:31:5-72
+20-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:31:22-69
+21    <uses-permission android:name="com.android.browser.permission.READ_HISTORY_BOOKMARKS" />
+21-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:33:5-93
+21-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:33:22-90
+22    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+22-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:34:5-81
+22-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:34:22-78
+23    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+23-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:35:5-76
+23-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:35:22-73
+24    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+24-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:36:5-76
+24-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:36:22-73
+25
+26    <uses-feature android:name="android.hardware.camera.any" />
+26-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:38:5-64
+26-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:38:19-61
+27    <uses-feature
+27-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:39:5-41:36
+28        android:name="android.hardware.camera.autofocus"
+28-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:40:9-57
+29        android:required="false" />
+29-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:41:9-33
+30    <uses-feature
+30-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:42:5-44:36
+31        android:name="android.hardware.camera.flash"
+31-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:43:9-53
+32        android:required="false" />
+32-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:44:9-33
+33    <uses-feature android:name="android.hardware.screen.landscape" />
+33-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:45:5-70
+33-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:45:19-67
+34    <uses-feature
+34-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:46:5-48:36
+35        android:name="android.hardware.wifi"
+35-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:47:9-45
+36        android:required="false" />
+36-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:48:9-33
+37
+38    <application
+38-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:7:5-9:19
+39        android:allowBackup="true"
+39-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:51:9-35
+40        android:debuggable="true"
+40-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:7:18-43
+41        android:label="@string/app_name" >
+41-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:52:9-41
+42        <uses-library android:name="android.test.runner" />
+42-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:8:9-60
+42-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:8:23-57
+43
+44        <activity
+44-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:53:9-113:20
+45            android:name="com.google.zxing.client.android.CaptureActivity"
+45-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:54:13-75
+46            android:clearTaskOnLaunch="true"
+46-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:55:13-45
+47            android:screenOrientation="portrait"
+47-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:56:13-49
+48            android:stateNotNeeded="true"
+48-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:57:13-42
+49            android:theme="@style/CaptureTheme"
+49-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:58:13-48
+50            android:windowSoftInputMode="stateAlwaysHidden" >
+50-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:59:13-60
+51            <intent-filter>
+51-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:60:13-64:29
+52                <action android:name="com.google.zxing.client.android.SCAN" />
+52-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:61:17-79
+52-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:61:25-76
+53
+54                <category android:name="android.intent.category.DEFAULT" />
+54-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:63:17-76
+54-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:63:27-73
+55            </intent-filter>
+56            <!-- Allow web apps to launch Barcode Scanner by linking to http://zxing.appspot.com/scan. -->
+57            <intent-filter>
+57-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:66:13-76:29
+58                <action android:name="android.intent.action.VIEW" />
+58-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:67:17-69
+58-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:67:25-66
+59
+60                <category android:name="android.intent.category.DEFAULT" />
+60-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:63:17-76
+60-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:63:27-73
+61                <category android:name="android.intent.category.BROWSABLE" />
+61-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:70:17-78
+61-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:70:27-75
+62
+63                <data
+63-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:72:17-75:45
+64                    android:host="zxing.appspot.com"
+64-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:73:21-53
+65                    android:path="/scan"
+65-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:74:21-41
+66                    android:scheme="http" />
+66-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:75:21-42
+67            </intent-filter>
+68            <!-- We also support a Google Product Search URL. -->
+69            <intent-filter>
+69-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:78:13-88:29
+70                <action android:name="android.intent.action.VIEW" />
+70-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:67:17-69
+70-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:67:25-66
+71
+72                <category android:name="android.intent.category.DEFAULT" />
+72-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:63:17-76
+72-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:63:27-73
+73                <category android:name="android.intent.category.BROWSABLE" />
+73-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:70:17-78
+73-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:70:27-75
+74
+75                <data
+75-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:72:17-75:45
+76                    android:host="www.google.com"
+76-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:73:21-53
+77                    android:path="/m/products/scan"
+77-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:74:21-41
+78                    android:scheme="http" />
+78-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:75:21-42
+79            </intent-filter>
+80            <!-- And the UK version. -->
+81            <intent-filter>
+81-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:90:13-100:29
+82                <action android:name="android.intent.action.VIEW" />
+82-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:67:17-69
+82-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:67:25-66
+83
+84                <category android:name="android.intent.category.DEFAULT" />
+84-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:63:17-76
+84-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:63:27-73
+85                <category android:name="android.intent.category.BROWSABLE" />
+85-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:70:17-78
+85-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:70:27-75
+86
+87                <data
+87-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:72:17-75:45
+88                    android:host="www.google.co.uk"
+88-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:73:21-53
+89                    android:path="/m/products/scan"
+89-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:74:21-41
+90                    android:scheme="http" />
+90-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:75:21-42
+91            </intent-filter>
+92            <!-- Support zxing://scan/?... like iPhone app -->
+93            <intent-filter>
+93-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:102:13-112:29
+94                <action android:name="android.intent.action.VIEW" />
+94-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:67:17-69
+94-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:67:25-66
+95
+96                <category android:name="android.intent.category.DEFAULT" />
+96-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:63:17-76
+96-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:63:27-73
+97                <category android:name="android.intent.category.BROWSABLE" />
+97-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:70:17-78
+97-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:70:27-75
+98
+99                <data
+99-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:72:17-75:45
+100                    android:host="scan"
+100-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:73:21-53
+101                    android:path="/"
+101-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:74:21-41
+102                    android:scheme="zxing" />
+102-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:75:21-42
+103            </intent-filter>
+104        </activity>
+105        <activity
+105-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:114:9-117:45
+106            android:name="com.google.zxing.client.android.PreferencesActivity"
+106-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:115:13-79
+107            android:label="@string/preferences_name"
+107-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:116:13-53
+108            android:stateNotNeeded="true" />
+108-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:117:13-42
+109        <activity
+109-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:118:9-142:20
+110            android:name="com.google.zxing.client.android.encode.EncodeActivity"
+110-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:119:13-81
+111            android:stateNotNeeded="true" >
+111-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:120:13-42
+112            <intent-filter>
+112-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:121:13-125:29
+113                <action android:name="com.google.zxing.client.android.ENCODE" />
+113-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:122:17-81
+113-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:122:25-78
+114
+115                <category android:name="android.intent.category.DEFAULT" />
+115-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:63:17-76
+115-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:63:27-73
+116            </intent-filter>
+117            <!-- This allows us to handle the Share button in Contacts. -->
+118            <intent-filter>
+118-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:127:13-133:29
+119                <action android:name="android.intent.action.SEND" />
+119-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:128:17-69
+119-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:128:25-66
+120
+121                <category android:name="android.intent.category.DEFAULT" />
+121-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:63:17-76
+121-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:63:27-73
+122
+123                <data android:mimeType="text/x-vcard" />
+123-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:72:17-75:45
+124            </intent-filter>
+125            <!-- This allows us to handle sharing any plain text . -->
+126            <intent-filter>
+126-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:135:13-141:29
+127                <action android:name="android.intent.action.SEND" />
+127-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:128:17-69
+127-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:128:25-66
+128
+129                <category android:name="android.intent.category.DEFAULT" />
+129-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:63:17-76
+129-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:63:27-73
+130
+131                <data android:mimeType="text/plain" />
+131-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:72:17-75:45
+132            </intent-filter>
+133        </activity>
+134        <activity
+134-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:143:9-153:20
+135            android:name="com.google.zxing.client.android.book.SearchBookContentsActivity"
+135-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:144:13-91
+136            android:label="@string/sbc_name"
+136-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:145:13-45
+137            android:screenOrientation="sensorLandscape"
+137-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:146:13-56
+138            android:stateNotNeeded="true" >
+138-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:147:13-42
+139            <intent-filter>
+139-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:148:13-152:29
+140                <action android:name="com.google.zxing.client.android.SEARCH_BOOK_CONTENTS" />
+140-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:149:17-95
+140-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:149:25-92
+141
+142                <category android:name="android.intent.category.DEFAULT" />
+142-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:63:17-76
+142-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:63:27-73
+143            </intent-filter>
+144        </activity>
+145        <activity
+145-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:154:9-163:20
+146            android:name="com.google.zxing.client.android.share.ShareActivity"
+146-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:155:13-79
+147            android:screenOrientation="user"
+147-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:156:13-45
+148            android:stateNotNeeded="true" >
+148-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:157:13-42
+149            <intent-filter>
+149-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:158:13-162:29
+150                <action android:name="com.google.zxing.client.android.SHARE" />
+150-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:159:17-80
+150-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:159:25-77
+151
+152                <category android:name="android.intent.category.DEFAULT" />
+152-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:63:17-76
+152-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:63:27-73
+153            </intent-filter>
+154        </activity>
+155        <activity
+155-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:164:9-167:45
+156            android:name="com.google.zxing.client.android.history.HistoryActivity"
+156-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:165:13-83
+157            android:label="@string/history_title"
+157-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:166:13-50
+158            android:stateNotNeeded="true" />
+158-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:167:13-42
+159        <activity
+159-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:168:9-171:45
+160            android:name="com.google.zxing.client.android.share.BookmarkPickerActivity"
+160-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:169:13-88
+161            android:label="@string/bookmark_picker_name"
+161-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:170:13-57
+162            android:stateNotNeeded="true" />
+162-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:171:13-42
+163        <activity
+163-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:172:9-175:45
+164            android:name="com.google.zxing.client.android.share.AppPickerActivity"
+164-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:173:13-83
+165            android:label="@string/app_picker_name"
+165-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:174:13-52
+166            android:stateNotNeeded="true" />
+166-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:175:13-42
+167        <activity
+167-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:176:9-180:45
+168            android:name="com.google.zxing.client.android.HelpActivity"
+168-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:177:13-72
+169            android:label="@string/menu_help"
+169-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:178:13-46
+170            android:screenOrientation="user"
+170-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:179:13-45
+171            android:stateNotNeeded="true" />
+171-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:180:13-42
+172    </application>
+173
+174</manifest>

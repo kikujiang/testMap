@@ -13,8 +13,8 @@ android {
         applicationId "map.test.testmap"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 11
-        versionName "4.1"
+        versionCode 12
+        versionName "4.2"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk {
             //设置支持的SO库架构（开发者可以根据需要，选择一个或多个平台的so）
@@ -93,4 +93,6 @@ dependencies {
     implementation 'com.android.support:support-annotations:28.0.0'
     //集成腾讯bugly
     implementation 'com.tencent.bugly:crashreport:2.8.6'
+    //集成litepal
+    implementation 'org.litepal.android:java:3.0.0'
 }

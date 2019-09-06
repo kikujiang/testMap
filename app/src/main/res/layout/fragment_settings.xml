@@ -137,6 +137,7 @@
                 android:gravity="center"
                 android:orientation="vertical">
                 <TextView
+                    android:id="@+id/settings_total"
                     android:layout_height="match_parent"
                     android:layout_width="wrap_content"
                     android:textStyle="bold"
@@ -160,6 +161,7 @@
                 android:gravity="center"
                 android:orientation="vertical">
                 <TextView
+                    android:id="@+id/settings_new"
                     android:layout_height="match_parent"
                     android:layout_width="wrap_content"
                     android:textStyle="bold"
@@ -189,6 +191,7 @@
                 android:gravity="center"
                 android:orientation="vertical">
                 <TextView
+                    android:id="@+id/settings_total2"
                     android:layout_height="match_parent"
                     android:layout_width="wrap_content"
                     android:textStyle="bold"
@@ -212,6 +215,7 @@
                 android:gravity="center"
                 android:orientation="vertical">
                 <TextView
+                    android:id="@+id/settings_new2"
                     android:layout_height="match_parent"
                     android:layout_width="wrap_content"
                     android:textStyle="bold"

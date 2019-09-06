@@ -109,7 +109,7 @@ public class NaviMain extends AppCompatActivity {
             Constants.messageId = PreferencesUtils.getInt(this,String.valueOf(Constants.userId),0);
             Log.d(TAG, "onCreate: 获取当前的message id,message id为:"+Constants.messageId);
         }
-        setMessageListener();
+//        setMessageListener();
     }
 
     private void setMessageListener(){

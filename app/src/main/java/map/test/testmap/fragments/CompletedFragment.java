@@ -7,6 +7,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,6 +48,12 @@ public class CompletedFragment extends Fragment {
         }
 
         if(list != null && list.size() > 0){
+
+            for (TaskBean item:list
+                 ) {
+                Log.d("http", "onCreateView: "+item.getStatusStr()+"==========="+item.getStatus());
+            }
+
             View view = inflater.inflate(R.layout.fragment_task_list,null,false);
             recyclerView = view.findViewById(R.id.list);
             TaskAdapter adapter = new TaskAdapter(getActivity(),list,Constants.TYPE_TASK_COMPLETED);
