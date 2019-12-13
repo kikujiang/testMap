@@ -1,11 +1,14 @@
 package map.test.testmap;
 
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.design.internal.BottomNavigationMenuView;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.tencent.android.tpush.XGPushBaseReceiver;
@@ -49,7 +52,7 @@ public class CustomReceiver extends XGPushBaseReceiver {
     }
 
     private void getNotice(){
-        long time = PreferencesUtils.getLong(mContext,String.valueOf(Constants.userId),0L);
+        long time = PreferencesUtils.getLong(mContext,String.valueOf(Constants.userId)+"123456",0L);
         HttpUtils.getInstance().getNotice(time,new OnResponseListener() {
             @Override
             public void success(retrofit2.Response responseMapBean) {
@@ -62,7 +65,7 @@ public class CustomReceiver extends XGPushBaseReceiver {
 
                 if(current.getResult() == Constants.RESULT_OK){
                     long currentTime = current.getTime();
-                    PreferencesUtils.putLong(mContext,String.valueOf(Constants.userId),currentTime);
+                    PreferencesUtils.putLong(mContext,String.valueOf(Constants.userId)+"123456",currentTime);
                     final List<Notice> noticeList = current.getList();
                     Log.d(LogTag, "run: ");
                     if(noticeList.size() > 0){
@@ -243,6 +246,36 @@ public class CustomReceiver extends XGPushBaseReceiver {
         String text = "收到消息:" + message.toString();
         // 获取自定义key-value
         String customContent = message.getCustomContent();
+        String title = message.getTitle();
+        Log.d(LogTag, "onTextMessage: text:"+text+",and title is:" + title);
+        if(title != null && title.length() != 0 && title.equals("强制退出")){
+            Log.d(LogTag, "onTextMessage: 1111");
+
+            PreferencesUtils.putString(context,"account",null);
+            PreferencesUtils.putString(context,"password_selector",null);
+            Intent intent = new Intent(context, LoginActivity.class);
+            context.startActivity(intent);
+
+//            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+//
+//            builder.setTitle("请注意");
+//            builder.setMessage("您的账号在其他地方登录，请重新登录！");
+//            builder.setCancelable(false);
+//            builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
+//                @Override
+//                public void onClick(DialogInterface dialog, int which) {
+//
+//                }
+//            });
+//
+//            AlertDialog dialog = builder.create();
+//
+////        dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);     //无效 崩溃
+//            dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_DIALOG);
+//            dialog.show();
+            Log.d(LogTag, "onTextMessage: 2222");
+        }
+
         if (customContent != null && customContent.length() != 0) {
             try {
                 JSONObject obj = new JSONObject(customContent);
@@ -251,6 +284,7 @@ public class CustomReceiver extends XGPushBaseReceiver {
                     String value = obj.getString("key");
                     Log.d(LogTag, "get custom value:" + value);
                 }
+
                 // ...
             } catch (JSONException e) {
                 e.printStackTrace();

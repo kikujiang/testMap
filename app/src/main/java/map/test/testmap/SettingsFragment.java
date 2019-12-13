@@ -22,6 +22,7 @@ import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.ResponseBean;
 import map.test.testmap.model.TaskInfo;
 import map.test.testmap.model.User;
+import map.test.testmap.mvvm.ui.WXCodeActivity;
 import map.test.testmap.utils.Common;
 import map.test.testmap.utils.HttpUtils;
 import map.test.testmap.utils.PreferencesUtils;
@@ -37,6 +38,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
     
     private Button updateLayout;
     private LinearLayout infoLayout;
+    private LinearLayout codeLayout;
     private Button exitLayout;
     private TextView tvName;
     private TextView tvPhone;
@@ -89,6 +91,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
         updateLayout = view.findViewById(R.id.settings_update);
         infoLayout = view.findViewById(R.id.settings_info);
         exitLayout = view.findViewById(R.id.settings_exit);
+        codeLayout = view.findViewById(R.id.layout_settings_code);
         tvName = view.findViewById(R.id.tv_settings_name);
         tvPhone = view.findViewById(R.id.tv_settings_phone);
         tvEmail = view.findViewById(R.id.tv_settings_mail);
@@ -101,6 +104,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
 
         tvVersion.setText(Common.getInstance().getVersionName(getActivity()));
         updateLayout.setOnClickListener(this);
+        codeLayout.setOnClickListener(this);
 //        infoLayout.setOnClickListener(this);
         exitLayout.setOnClickListener(this);
         if(userId == Integer.MIN_VALUE){
@@ -238,12 +242,20 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
             case R.id.settings_exit:
                 logOut(userId);
                 break;
+            case R.id.layout_settings_code:
+                enterCodeActivity();
+                break;
         }
     }
 
     private void enterVersionActivity(){
         Intent versionIntent = new Intent(getActivity(),VersionActivity.class);
         startActivity(versionIntent);
+    }
+
+    private void enterCodeActivity(){
+        Intent codeIntent = new Intent(getActivity(), WXCodeActivity.class);
+        startActivity(codeIntent);
     }
 
     /**
@@ -372,7 +384,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener{
                 .setPositiveButton("更新", new DialogInterface.OnClickListener() {
                     @Override public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.dismiss();
-                        Common.getInstance().downloadApk(getActivity(),url,"下载中","电力地理系统");
+                        Common.getInstance().downloadApk(getActivity(),url,"下载中","线路运维");
                     }
                 })
                 .setNegativeButton("取消", new DialogInterface.OnClickListener() {

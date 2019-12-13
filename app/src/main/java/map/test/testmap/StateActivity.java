@@ -17,7 +17,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -25,13 +24,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,7 +40,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import map.test.testmap.model.DataType;
 import map.test.testmap.model.Image;
 import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.ResponseBean;
@@ -61,7 +56,7 @@ import map.test.testmap.utils.PreferencesUtils;
 import map.test.testmap.view.MultiSelectionSpinner;
 import retrofit2.Response;
 
-public class StateActivity extends AppCompatActivity implements StateListFragment.OnTouchListener,View.OnClickListener {
+public class StateActivity extends BaseActivity implements StateListFragment.OnTouchListener,View.OnClickListener {
 
     private static final String TAG = "StateActivity";
     public static final int REQUEST_CODE_TAKE_PICTURE = 0;

@@ -14,7 +14,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
@@ -39,7 +38,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import map.test.testmap.model.Image;
 import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.ResponseBean;
 import map.test.testmap.model.ResponseTaskUserBean;
@@ -50,10 +48,9 @@ import map.test.testmap.utils.Common;
 import map.test.testmap.utils.HttpUtils;
 import map.test.testmap.utils.MyViewPagerAdapter;
 import map.test.testmap.utils.PreferencesUtils;
-import map.test.testmap.view.MultiSelectionSpinner;
 import retrofit2.Response;
 
-public class TaskEditActivity extends AppCompatActivity implements View.OnClickListener {
+public class TaskEditActivity extends BaseActivity implements View.OnClickListener {
 
     public static final int REQUEST_CODE_TAKE_PICTURE = 0;
     public final static int REQUEST_CODE_GALLERY = 1;
@@ -116,7 +113,6 @@ public class TaskEditActivity extends AppCompatActivity implements View.OnClickL
         dialogBtnTakePic.setOnClickListener(this);
         dialogBtnPickPic.setOnClickListener(this);
     }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

@@ -1,15 +1,15 @@
 package map.test.testmap.mvvm.ui;
 
 import android.databinding.DataBindingUtil;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 
+import map.test.testmap.BaseActivity;
 import map.test.testmap.R;
 import map.test.testmap.databinding.ActivityTaskDetailBinding;
 
-public class TaskDetailActivity extends AppCompatActivity {
+public class TaskDetailActivity extends BaseActivity {
 
     private ActivityTaskDetailBinding binding = null;
     private int checkId;

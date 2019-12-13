@@ -23,7 +23,7 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:layout_gravity="center"
-            android:text="电力地理信息"
+            android:text="线路运维"
             android:textColor="@android:color/white"
             android:textSize="20sp" />
 

@@ -103,4 +103,10 @@ public interface IUserBiz {
     @FormUrlEncoded
     @POST(Constants.TAG_LOGIN_QRCODE_CONFIRM)
     Call<ResponseBean> confirmQRCode(@Field("loginSign") String loginSign,@Field("login") String login);
+
+    @GET(Constants.TAG_GET_WX_CODE)
+    Call<ResponseBean> getWXCode();
+
+    @GET(Constants.TAG_GET_WX_CODE_IMG)
+    Call<ResponseBean> getWXCodeImg();
 }

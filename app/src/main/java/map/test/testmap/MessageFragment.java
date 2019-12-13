@@ -117,11 +117,11 @@ public class MessageFragment extends Fragment {
 
         if(Constants.noticeCount > 0){
             Constants.noticeCount = 0;
-            long time = PreferencesUtils.getLong(getActivity(),String.valueOf(Constants.userId),0L);
+            long time = PreferencesUtils.getLong(getActivity(),String.valueOf(Constants.userId)+"123456",0L);
             getNotice(time);
         }else{
             if(null == cacheList || cacheList.isEmpty()){
-                long time = PreferencesUtils.getLong(getActivity(),String.valueOf(Constants.userId),0L);
+                long time = PreferencesUtils.getLong(getActivity(),String.valueOf(Constants.userId)+"123456",0L);
                 getNotice(time);
             }else{
 

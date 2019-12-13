@@ -45,7 +45,7 @@
                 android:gravity="center"
                 android:textSize="18sp"
                 android:textColor="@android:color/white"
-                android:text="电力地图信息系统"/>
+                android:text="线路运维"/>
 
             <ImageView
                 android:layout_width="80dp"

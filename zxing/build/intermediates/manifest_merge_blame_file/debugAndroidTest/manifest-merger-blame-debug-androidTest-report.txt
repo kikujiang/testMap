@@ -3,24 +3,24 @@
 3    package="com.google.zxing.client.android.test" >
 4
 5    <uses-sdk
-5-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:5:5-74
+5-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger5474751104654505380.xml:5:5-74
 6        android:minSdkVersion="19"
-6-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:5:15-41
+6-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger5474751104654505380.xml:5:15-41
 7        android:targetSdkVersion="28" />
-7-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:5:42-71
+7-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger5474751104654505380.xml:5:42-71
 8
 9    <instrumentation
-9-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:11:5-15:86
+9-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger5474751104654505380.xml:11:5-15:86
 10        android:name="android.test.InstrumentationTestRunner"
-10-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:11:22-75
+10-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger5474751104654505380.xml:11:22-75
 11        android:functionalTest="false"
-11-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:14:22-52
+11-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger5474751104654505380.xml:14:22-52
 12        android:handleProfiling="false"
-12-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:13:22-53
+12-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger5474751104654505380.xml:13:22-53
 13        android:label="Tests for com.google.zxing.client.android.test"
-13-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:15:22-84
+13-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger5474751104654505380.xml:15:22-84
 14        android:targetPackage="com.google.zxing.client.android.test" />
-14-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:12:22-82
+14-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger5474751104654505380.xml:12:22-82
 15
 16    <uses-permission android:name="android.permission.CAMERA" />
 16-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:27:5-65
@@ -76,16 +76,16 @@
 36-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:48:9-33
 37
 38    <application
-38-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:7:5-9:19
+38-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger5474751104654505380.xml:7:5-9:19
 39        android:allowBackup="true"
 39-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:51:9-35
 40        android:debuggable="true"
-40-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:7:18-43
+40-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger5474751104654505380.xml:7:18-43
 41        android:label="@string/app_name" >
 41-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:52:9-41
 42        <uses-library android:name="android.test.runner" />
-42-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:8:9-60
-42-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger4901513916596066058.xml:8:23-57
+42-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger5474751104654505380.xml:8:9-60
+42-->F:\test\testMap\zxing\build\intermediates\tmp\manifest\androidTest\debug\manifestMerger5474751104654505380.xml:8:23-57
 43
 44        <activity
 44-->[__tested_artifact__::zxing] F:\test\testMap\zxing\build\intermediates\library_manifest\debug\AndroidManifest.xml:53:9-113:20

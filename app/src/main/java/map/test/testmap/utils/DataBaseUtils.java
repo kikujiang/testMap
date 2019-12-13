@@ -70,6 +70,10 @@ public class DataBaseUtils {
         return LitePal.where("pointId = ?",id+"").findFirst(Point.class);
     }
 
+    public List<Point> findAllPoint(){
+        return LitePal.order(" pointId desc").find(Point.class);
+    }
+
     public void insertLine(Line line){
         line.save();
     }

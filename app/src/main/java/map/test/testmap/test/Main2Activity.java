@@ -1,11 +1,7 @@
 package map.test.testmap.test;
 
 import android.graphics.Bitmap;
-import android.os.Handler;
-import android.os.Looper;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -14,32 +10,13 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.FutureTarget;
 import com.bumptech.glide.request.target.Target;
-import com.tencent.bugly.crashreport.CrashReport;
 
-import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
-import java.io.File;
-import java.util.concurrent.TimeUnit;
-
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.FlowableEmitter;
-import io.reactivex.FlowableOnSubscribe;
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.Observer;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Function;
-import io.reactivex.schedulers.Schedulers;
+import map.test.testmap.BaseActivity;
 import map.test.testmap.R;
-import map.test.testmap.utils.Common;
-import uk.co.senab.photoview.log.LoggerDefault;
 
-public class Main2Activity extends AppCompatActivity {
+public class Main2Activity extends BaseActivity {
 
     private Button btn;
     private ImageView image;

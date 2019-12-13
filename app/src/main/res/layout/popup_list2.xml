@@ -36,7 +36,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="电力线路"
+                    android:text="线        路"
                     style="@style/DetailTitle" />
                 <EditText
                     android:layout_marginLeft="18dp"
@@ -51,7 +51,22 @@
                 android:paddingBottom="15dp"
                 android:layout_height="wrap_content">
                 <TextView
-                    android:text="名        称"
+                    android:text="旧  名  称"
+                    style="@style/DetailTitle" />
+                <EditText
+                    android:layout_marginLeft="18dp"
+                    android:id="@+id/edit_old_name"
+                    style="@style/DetailContent" />
+            </LinearLayout>
+            <View
+                style="@style/DetailLine"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:text="新  名  称"
                     style="@style/DetailTitle" />
                 <EditText
                     android:layout_marginLeft="18dp"

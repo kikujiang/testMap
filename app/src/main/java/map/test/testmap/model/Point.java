@@ -33,6 +33,8 @@ public class Point extends LitePalSupport implements Parcelable {
     private String manageUserName;
 
     private String name;
+    @SerializedName("old_name")
+    private String old_name;
     private String tagNo;
     private double location_lat;
     private double location_long;
@@ -61,6 +63,7 @@ public class Point extends LitePalSupport implements Parcelable {
     private String statusIconUrl_APP;
     private String lineName;
     private String stationName;
+    private int manageUserId;
 
     @SerializedName("ip1")
     private String ip2;
@@ -74,6 +77,7 @@ public class Point extends LitePalSupport implements Parcelable {
 
     protected Point(Parcel in) {
         name = in.readString();
+        old_name = in.readString();
         tagNo = in.readString();
         location_lat = in.readDouble();
         location_long = in.readDouble();
@@ -89,6 +93,7 @@ public class Point extends LitePalSupport implements Parcelable {
         createUser = in.readParcelable(User.class.getClassLoader());
         remark = in.readString();
         pointId = in.readInt();
+        manageUserId = in.readInt();
         tagCheckId = in.readInt();
         checkStatus = in.readInt();
         lineId = in.readInt();
@@ -126,6 +131,7 @@ public class Point extends LitePalSupport implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(name);
+        dest.writeString(old_name);
         dest.writeString(tagNo);
         dest.writeDouble(location_lat);
         dest.writeDouble(location_long);
@@ -136,6 +142,7 @@ public class Point extends LitePalSupport implements Parcelable {
         dest.writeString(leTypeStr);
         dest.writeInt(ce_type);
         dest.writeInt(le_type);
+        dest.writeInt(manageUserId);
         dest.writeString(createTime);
         dest.writeString(lineName);
         dest.writeString(stationName);
@@ -396,6 +403,25 @@ public class Point extends LitePalSupport implements Parcelable {
 
     public void setManageUserName(String manageUserName) {
         this.manageUserName = manageUserName;
+    }
+
+    public int getManageUserId() {
+        return manageUserId;
+    }
+
+    public void setManageUserId(int manageUserId) {
+        this.manageUserId = manageUserId;
+    }
+
+    public String getOld_name() {
+        if(old_name == null){
+            return "";
+        }
+        return old_name;
+    }
+
+    public void setOld_name(String old_name) {
+        this.old_name = old_name;
     }
 
     @Override

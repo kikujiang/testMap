@@ -101,6 +101,8 @@ public class HttpUtils {
 
     }
 
+
+
     public void getUserInfo(int userId, final OnResponseListener listener){
         Call<ResponseBean<User>> userInfo = userBiz.getUserInfo(userId);
         userInfo.enqueue(new retrofit2.Callback<ResponseBean<User>>() {
@@ -493,6 +495,45 @@ public class HttpUtils {
 
         Call<ResponseBean> editTagCheckBean = userBiz.editTagCheck(params);
         editTagCheckBean.enqueue(new retrofit2.Callback<ResponseBean>() {
+            @Override
+            public void onResponse(Call<ResponseBean> call, retrofit2.Response<ResponseBean> response) {
+                listener.success(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBean> call, Throwable t) {
+                listener.fail(t);
+            }
+        });
+    }
+
+
+    /**
+     * 获取微信专用码信息
+     * @param listener
+     */
+    public void getWXCode(final OnResponseListener listener){
+        Call<ResponseBean> updateInfo = userBiz.getWXCode();
+        updateInfo.enqueue(new retrofit2.Callback<ResponseBean>() {
+            @Override
+            public void onResponse(Call<ResponseBean> call, retrofit2.Response<ResponseBean> response) {
+                listener.success(response);
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBean> call, Throwable t) {
+                listener.fail(t);
+            }
+        });
+    }
+
+    /**
+     * 获取微信专用码图片地址
+     * @param listener
+     */
+    public void getWXCodeImg(final OnResponseListener listener){
+        Call<ResponseBean> updateInfo = userBiz.getWXCodeImg();
+        updateInfo.enqueue(new retrofit2.Callback<ResponseBean>() {
             @Override
             public void onResponse(Call<ResponseBean> call, retrofit2.Response<ResponseBean> response) {
                 listener.success(response);

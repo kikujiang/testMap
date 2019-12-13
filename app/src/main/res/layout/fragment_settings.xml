@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="30dp"
             android:paddingTop="10dp"
-            android:paddingBottom="20dp"
+            android:paddingBottom="25dp"
             android:orientation="horizontal">
 
             <ImageView
@@ -52,30 +52,33 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:layout_marginLeft="20dp"
                 android:layout_weight="1"
-                android:layout_gravity="center_vertical"
                 android:orientation="vertical">
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:orientation="horizontal">
+
                     <TextView
-                        android:layout_height="match_parent"
                         android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
                         android:gravity="center_vertical"
-                        android:textSize="14sp"
+                        android:text="用户名："
                         android:textColor="@android:color/white"
-                        android:text="用户名：" />
+                        android:textSize="14sp" />
+
                     <TextView
                         android:id="@+id/tv_settings_name"
-                        android:textColor="@android:color/white"
-                        android:textSize="14sp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_marginLeft="5dp"
                         android:singleLine="true"
-                        android:layout_height="wrap_content"
-                        android:layout_width="wrap_content"/>
+                        android:textColor="@android:color/white"
+                        android:textSize="14sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -84,20 +87,22 @@
                     android:layout_gravity="center_vertical"
                     android:layout_marginTop="5dp"
                     android:orientation="horizontal">
+
                     <TextView
-                        android:textSize="14sp"
-                        android:layout_height="wrap_content"
                         android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="手    机："
                         android:textColor="@android:color/white"
-                        android:text="手    机：" />
+                        android:textSize="14sp" />
+
                     <TextView
                         android:id="@+id/tv_settings_phone"
-                        android:textSize="14sp"
-                        android:layout_marginLeft="5dp"
-                        android:textColor="@android:color/white"
-                        android:singleLine="true"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_width="wrap_content"/>
+                        android:layout_marginLeft="5dp"
+                        android:singleLine="true"
+                        android:textColor="@android:color/white"
+                        android:textSize="14sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -106,20 +111,48 @@
                     android:layout_gravity="center_vertical"
                     android:layout_marginTop="5dp"
                     android:orientation="horizontal">
+
                     <TextView
-                        android:layout_height="match_parent"
                         android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
                         android:gravity="center_vertical"
+                        android:text="邮    箱："
                         android:textColor="@android:color/white"
-                        android:text="邮    箱：" />
+                        android:textSize="14sp" />
+
                     <TextView
                         android:id="@+id/tv_settings_mail"
-                        android:textSize="14sp"
-                        android:layout_marginLeft="5dp"
-                        android:textColor="@android:color/white"
-                        android:singleLine="true"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_width="wrap_content"/>
+                        android:layout_marginLeft="5dp"
+                        android:singleLine="true"
+                        android:textColor="@android:color/white"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/layout_settings_code"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginTop="5dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:text="企业二维码："
+                        android:textColor="@android:color/white"
+                        android:textSize="14sp" />
+
+                    <ImageView
+                        android:id="@+id/tv_settings_code"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:singleLine="true"
+                        android:src="@mipmap/code"
+                        android:textColor="@android:color/white" />
                 </LinearLayout>
 
             </LinearLayout>

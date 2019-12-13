@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.DatabaseUtils;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -29,7 +28,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.menu.MenuBuilder;
-import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
@@ -71,8 +69,6 @@ import com.example.qrcode.ScannerActivity;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
-
-import org.litepal.LitePal;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -146,6 +142,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     public static final int REQUEST_CODE_SEARCH = 18;
     public final static int TYPE_LINE = 100008;
     public final static int TYPE_BDS = 100009;
+    public final static int TYPE_MANAGER = 100010;
 
     private MapView mMapView;
     private View currentView;
@@ -164,13 +161,17 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     private String currentDeviceType = "";
 
     private List<Point> pointList = null;
+    private List<Point> pointAllList = null;
     private List<Line> lineList = null;
     private Point currentPoint = null;
     private Line currentLine = null;
     private String currentSearch = "";
 
     private List<User> operatorList = null;
-    private List<Marker> markerList = null;
+    private ArrayList<Marker> markerList = null;
+    private ArrayList<MarkerOptions> markerOptionsList = null;
+
+
     private LinearLayout progressBar =null;
 
     public static final int MSG_START = 100000;
@@ -252,6 +253,13 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                         currentMarker.destroy();
                     }
 
+                    Point curPoint = DataBaseUtils.getInstance().findPoint(currentPoint.getId());
+                    if(curPoint == null){
+                        DataBaseUtils.getInstance().insertPoint(currentPoint);
+                    }else{
+                        DataBaseUtils.getInstance().updatePoint(currentPoint);
+                    }
+
                     if (isAdd){
                         pointList.add(currentPoint);
                     }
@@ -293,16 +301,31 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     if(currentLine != null){
                         Log.d(TAG, "onPolylineClick: "+currentLine.getName());
 
+                        Line cacheLine = DataBaseUtils.getInstance().findLine(currentLine.getId());
+
+                        if(cacheLine != null){
+                            DataBaseUtils.getInstance().updateLine(currentLine);
+                        }else{
+                            DataBaseUtils.getInstance().insertLine(currentLine);
+                        }
+
                         if(currentPolyLine != null){
                             currentPolyLine.remove();
                         }
 
                         List<LatLng> latLngs = new ArrayList<>();
 
-                        for (Point item:currentLine.getCheckPoints()) {
-                            LatLng cur = new LatLng(item.getLocation_lat(),item.getLocation_long());
+                        String path = currentLine.getPath();
+
+                        String[] group =  path.split(";");
+
+                        for(int i = 0;i<group.length;i++){
+                            String[] item = group[i].split(",");
+                            LatLng cur = new LatLng(Double.parseDouble(item[0]),Double.parseDouble(item[1]));
                             latLngs.add(cur);
                         }
+
+
 
                         currentPolyLine = aMap.addPolyline(new PolylineOptions().
                                 addAll(latLngs).setDottedLine(true).width(20).color(Color.parseColor(currentLine.getStatusIconColor())));
@@ -411,6 +434,9 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
     private void initial(View view){
         Log.d(TAG, "=========================initial called!=========================");
+        Common.getInstance().methodStart("findAllPoint");
+        pointAllList = DataBaseUtils.getInstance().findAllPoint();
+        Common.getInstance().methodEnd("findAllPoint");
         initControl(view);
         initMap();
     }
@@ -553,6 +579,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     }
 
     private void getDataFromServer(){
+        Common.getInstance().methodStart("getDataFromServer");
         if(isPointRead){
             getAllType();
             getALLPoint();
@@ -565,12 +592,16 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         if(isLineRead){
             getALLLine();
         }
+
+        managerUserId = Constants.userId;
+        Common.getInstance().methodEnd("getDataFromServer");
     }
 
     /**
      * 获取所有点的信息
      */
     private void getALLPoint(){
+        Common.getInstance().methodStart("getALLPoint");
         final String url = Constants.WEB_URL + Constants.TAG_GET_ALL_POINT;
         final Map<String,String> data = new HashMap<>();
         long time = PreferencesUtils.getLong(getActivity(),Constants.POINT_FLAG,0L);
@@ -600,19 +631,52 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     }
 
                     if (currentData.getResult() == Constants.RESULT_OK){
+                        Common.getInstance().methodStart("getALLPoint请求结束，数据处理开始1");
                         PreferencesUtils.putLong(getActivity(),Constants.POINT_FLAG,currentData.getTime());
                         Log.d(TAG, ",时间戳是:"+currentData.getTime());
                         List<Point> currentPointList = currentData.getList();
                         for (Point item:
                              currentPointList) {
+
+                            if (item == null){
+                                continue;
+                            }
+
+
+
                             Point cur = DataBaseUtils.getInstance().findPoint(item.getId());
                             if(cur == null){
                                 DataBaseUtils.getInstance().insertPoint(item);
+                                if(pointAllList != null && pointAllList.size()>0){
+                                    pointAllList.add(item);
+                                }
                             }else{
+
+                                if(pointAllList != null && pointAllList.size()>0){
+                                    Point selectedPoint = null;
+                                    for (Point detail:pointAllList){
+                                        if(detail.getId() == item.getId()){
+                                            selectedPoint = detail;
+                                            break;
+                                        }
+                                    }
+                                    if(selectedPoint != null){
+                                      pointAllList.remove(selectedPoint);
+                                      pointAllList.add(item);
+                                    }
+                                }
+
                                 DataBaseUtils.getInstance().updatePoint(item);
                             }
                         }
-                        Log.d(TAG, "getALLPoint 收到消息为："+ result+"/n 当前更新标记点的数量是：" + currentPointList.size());
+                        Log.d(TAG, "getALLPoint 收到消息为："+ result);
+                        Log.d(TAG, "getALLPoint 更新标记点的数量是：" + currentPointList.size());
+
+                        if(pointAllList == null || pointAllList.size() < 1){
+                            pointAllList = DataBaseUtils.getInstance().findAllPoint();
+                        }
+
+                        Common.getInstance().methodStart("getALLPoint请求结束，数据处理开始2");
                         getCurrentPointList();
                     }
                 }catch (Exception e){
@@ -628,6 +692,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     }
 
     private void getCurrentPointList(){
+        Common.getInstance().methodStart("getCurrentPointList");
 
         if(pointList == null){
             pointList = new ArrayList<>();
@@ -664,11 +729,22 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
                     if (currentData.getResult() == Constants.RESULT_OK){
                         List<Integer> idList = currentData.getList();
+                        Common.getInstance().methodStart("getCurrentPointList数据前");
                         for (Integer id:idList){
-                            Point item = DataBaseUtils.getInstance().findPoint(id);
-                            pointList.add(item);
+
+                            for (Point item: pointAllList){
+                                if (item.getId() == id){
+                                    pointList.add(item);
+                                    break;
+                                }
+                            }
+
+//                            Point item = DataBaseUtils.getInstance().findPoint(id);
+//                            pointList.add(item);
                         }
-                        Log.d(TAG, "getCurrentPointList 收到消息为："+ result+"/n 当前标记点数量是：" + pointList.size());
+                        Log.d(TAG, "getCurrentPointList 收到消息为："+ result);
+                        Log.d(TAG, "getCurrentPointList 当前标记点数量是：" + pointList.size());
+                        Common.getInstance().methodStart("getCurrentPointList数据后");
                         mHandler.sendEmptyMessage(MSG_GET_ALL_POINT_END);
                     }
                 }catch (Exception e){
@@ -1371,6 +1447,8 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     return;
                 }
 
+                String oldName = etOldName.getText().toString();
+
                 //判断经度
                 String longitudeStr = etLongitude.getText().toString();
                 if(TextUtils.isEmpty(longitudeStr)){
@@ -1393,6 +1471,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     currentPoint = new Point();
                     currentPoint.setId(0);
                     currentPoint.setName(name);
+                    currentPoint.setOld_name(oldName);
                     currentPoint.setType(currentType);
                     currentPoint.setCe_type(currentTerminalType);
                     currentPoint.setLe_type(currentLineType);
@@ -1409,11 +1488,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     }else{
                         currentPoint.setPhone1("");
                     }
-                    if(!TextUtils.isEmpty(etManager.getText().toString())){
-                        currentPoint.setManageUserName(etManager.getText().toString());
-                    }else{
-                        currentPoint.setManageUserName("");
-                    }
+                    currentPoint.setManageUserId(managerUserId);
                     if(!TextUtils.isEmpty(etIP.getText().toString())){
                         currentPoint.setIp(etIP.getText().toString());
                     }else{
@@ -1440,22 +1515,19 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     currentPoint.setLocation_long(longitude);
                 }else{
                     currentPoint.setName(name);
+                    currentPoint.setOld_name(oldName);
                     currentPoint.setType(currentType);
                     currentPoint.setCe_type(currentTerminalType);
                     currentPoint.setLe_type(currentLineType);
                     currentPoint.setMtype(currentDeviceType);
                     currentPoint.setRemark(remark);
+                    currentPoint.setManageUserId(managerUserId);
                     currentPoint.setLocation_lat(latitude);
                     currentPoint.setLocation_long(longitude);
                     if(!TextUtils.isEmpty(etPhone.getText().toString())){
                         currentPoint.setPhone(etPhone.getText().toString());
                     }else{
                         currentPoint.setPhone("");
-                    }
-                    if(!TextUtils.isEmpty(etManager.getText().toString())){
-                        currentPoint.setManageUserName(etManager.getText().toString());
-                    }else{
-                        currentPoint.setManageUserName("");
                     }
                     if(!TextUtils.isEmpty(etIP.getText().toString())){
                         currentPoint.setIp(etIP.getText().toString());
@@ -1835,6 +1907,9 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                 isMaintenanceAdd = true;
                 showMaintenanceDialog(MAINTENANCE_TYPE_FIX);
                 break;
+            case R.id.edit_manager:
+                enterQueryActivity(TYPE_MANAGER);
+                break;
             case R.id.point_belong:
                 enterQueryActivity(TYPE_BDS);
                 break;
@@ -1952,6 +2027,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         final Map<String,String> data = new HashMap<>();
         data.put("id",currentPoint.getId()+"");
         data.put("name",currentPoint.getName());
+        data.put("old_name",currentPoint.getOld_name());
         data.put("tagNo",currentPoint.getTagNo());
         data.put("location_lat",currentPoint.getLocation_lat()+"");
         data.put("location_long",currentPoint.getLocation_long()+"");
@@ -1968,7 +2044,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
         data.put("tagPhone",currentPoint.getPhone());
         data.put("tagPhone1",currentPoint.getPhone1());
-        data.put("manageUser",currentPoint.getManageUserName());
+        data.put("manageUserId",currentPoint.getManageUserId()+"");
 
         Log.d(TAG, "savePoint data is:" + data.toString());
         OkHttpClientManager.getInstance().sendFileToServer(url, imagePath, data, new OnInfoListener() {
@@ -2045,7 +2121,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
                     if(currentData.getResult() == Constants.RESULT_OK){
                         currentPoint = currentData.getObject();
-                        Log.d(TAG, "收到消息为："+ result);
+                        Log.d(TAG, "getSinglePoint 收到消息为："+ result);
                         mHandler.sendEmptyMessage(MSG_GET_SINGLE_POINT_END);
                     }
                 }catch (Exception e){
@@ -2137,10 +2213,17 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
     private void showAllPoint(){
 
+        Common.getInstance().methodStart("showAllPoint");
         if(markerList == null){
             markerList = new ArrayList<>();
         }else{
             markerList.clear();
+        }
+
+        if(markerOptionsList == null){
+            markerOptionsList = new ArrayList<>();
+        }else{
+            markerOptionsList.clear();
         }
 
         if (searchData == null){
@@ -2151,118 +2234,140 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             searchDataMarkerMap.clear();
         }
 
-        for (final Point current: pointList) {
+        synchronized (pointList) {
 
-            if(current.getType() == 102){
-                continue;
-            }
+            for (final Point current: pointList) {
 
-            if(current.getType() == 101 && current.getCheckStatus() == 1){
-                continue;
-            }
-
-            String cur = current.getName() + "," +current.getId();
-            searchData.add(cur);
-//            Log.d(TAG, "showAllPoint: "+current.getLocation_lat()+","+current.getLocation_long());
-            if(current.getLocation_lat() == 0.0 || current.getLocation_long() == 0.0){
-                continue;
-            }
-            LatLng latLng = new LatLng(current.getLocation_lat(),current.getLocation_long(),false);
-            MarkerOptions markerOption = new MarkerOptions();
-            markerOption.position(latLng);
-            String type = "";
-            for (DataType currentType:Constants.pointTypeList
-                    ) {
-                if(currentType.getOptionValue() == current.getType()){
-                    type = currentType.getOptionText();
+                if(current == null){
+                    continue;
                 }
-            }
-            markerOption.title(current.getName()).snippet(type);
 
-            markerOption.draggable(true);//设置Marker可拖动
-            // 将Marker设置为贴地显示，可以双指下拉地图查看效果
-            markerOption.setFlat(true);//设置marker平贴地图效果
-            final Marker marker = aMap.addMarker(markerOption);
+                if(current.getType() == 102){
+                    continue;
+                }
 
-            switch (current.getCheckStatus()){
-                case 0:
-                case 1:
+                if(current.getType() == 101 && current.getCheckStatus() == 1){
+                    continue;
+                }
 
-                    String pointType = current.getTypeStr();
-                    if(pointType == null){
-                        int typeId = current.getType();
-//                            Log.d(TAG, "showAllPoint point type id:"+typeId);
-                        for (DataType dataType:Constants.pointTypeList
-                             ) {
-//                                Log.d(TAG, "showAllPoint: data type "+dataType.getOptionText()+","+dataType.getOptionValue());
-                            if(typeId == dataType.getOptionValue()){
-                                pointType = dataType.getOptionText();
+                String cur = current.getName() + "," +current.getId();
+                searchData.add(cur);
+    //            Log.d(TAG, "showAllPoint: "+current.getLocation_lat()+","+current.getLocation_long());
+                if(current.getLocation_lat() == 0.0 || current.getLocation_long() == 0.0){
+                    continue;
+                }
+                LatLng latLng = new LatLng(current.getLocation_lat(),current.getLocation_long(),false);
+                MarkerOptions markerOption = new MarkerOptions();
+                markerOption.position(latLng);
+                String type = "";
+                for (DataType currentType:Constants.pointTypeList
+                        ) {
+                    if(currentType.getOptionValue() == current.getType()){
+                        type = currentType.getOptionText();
+                    }
+                }
+                markerOption.title(current.getName()).snippet(type);
+
+                markerOption.draggable(true);//设置Marker可拖动
+                // 将Marker设置为贴地显示，可以双指下拉地图查看效果
+                markerOption.setFlat(true);//设置marker平贴地图效果
+
+                switch (current.getCheckStatus()){
+                    case 0:
+                    case 1:
+
+                        String pointType = current.getTypeStr();
+                        if(pointType == null){
+                            int typeId = current.getType();
+                            for (DataType dataType:Constants.pointTypeList
+                                 ) {
+                                if(typeId == dataType.getOptionValue()){
+                                    pointType = dataType.getOptionText();
+                                }
                             }
                         }
-                    }
-                    if(pointType == null){
-                        pointType = "";
-                    }
+                        if(pointType == null){
+                            pointType = "";
+                        }
 
-//                        Log.d(TAG, "showAllPoint: point type "+pointType);
-//                        String pointType = current.getTypeStr();
-                    if(pointType.equals("变电所")){
-                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.bds)));
-                    }else if(pointType.equals("环网柜")){
-                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.hwg)));
-                    }else if(pointType.equals("柱上开关")){
-                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.zskg)));
-                    }else if(pointType.equals("配电房")){
-                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.pdf)));
-                    }else if(pointType.equals("柱上变压器")){
-                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.zzbyq)));
-                    }else if(pointType.equals("开闭所")){
-                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.kbs)));
-                    }else if(pointType.equals("变压器")){
-                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.byq)));
-                    }else{
-                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.mark_bs)));
-                    }
-                    break;
-                case 2:
-                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                            .decodeResource(getResources(),R.mipmap.mark_repair_1)));
-                    break;
-                case 5:
-                case 3:
-                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                            .decodeResource(getResources(),R.mipmap.mark_repair_2)));
-                    break;
-                case 4:
-                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                            .decodeResource(getResources(),R.mipmap.mark_repair_1)));
-                    break;
+                        if(pointType.equals("变电所")){
+                            markerOption.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                                    .decodeResource(getResources(),R.mipmap.bds)));
+                        }else if(pointType.equals("环网柜")){
+                            markerOption.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                                    .decodeResource(getResources(),R.mipmap.hwg)));
+                        }else if(pointType.equals("柱上开关")){
+                            markerOption.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                                    .decodeResource(getResources(),R.mipmap.zskg)));
+                        }else if(pointType.equals("配电房")){
+                            markerOption.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                                    .decodeResource(getResources(),R.mipmap.pdf)));
+                        }else if(pointType.equals("柱上变压器")){
+                            markerOption.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                                    .decodeResource(getResources(),R.mipmap.zzbyq)));
+                        }else if(pointType.equals("开闭所")){
+                            markerOption.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                                    .decodeResource(getResources(),R.mipmap.kbs)));
+                        }else if(pointType.equals("变压器")){
+                            markerOption.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                                    .decodeResource(getResources(),R.mipmap.byq)));
+                        }else{
+                            markerOption.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                                    .decodeResource(getResources(),R.mipmap.mark_bs)));
+                        }
+                        break;
+                    case 2:
+                        markerOption.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                                .decodeResource(getResources(),R.mipmap.mark_repair_1)));
+                        break;
+                    case 5:
+                    case 3:
+                        markerOption.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                                .decodeResource(getResources(),R.mipmap.mark_repair_2)));
+                        break;
+                    case 4:
+                        markerOption.icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                                .decodeResource(getResources(),R.mipmap.mark_repair_1)));
+                        break;
+                }
+
+                markerOptionsList.add(markerOption);
             }
 
-            Animation animation = new AlphaAnimation(0,1);
-            long duration = 1000L;
-            animation.setDuration(duration);
-            animation.setInterpolator(new LinearInterpolator());
+            markerList = aMap.addMarkers(markerOptionsList,false);
 
-            marker.setAnimation(animation);
-            marker.startAnimation();
-            searchDataMarkerMap.put(cur,marker);
-            markerList.add(marker);
+            for (Marker marker:
+                    markerList) {
+                String curContains = marker.getTitle();
+                String cur = "";
+
+                for (String item:searchData){
+                    if (item.startsWith(curContains)){
+                        cur = item;
+                    }
+                }
+
+                Animation animation = new AlphaAnimation(0,1);
+                long duration = 1000L;
+                animation.setDuration(duration);
+                animation.setInterpolator(new LinearInterpolator());
+
+                marker.setAnimation(animation);
+                marker.startAnimation();
+                if (!"".equals(cur)){
+                    searchDataMarkerMap.put(cur,marker);
+                }
+            }
+
         }
+
 
         String[] sData = new String[searchData.size()];
 
         searchData.toArray(sData);
         searchView.setSuggestions(sData);
         searchView.setSuggestionIcon(getResources().getDrawable(R.mipmap.icon16));
+        Common.getInstance().methodEnd("showAllPoint");
     }
 
     private void addMarker(final Point current){
@@ -2376,6 +2481,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     private BottomSheetDialog maintenanceDialog = null;
 
     private EditText etName = null;
+    private EditText etOldName = null;
     private EditText etOther = null;
     private EditText etPhone = null;
     private EditText etPhone1 = null;
@@ -2519,6 +2625,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             pointDialog.setCanceledOnTouchOutside(false);
 
             etName = view.findViewById(R.id.edit_name);
+            etOldName = view.findViewById(R.id.edit_old_name);
             etOther = view.findViewById(R.id.edit_other);
             etPhone = view.findViewById(R.id.edit_phone);
             etPhone1 = view.findViewById(R.id.edit_phone1);
@@ -2556,6 +2663,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             initSpinner(spinnerLineType,Constants.pointLineTypeList,CURRENT_TYPE_POINT_LINE);
 
             Common.getInstance().setEditTextFalse(etPointBelong);
+            Common.getInstance().setEditTextFalse(etManager);
 
             currentDeviceType = "";
             String[] typeData =new String[Constants.pointDeviceTypeList.size()];
@@ -2603,6 +2711,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             cancelBtn.setOnClickListener(this);
 
             etPointBelong.setOnClickListener(this);
+            etManager.setOnClickListener(this);
         }
 
         clearImageData();
@@ -2617,6 +2726,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             spinnerDeviceType.setSelection(indexStr);
             spinnerDeviceType.setSelection(0);
             etName.setText("");
+            etOldName.setText("");
             etOther.setText("");
             etPhone.setText("");
             etPhone1.setText("");
@@ -2702,6 +2812,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             }
 
             etName.setText(currentPoint.getName());
+            etOldName.setText(currentPoint.getOld_name());
             etOther.setText(currentPoint.getRemark());
             etPhone.setText(currentPoint.getPhone());
             etIP.setText(currentPoint.getIp());
@@ -3108,12 +3219,27 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         }
     }
 
+    boolean isShow = true;
+
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
         if(!hidden){
-            getALLPoint();
-            getALLLine();
+            Log.d(TAG, "onHiddenChanged: click 1");
+
+            if(isShow){
+                return;
+            }
+
+            if(Common.getInstance().isFastClick()){
+                Log.d(TAG, "onHiddenChanged: click 2");
+                getALLPoint();
+                getALLLine();
+            }
+
+            isShow = true;
+        }else{
+            isShow = false;
         }
     }
 
@@ -3209,6 +3335,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     }
 
     private int stationId = 0;
+    private int managerUserId = 0;
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -3228,6 +3355,10 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 //                                lineId = id;
 //                                etPointLine.setText(typeStr);
                                 break;
+                            case TYPE_MANAGER:
+                                managerUserId = id;
+                                etManager.setText(typeStr);
+                                break;
                         }
                     }
                     break;
@@ -3240,40 +3371,81 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     String content = data.getStringExtra(Constant.EXTRA_RESULT_CONTENT);
 
                     Log.d(TAG, "onActivityResult: content:" + content);
-                    final String loginSign = content.split("loginSign=")[1];
 
-                    Log.d(TAG, "onActivityResult: loginSign:" + loginSign);
-                    HttpUtils.getInstance().scanQRCode(loginSign,Constants.loginTag,new OnResponseListener() {
-                        @Override
-                        public void success(retrofit2.Response responseMapBean) {
-                            final ResponseBean data = (ResponseBean) responseMapBean.body();
-                            if(data == null){
-                                getActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(getActivity(),"服务器响应失败，请重新扫码！",Toast.LENGTH_LONG).show();
-                                    }
-                                });
-                                return;
-                            }
+                    try{
+                        final String loginSign = content.split("loginSign=")[1];
+                        Log.d(TAG, "onActivityResult: loginSign:" + loginSign);
+                        HttpUtils.getInstance().scanQRCode(loginSign,Constants.loginTag,new OnResponseListener() {
+                            @Override
+                            public void success(retrofit2.Response responseMapBean) {
+                                final ResponseBean data = (ResponseBean) responseMapBean.body();
+                                if(data == null){
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(getActivity(),"服务器响应失败，请重新扫码！",Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                    return;
+                                }
 
-                            if(data.getResult() == 1){
-                                final String message = data.getDesc();
-                                getActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                                        builder.setMessage(message)
-                                                .setPositiveButton("确认", new DialogInterface.OnClickListener() {// 积极
+                                if(data.getResult() == 1){
+                                    final String message = data.getDesc();
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                            builder.setMessage(message)
+                                                    .setPositiveButton("确认", new DialogInterface.OnClickListener() {// 积极
 
-                                                    @Override
-                                                    public void onClick(final DialogInterface dialog,
-                                                                        int which) {
-                                                        HttpUtils.getInstance().confirmQRCode(loginSign,Constants.loginTag, new OnResponseListener() {
-                                                            @Override
-                                                            public void success(retrofit2.Response responseMapBean) {
-                                                                final ResponseBean data = (ResponseBean) responseMapBean.body();
-                                                                if(data == null){
+                                                        @Override
+                                                        public void onClick(final DialogInterface dialog,
+                                                                            int which) {
+                                                            HttpUtils.getInstance().confirmQRCode(loginSign,Constants.loginTag, new OnResponseListener() {
+                                                                @Override
+                                                                public void success(retrofit2.Response responseMapBean) {
+                                                                    final ResponseBean data = (ResponseBean) responseMapBean.body();
+                                                                    if(data == null){
+                                                                        getActivity().runOnUiThread(new Runnable() {
+                                                                            @Override
+                                                                            public void run() {
+                                                                                Toast.makeText(getActivity(),"服务器响应失败，请重新扫码！",Toast.LENGTH_LONG).show();
+                                                                                dialog.dismiss();
+                                                                            }
+                                                                        });
+                                                                        return;
+                                                                    }
+
+                                                                    if(data.getResult() == 1){
+                                                                        getActivity().runOnUiThread(new Runnable() {
+                                                                            @Override
+                                                                            public void run() {
+                                                                                Toast.makeText(getActivity(),"登录成功",Toast.LENGTH_LONG).show();
+                                                                                dialog.dismiss();
+                                                                            }
+                                                                        });
+                                                                    }else{
+                                                                        getActivity().runOnUiThread(new Runnable() {
+                                                                            @Override
+                                                                            public void run() {
+                                                                                if(data.getDesc().equals("登陆已过期,请重新登陆")){
+                                                                                    Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                                                                                    PreferencesUtils.putString(getActivity(),"account",null);
+                                                                                    PreferencesUtils.putString(getActivity(),"password_selector",null);
+                                                                                    Intent intent = new Intent(getActivity(), LoginActivity.class);
+                                                                                    startActivity(intent);
+                                                                                    getActivity().finish();
+                                                                                    return;
+                                                                                }
+                                                                                Toast.makeText(getActivity(),data.getDesc(),Toast.LENGTH_LONG).show();
+                                                                                dialog.dismiss();
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                }
+
+                                                                @Override
+                                                                public void fail(Throwable e) {
                                                                     getActivity().runOnUiThread(new Runnable() {
                                                                         @Override
                                                                         public void run() {
@@ -3281,89 +3453,54 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                                                                             dialog.dismiss();
                                                                         }
                                                                     });
-                                                                    return;
                                                                 }
+                                                            });
+                                                        }
+                                                    }).setNegativeButton("取消", new DialogInterface.OnClickListener() {// 消极
 
-                                                                if(data.getResult() == 1){
-                                                                    getActivity().runOnUiThread(new Runnable() {
-                                                                        @Override
-                                                                        public void run() {
-                                                                            Toast.makeText(getActivity(),"登录成功",Toast.LENGTH_LONG).show();
-                                                                            dialog.dismiss();
-                                                                        }
-                                                                    });
-                                                                }else{
-                                                                    getActivity().runOnUiThread(new Runnable() {
-                                                                        @Override
-                                                                        public void run() {
-                                                                            if(data.getDesc().equals("登陆已过期,请重新登陆")){
-                                                                                Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
-                                                                                PreferencesUtils.putString(getActivity(),"account",null);
-                                                                                PreferencesUtils.putString(getActivity(),"password_selector",null);
-                                                                                Intent intent = new Intent(getActivity(), LoginActivity.class);
-                                                                                startActivity(intent);
-                                                                                getActivity().finish();
-                                                                                return;
-                                                                            }
-                                                                            Toast.makeText(getActivity(),data.getDesc(),Toast.LENGTH_LONG).show();
-                                                                            dialog.dismiss();
-                                                                        }
-                                                                    });
-                                                                }
-                                                            }
-
-                                                            @Override
-                                                            public void fail(Throwable e) {
-                                                                getActivity().runOnUiThread(new Runnable() {
-                                                                    @Override
-                                                                    public void run() {
-                                                                        Toast.makeText(getActivity(),"服务器响应失败，请重新扫码！",Toast.LENGTH_LONG).show();
-                                                                        dialog.dismiss();
-                                                                    }
-                                                                });
-                                                            }
-                                                        });
-                                                    }
-                                                }).setNegativeButton("取消", new DialogInterface.OnClickListener() {// 消极
-
-                                            @Override
-                                            public void onClick(DialogInterface dialog,
-                                                                int which) {
-                                                dialog.dismiss();
+                                                @Override
+                                                public void onClick(DialogInterface dialog,
+                                                                    int which) {
+                                                    dialog.dismiss();
+                                                }
+                                            });
+                                            builder.create().show();
+                                        }
+                                    });
+                                }else{
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            if(data.getDesc().equals("登陆已过期,请重新登陆")){
+                                                Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
+                                                PreferencesUtils.putString(getActivity(),"account",null);
+                                                PreferencesUtils.putString(getActivity(),"password_selector",null);
+                                                Intent intent = new Intent(getActivity(), LoginActivity.class);
+                                                startActivity(intent);
+                                                getActivity().finish();
+                                                return;
                                             }
-                                        });
-                                        builder.create().show();
-                                    }
-                                });
-                            }else{
+                                            Toast.makeText(getActivity(),data.getDesc(),Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                }
+                            }
+
+                            @Override
+                            public void fail(Throwable e) {
                                 getActivity().runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        if(data.getDesc().equals("登陆已过期,请重新登陆")){
-                                            Toast.makeText(getActivity(),"登陆已过期,请重新登陆",Toast.LENGTH_LONG).show();
-                                            PreferencesUtils.putString(getActivity(),"account",null);
-                                            PreferencesUtils.putString(getActivity(),"password_selector",null);
-                                            Intent intent = new Intent(getActivity(), LoginActivity.class);
-                                            startActivity(intent);
-                                            getActivity().finish();
-                                            return;
-                                        }
-                                        Toast.makeText(getActivity(),data.getDesc(),Toast.LENGTH_LONG).show();
+                                        Toast.makeText(getActivity(),"服务器响应失败，请重新扫码！",Toast.LENGTH_LONG).show();
                                     }
                                 });
                             }
-                        }
+                        });
+                    }catch (Exception e){
+                        Toast.makeText(getActivity(),"扫码失败，请重试！",Toast.LENGTH_LONG).show();
+                        return;
+                    }
 
-                        @Override
-                        public void fail(Throwable e) {
-                            getActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(getActivity(),"服务器响应失败，请重新扫码！",Toast.LENGTH_LONG).show();
-                                }
-                            });
-                        }
-                    });
                     break;
                 case REQUEST_CODE_TAKE_PICTURE:
 
@@ -3483,12 +3620,12 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     int pointLineId = data.getIntExtra("lineId",-1);
                     Log.d(TAG, "REQUEST_CODE_POINT_DETAIL onActivityResult: id:" + pointDetailId);
                     getALLPoint();
-                    if(pointDetailId != -1){
-                        getSinglePoint(pointDetailId+"");
-                    }
-                    if(pointLineId != -1){
-                        getSingleLine(pointLineId+"");
-                    }
+//                    if(pointDetailId != -1){
+//                        getSinglePoint(pointDetailId+"");
+//                    }
+//                    if(pointLineId != -1){
+//                        getSingleLine(pointLineId+"");
+//                    }
                     break;
                 case Constants.REQUEST_LINE_CODE:
 

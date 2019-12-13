@@ -89,9 +89,9 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.MyHolder> {
     public void onBindViewHolder(@NonNull final MyHolder myHolder, int i) {
         final TaskBean item = dataList.get (i);
 
-        if(item.getName().equals("刚刚")){
-            Log.d("task", "刚刚 data is: "+item.getStatus());
-        }
+//        if(item.getName().equals("刚刚")){
+//            Log.d("task", "刚刚 data is: "+item.getStatus());
+//        }
 
         myHolder.tvTitle.setText (item.getName());
 

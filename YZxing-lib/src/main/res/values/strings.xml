@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">电力地理信息</string>
+    <string name="app_name">线路运维</string>
     <string name="scanner_view_tip_text">将二维码/条形码放入框内，即可自动扫描</string>
 </resources>

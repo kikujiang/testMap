@@ -393,4 +393,29 @@ public class Common {
         }
         return sb.toString();
     }
+
+    // 两次点击间隔不能少于1000ms
+    private static final int FAST_CLICK_DELAY_TIME = 2000;
+    private static long lastClickTime;
+
+    public boolean isFastClick() {
+        boolean flag = false;
+        long currentClickTime = System.currentTimeMillis();
+        if ((currentClickTime - lastClickTime) > FAST_CLICK_DELAY_TIME ) {
+            flag = true;
+        }
+        lastClickTime = currentClickTime;
+        return flag;
+    }
+
+    private String strDateFormat = "yyyy-MM-dd HH:mm:ss";
+    private SimpleDateFormat format = new SimpleDateFormat(strDateFormat,Locale.CHINA);
+
+    public void methodStart(String methodName){
+        Log.d(TAG, "======methodStart: "+methodName +": "+ format.format(new Date()));
+    }
+
+    public void methodEnd(String methodName){
+        Log.d(TAG, "======methodEnd: "+methodName +": "+ format.format(new Date()));
+    }
 }

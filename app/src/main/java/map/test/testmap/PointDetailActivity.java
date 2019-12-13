@@ -7,7 +7,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
@@ -16,7 +15,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -67,11 +65,12 @@ import map.test.testmap.utils.PreferencesUtils;
 import map.test.testmap.view.MultiSelectionSpinner;
 import okhttp3.Response;
 
-public class PointDetailActivity extends AppCompatActivity implements View.OnClickListener {
+public class PointDetailActivity extends BaseActivity implements View.OnClickListener {
 
     private static final String TAG = "point_detail";
     
     private EditText etName = null;
+    private EditText etOldName = null;
     private EditText etOther = null;
     private EditText etPhone = null;
     private EditText etPhone1 = null;
@@ -89,8 +88,8 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
     private MultiSelectionSpinner spinnerDeviceType = null;
     private Button confirmBtn = null;
     private Button pointHistoryBtn = null;
-    private  Button naviBtn = null;
-    private  Button cancelBtn = null;
+    private Button naviBtn = null;
+    private Button cancelBtn = null;
     private Button locateBtn = null;
     private Button takePicBtn;
     private Button choosePicBtn;
@@ -112,6 +111,7 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
     private int currentTerminalType = 0;
     private int currentLineType = 0;
     private int stationId = 0;
+    private int managerUserId = 0;
     private String currentDeviceType = "";
     public static final int CURRENT_TYPE_POINT = 1;
     public static final int CURRENT_TYPE_POINT_TERMINAL = 2;
@@ -128,6 +128,7 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
     public final static int REQUEST_CODE_SEARCH = 2;
     public final static int TYPE_LINE = 100008;
     public final static int TYPE_BDS = 100009;
+    public final static int TYPE_MANAGER = 100010;
 
     private int intentType;
 
@@ -143,12 +144,20 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
 
                     int id = (int) msg.obj;
                     Toast.makeText(PointDetailActivity.this,"保存成功！",Toast.LENGTH_LONG).show();
-                    DataBaseUtils.getInstance().insertPoint(currentPoint);
+
+                    Point cur = DataBaseUtils.getInstance().findPoint(currentPoint.getId());
+                    if(cur == null){
+                        DataBaseUtils.getInstance().insertPoint(currentPoint);
+                    }else{
+                        DataBaseUtils.getInstance().updatePoint(currentPoint);
+                    }
+
                     Intent resultIntent = new Intent();
                     resultIntent.putExtra("id",id);
 //                    if(lineId != 0){
 //                        resultIntent.putExtra("lineId",lineId);
 //                    }
+
                     setResult(Activity.RESULT_OK,resultIntent);
                     finish();
                     break;
@@ -241,6 +250,7 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
         toolbar = findViewById(R.id.toolbar_point_detail);
         progressBar = findViewById(R.id.point_detail_loading);
         etName = findViewById(R.id.edit_name);
+        etOldName = findViewById(R.id.edit_old_name);
         etOther = findViewById(R.id.edit_other);
         etPhone = findViewById(R.id.edit_phone);
         etPhone1 = findViewById(R.id.edit_phone1);
@@ -276,14 +286,15 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
         imageViews = new ArrayList<>();
 
         Common.getInstance().setEditTextFalse(etPointBelong);
+        Common.getInstance().setEditTextFalse(etManager);
 
         initLocateInfo();
 
         if(intentType == 1234){
             Common.getInstance().setEditTextFalse(etName);
+            Common.getInstance().setEditTextFalse(etOldName);
             Common.getInstance().setEditTextFalse(etOther);
             Common.getInstance().setEditTextFalse(etIP);
-            Common.getInstance().setEditTextFalse(etManager);
             Common.getInstance().setEditTextFalse(etLatitude);
             Common.getInstance().setEditTextFalse(etLongitude);
             Common.getInstance().setEditTextFalse(etPhone);
@@ -298,6 +309,7 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
             takePicBtn.setVisibility(View.GONE);
             choosePicBtn.setVisibility(View.GONE);
             etPointBelong.setOnClickListener(null);
+            etManager.setOnClickListener(null);
         }
     }
 
@@ -446,6 +458,7 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
         takePicBtn.setOnClickListener(this);
         choosePicBtn.setOnClickListener(this);
         etPointBelong.setOnClickListener(this);
+        etManager.setOnClickListener(this);
 
         if(pointId != -1 && currentPoint != null){
             currentType = currentPoint.getType();
@@ -515,6 +528,7 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
             }
 
             etName.setText(currentPoint.getName());
+            etOldName.setText(currentPoint.getOld_name());
             etOther.setText(currentPoint.getRemark());
             etPhone.setText(currentPoint.getPhone());
             etPhone1.setText(currentPoint.getPhone1());
@@ -523,7 +537,6 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
             }else{
                 etManager.setText(currentPoint.getManageUserName());
             }
-
             etIP.setText(currentPoint.getIp());
             etIP2.setText(currentPoint.getIp2());
             etONU.setText(currentPoint.getIp_onu());
@@ -542,6 +555,7 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
             spinnerDeviceType.setSelection(indexStr);
             spinnerDeviceType.setSelection(0);
             etName.setText("");
+            etOldName.setText("");
             etOther.setText("");
             etPhone.setText("");
             etPhone1.setText("");
@@ -571,9 +585,15 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
                 //判断名称
                 String name = etName.getText().toString();
                 if(TextUtils.isEmpty(name)){
-                    Toast.makeText(PointDetailActivity.this,"名称不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+                    Toast.makeText(PointDetailActivity.this,"新名称不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
                     return;
                 }
+
+                String oldName = etOldName.getText().toString();
+//                if(TextUtils.isEmpty(oldName)){
+//                    Toast.makeText(PointDetailActivity.this,"旧名称不能为空，请输入后再提交！",Toast.LENGTH_LONG).show();
+//                    return;
+//                }
 
                 //判断经度
                 String longitudeStr = etLongitude.getText().toString();
@@ -597,12 +617,19 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
                     currentPoint = new Point();
                     currentPoint.setId(0);
                     currentPoint.setName(name);
+                    currentPoint.setOld_name(oldName);
                     currentPoint.setType(currentType);
                     currentPoint.setCe_type(currentTerminalType);
                     currentPoint.setLe_type(currentLineType);
                     currentPoint.setMtype(currentDeviceType);
                     currentPoint.setTagNo("");
                     currentPoint.setRemark(remark);
+
+                    if(managerUserId == 0){
+                        managerUserId = Constants.userId;
+                    }
+
+                    currentPoint.setManageUserId(managerUserId);
                     if(!TextUtils.isEmpty(etPhone.getText().toString())){
                         currentPoint.setPhone(etPhone.getText().toString());
                     }else{
@@ -612,11 +639,6 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
                         currentPoint.setPhone1(etPhone1.getText().toString());
                     }else{
                         currentPoint.setPhone1("");
-                    }
-                    if(!TextUtils.isEmpty(etManager.getText().toString())){
-                        currentPoint.setManageUserName(etManager.getText().toString());
-                    }else{
-                        currentPoint.setManageUserName("");
                     }
 
                     if(!TextUtils.isEmpty(etIP.getText().toString())){
@@ -644,12 +666,19 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
                     currentPoint.setLocation_lat(latitude);
                     currentPoint.setLocation_long(longitude);
                 }else{
+
+                    if(managerUserId == 0){
+                        managerUserId = currentPoint.getManageUserId();
+                    }
+
                     currentPoint.setName(name);
+                    currentPoint.setOld_name(oldName);
                     currentPoint.setType(currentType);
                     currentPoint.setCe_type(currentTerminalType);
                     currentPoint.setLe_type(currentLineType);
                     currentPoint.setMtype(currentDeviceType);
                     currentPoint.setRemark(remark);
+                    currentPoint.setManageUserId(managerUserId);
                     currentPoint.setLocation_lat(latitude);
                     currentPoint.setLocation_long(longitude);
                     if(!TextUtils.isEmpty(etPhone.getText().toString())){
@@ -661,12 +690,6 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
                         currentPoint.setPhone1(etPhone1.getText().toString());
                     }else{
                         currentPoint.setPhone1("");
-                    }
-
-                    if(!TextUtils.isEmpty(etManager.getText().toString())){
-                        currentPoint.setManageUserName(etManager.getText().toString());
-                    }else{
-                        currentPoint.setManageUserName("");
                     }
 
                     if(!TextUtils.isEmpty(etIP.getText().toString())){
@@ -701,6 +724,9 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
                 break;
             case R.id.point_belong:
                 enterQueryActivity(TYPE_BDS);
+                break;
+            case R.id.edit_manager:
+                enterQueryActivity(TYPE_MANAGER);
                 break;
             case R.id.point_line:
 //                enterQueryActivity(TYPE_LINE);
@@ -765,6 +791,7 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
         final Map<String,String> data = new HashMap<>();
         data.put("id",currentPoint.getId()+"");
         data.put("name",currentPoint.getName());
+        data.put("old_name",currentPoint.getOld_name());
 
         if(currentPoint.getTagNo() != null){
             data.put("tagNo",currentPoint.getTagNo());
@@ -782,7 +809,7 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
         data.put("tagPhone1",currentPoint.getPhone1());
         data.put("stationId",stationId+"");
         data.put("l_name",currentPoint.getL_name());
-        data.put("manageUser",currentPoint.getManageUserName());
+        data.put("manageUserId",currentPoint.getManageUserId()+"");
         data.put("tagIp1",currentPoint.getIp2());
         data.put("ip_onu",currentPoint.getIp_onu());
 
@@ -1225,6 +1252,10 @@ public class PointDetailActivity extends AppCompatActivity implements View.OnCli
                             case TYPE_LINE:
 //                                lineId = id;
 //                                etPointLine.setText(typeStr);
+                                break;
+                            case TYPE_MANAGER:
+                                managerUserId = id;
+                                etManager.setText(typeStr);
                                 break;
                         }
                     }

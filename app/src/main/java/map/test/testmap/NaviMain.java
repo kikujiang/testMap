@@ -9,7 +9,6 @@ import android.support.design.internal.BottomNavigationMenuView;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -31,7 +30,7 @@ import map.test.testmap.utils.MessageUpdateWorker;
 import map.test.testmap.utils.PreferencesUtils;
 import q.rorbin.badgeview.QBadgeView;
 
-public class NaviMain extends AppCompatActivity {
+public class NaviMain extends BaseActivity {
 
     private static final String TAG = "NaviMain";
     public static BottomNavigationView navigation;

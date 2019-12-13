@@ -12,7 +12,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
@@ -46,8 +45,7 @@ import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 /**
  * A login screen that offers login via email/password_selector.
  */
-public class
-LoginActivity extends AppCompatActivity {
+public class LoginActivity extends BaseActivity {
 
     private static final String TAG = "LoginActivity";
 
@@ -72,8 +70,6 @@ LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Constants.isLogin = false;
-
-        CrashReport.initCrashReport(getApplicationContext(), "171b14d1df", false);
 
         String account = PreferencesUtils.getString(LoginActivity.this,"account",null);
         String password = PreferencesUtils.getString(LoginActivity.this,"password_selector",null);
@@ -227,7 +223,7 @@ LoginActivity extends AppCompatActivity {
                 .setPositiveButton("更新", new DialogInterface.OnClickListener() {
                     @Override public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.dismiss();
-                        Common.getInstance().downloadApk(LoginActivity.this,url,"下载中","电力地理系统");
+                        Common.getInstance().downloadApk(LoginActivity.this,url,"下载中","线路运维系统");
                     }
                 })
                 .setNegativeButton("取消", new DialogInterface.OnClickListener() {

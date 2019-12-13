@@ -1,11 +1,7 @@
 package map.test.testmap;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
@@ -18,8 +14,6 @@ import android.widget.Toast;
 import java.util.List;
 
 import map.test.testmap.model.HistoryAdapter;
-import map.test.testmap.model.Notice;
-import map.test.testmap.model.NoticeAdapter;
 import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.ResponseBean;
 import map.test.testmap.model.ResponseHistory;
@@ -27,7 +21,7 @@ import map.test.testmap.utils.HttpUtils;
 import map.test.testmap.utils.PreferencesUtils;
 import retrofit2.Response;
 
-public class HistoryActivity extends AppCompatActivity {
+public class HistoryActivity extends BaseActivity {
 
     private static final String TAG = "history";
     

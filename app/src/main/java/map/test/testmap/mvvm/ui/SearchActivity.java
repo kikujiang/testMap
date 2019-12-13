@@ -2,7 +2,6 @@ package map.test.testmap.mvvm.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,8 +14,6 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.amap.api.maps.CameraUpdateFactory;
-import com.amap.api.maps.model.Marker;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
@@ -27,19 +24,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import map.test.testmap.BaseActivity;
 import map.test.testmap.Constants;
 import map.test.testmap.PointDetailActivity;
 import map.test.testmap.R;
 import map.test.testmap.model.ConstantType;
-import map.test.testmap.model.DataType;
 import map.test.testmap.model.Line;
+import map.test.testmap.model.ManagerUser;
 import map.test.testmap.model.OnInfoListener;
 import map.test.testmap.model.ResponseBean;
 import map.test.testmap.utils.OkHttpClientManager;
 import map.test.testmap.utils.SearchAdapter;
 import okhttp3.Response;
 
-public class SearchActivity extends AppCompatActivity {
+public class SearchActivity extends BaseActivity {
 
     private static final String TAG = "SearchActivity";
     private int searchType;
@@ -52,6 +50,7 @@ public class SearchActivity extends AppCompatActivity {
     private List<String> dataList;
     private String[] dataAll;
     private List<ConstantType> typeList;
+    private List<ManagerUser> userList;
 
     private LinearLayout loadingLayout;
 
@@ -87,6 +86,9 @@ public class SearchActivity extends AppCompatActivity {
                     .TYPE_LINE:
                 getALLLine();
                 break;
+            case PointDetailActivity.TYPE_MANAGER:
+                getUserList();
+                break;
         }
     }
 
@@ -114,6 +116,92 @@ public class SearchActivity extends AppCompatActivity {
                 return true;
         }
         return true;
+    }
+
+    private void getUserList(){
+        final String url = Constants.WEB_URL + Constants.TAG_MANAGER_LIST;
+        Log.d(TAG, "请求获取管理员列表接口" + url);
+        final Map<String,String> data = new HashMap<>();
+        OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
+            @Override
+            public void success(Response responseMapBean) {
+                try{
+                    String result = responseMapBean.body().string();
+                    Log.d(TAG, "success: "+result);
+                    Type type = new TypeToken<ResponseBean<ManagerUser>>(){}.getType();
+                    final ResponseBean<ManagerUser> currentData = new Gson().fromJson(result,type);
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(currentData.getResult() == Constants.RESULT_FAIL){
+                                Toast.makeText(SearchActivity.this,currentData.getDesc(),Toast.LENGTH_LONG).show();
+                                finish();
+                                return;
+                            }
+
+                            if (currentData.getResult() == Constants.RESULT_OK){
+                                userList = currentData.getList();
+
+                                if (userList.size() > 0){
+                                    loadingLayout.setVisibility(View.GONE);
+                                    if(dataList != null){
+                                        dataList.clear();
+                                    }else {
+                                        dataList = new ArrayList<>();
+                                    }
+                                    dataAll = new String[userList.size()];
+                                    int i = 0;
+                                    for (ManagerUser item:
+                                            userList) {
+                                        dataList.add(item.getName());
+                                        dataAll[i] = item.getName();
+                                        i++;
+                                    }
+
+                                    SearchAdapter adapter = new SearchAdapter(SearchActivity.this,dataList);
+                                    contentList.setLayoutManager (new LinearLayoutManager(SearchActivity.this,LinearLayoutManager.VERTICAL,false));
+                                    contentList.setItemAnimator (new DefaultItemAnimator());
+                                    contentList.setAdapter (adapter);
+                                    contentList.addItemDecoration (new DividerItemDecoration(SearchActivity.this,DividerItemDecoration.VERTICAL));
+
+                                    adapter.setOnItemClickListener(new SearchAdapter.OnItemClickListener() {
+                                        @Override
+                                        public void onItemClick(View view, int position) {
+                                            String cur = dataList.get(position);
+
+                                            for (ManagerUser item:
+                                                    userList) {
+                                                if(item.getName().equals(cur)){
+                                                    Intent backData = new Intent();
+                                                    backData.putExtra("type",searchType);
+                                                    backData.putExtra("id",item.getUserId());
+                                                    backData.putExtra("str",item.getName());
+                                                    setResult(SearchActivity.RESULT_OK,backData);
+                                                    finish();
+                                                    return;
+                                                }
+                                            }
+                                        }
+                                    });
+
+                                    searchView.setSuggestions(dataAll);
+
+                                }
+                            }
+                        }
+                    });
+
+                }catch (Exception e){
+                    dealException(e);
+                }
+            }
+
+            @Override
+            public void fail(Exception e) {
+                dealException(e);
+            }
+        });
     }
 
     private void getConstantType(){

@@ -1,14 +1,13 @@
 package map.test.testmap;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.widget.TextView;
 
 import map.test.testmap.utils.Common;
 
-public class VersionActivity extends AppCompatActivity {
+public class VersionActivity extends BaseActivity {
 
     private Toolbar toolbar;
     private TextView infoTv;
