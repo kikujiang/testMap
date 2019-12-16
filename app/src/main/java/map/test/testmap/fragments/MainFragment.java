@@ -20,6 +20,7 @@ import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
+import android.support.annotation.RestrictTo;
 import android.support.design.widget.BottomSheetDialog;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -117,7 +118,6 @@ import okhttp3.Response;
  * create an instance of this fragment.
  */
 public class MainFragment extends Fragment implements View.OnClickListener{
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "userId";
 
     private static final String TAG = "map123";
@@ -161,14 +161,15 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     private String currentDeviceType = "";
 
     private List<Point> pointList = null;
-    private List<Point> pointAllList = null;
     private List<Line> lineList = null;
+
     private Point currentPoint = null;
     private Line currentLine = null;
     private String currentSearch = "";
 
     private List<User> operatorList = null;
     private ArrayList<Marker> markerList = null;
+    private ArrayList<Polyline> polyLineList = null;
     private ArrayList<MarkerOptions> markerOptionsList = null;
 
 
@@ -236,10 +237,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     Toast.makeText(getActivity(),"保存成功！",Toast.LENGTH_LONG).show();
                     getSinglePoint(id+"");
 
-//                    if(lineId != 0){
-//                        getSingleLine(lineId+"");
-//                    }
-
                     if (pointDialog != null&& pointDialog.isShowing()){
                         pointDialog.dismiss();
                     }
@@ -264,11 +261,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                         pointList.add(currentPoint);
                     }
 
-//                    clearImageData();
-//                    if(currentPoint.getImages() != null){
-//                        Log.d(TAG, "handleMessage: "+ currentPoint.getImages().size());
-//                        configRemoteData(currentPoint.getImages());
-//                    }
                     addMarker(currentPoint);
                     if(isMarkerClick){
                         showBottomDialog();
@@ -325,8 +317,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                             latLngs.add(cur);
                         }
 
-
-
                         currentPolyLine = aMap.addPolyline(new PolylineOptions().
                                 addAll(latLngs).setDottedLine(true).width(20).color(Color.parseColor(currentLine.getStatusIconColor())));
                         currentPolyLine.setVisible(true);
@@ -340,7 +330,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     };
 
     private int userId = 0;
-//    private boolean isExistAlready = false;
 
     public MainFragment() {
         // Required empty public constructor
@@ -434,9 +423,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
     private void initial(View view){
         Log.d(TAG, "=========================initial called!=========================");
-        Common.getInstance().methodStart("findAllPoint");
-        pointAllList = DataBaseUtils.getInstance().findAllPoint();
-        Common.getInstance().methodEnd("findAllPoint");
         initControl(view);
         initMap();
     }
@@ -471,7 +457,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
      * 获取用户权限的信息
      */
     private void getUserPermission(int userId){
-//        mHandler.sendEmptyMessage(MSG_START);
         HttpUtils.getInstance().getUserPermission(userId, new OnResponseListener() {
             @Override
             public void success(retrofit2.Response responseMapBean) {
@@ -642,8 +627,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                                 continue;
                             }
 
-
-
                             Point cur = DataBaseUtils.getInstance().findPoint(item.getId());
                             if(cur == null){
                                 DataBaseUtils.getInstance().insertPoint(item);
@@ -729,6 +712,9 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
                     if (currentData.getResult() == Constants.RESULT_OK){
                         List<Integer> idList = currentData.getList();
+                        String[]
+                        Integer[] ids = (Integer[])idList.toArray();
+
                         Common.getInstance().methodStart("getCurrentPointList数据前");
                         for (Integer id:idList){
 
@@ -1100,13 +1086,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         initSearchView();
         initImageData();
 
-//        if (aMap == null) {
-//            aMap = mMapView.getMap();
-//        }
-//
-//        aMap.setMapType(AMap.MAP_TYPE_NORMAL);
-//        aMap.moveCamera(CameraUpdateFactory.zoomTo(19));
-//        initLocationInfo();
         getUserPermission(userId);
     }
 
@@ -1168,7 +1147,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             actionBar.setTitle("");
             actionBar.setDisplayHomeAsUpEnabled(isDisplayHomeAsUp);
         }
-
     }
 
     @Override
@@ -1184,7 +1162,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         switch (item.getItemId()){
             case R.id.collect:
                 if(isPointAdd){
@@ -1247,7 +1224,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
         aMap.setMapType(AMap.MAP_TYPE_NORMAL);
         aMap.moveCamera(CameraUpdateFactory.zoomTo(5));
-//        aMap.moveCamera(CameraUpdateFactory.zoomTo(19));
         AMap.OnPolylineClickListener l = new AMap.OnPolylineClickListener() {
             @Override
             public void onPolylineClick(Polyline polyline) {
@@ -1273,7 +1249,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                 }
                 isPoint = false;
                 showBottomDialog();
-// getSingleLine(currentLine.getId()+"");
             }
         };
 
@@ -2137,6 +2112,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     }
 
     private void showAllLine(){
+
         for (Line current:lineList) {
             Log.d(TAG, "showAllLine: called");
             List<LatLng> latLngs = new ArrayList<>();
@@ -2217,6 +2193,15 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         if(markerList == null){
             markerList = new ArrayList<>();
         }else{
+
+            if (markerList.size() > 0){
+                //如果重新刷新
+                for (Marker item:
+                     markerList) {
+                    item.destroy();
+                }
+            }
+
             markerList.clear();
         }
 
@@ -3623,9 +3608,9 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 //                    if(pointDetailId != -1){
 //                        getSinglePoint(pointDetailId+"");
 //                    }
-//                    if(pointLineId != -1){
-//                        getSingleLine(pointLineId+"");
-//                    }
+                    if(pointLineId != -1){
+                        getSingleLine(pointLineId+"");
+                    }
                     break;
                 case Constants.REQUEST_LINE_CODE:
 

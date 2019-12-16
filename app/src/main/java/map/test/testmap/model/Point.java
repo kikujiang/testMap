@@ -64,6 +64,7 @@ public class Point extends LitePalSupport implements Parcelable {
     private String lineName;
     private String stationName;
     private int manageUserId;
+    private int actType;
 
     @SerializedName("ip1")
     private String ip2;
@@ -96,6 +97,7 @@ public class Point extends LitePalSupport implements Parcelable {
         manageUserId = in.readInt();
         tagCheckId = in.readInt();
         checkStatus = in.readInt();
+        actType = in.readInt();
         lineId = in.readInt();
         ip = in.readString();
         ip2 = in.readString();
@@ -152,6 +154,7 @@ public class Point extends LitePalSupport implements Parcelable {
         dest.writeInt(tagCheckId);
         dest.writeInt(checkStatus);
         dest.writeInt(lineId);
+        dest.writeInt(actType);
         dest.writeString(ip);
         dest.writeString(ip2);
         dest.writeString(ip_onu);
@@ -418,6 +421,10 @@ public class Point extends LitePalSupport implements Parcelable {
             return "";
         }
         return old_name;
+    }
+
+    public int getActType() {
+        return actType;
     }
 
     public void setOld_name(String old_name) {

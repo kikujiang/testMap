@@ -64,6 +64,7 @@ public class Line extends LitePalSupport {
     private float lineLength;
     private String tag_begin_name;
     private String tag_end_name;
+    private int actType;
 
     public String getPath() {
         return path;
@@ -203,5 +204,9 @@ public class Line extends LitePalSupport {
 
     public void setManageUserName(String manageUserName) {
         this.manageUserName = manageUserName;
+    }
+
+    public int getActType() {
+        return actType;
     }
 }
