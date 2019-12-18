@@ -20,7 +20,6 @@ import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
-import android.support.annotation.RestrictTo;
 import android.support.design.widget.BottomSheetDialog;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -38,7 +37,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.LinearInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -60,8 +58,6 @@ import com.amap.api.maps.model.MarkerOptions;
 import com.amap.api.maps.model.MyLocationStyle;
 import com.amap.api.maps.model.Polyline;
 import com.amap.api.maps.model.PolylineOptions;
-import com.amap.api.maps.model.animation.AlphaAnimation;
-import com.amap.api.maps.model.animation.Animation;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
@@ -161,7 +157,9 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     private String currentDeviceType = "";
 
     private List<Point> pointList = null;
+    private List<Point> pointAllList = null;
     private List<Line> lineList = null;
+    private List<Line> lineAllList = null;
 
     private Point currentPoint = null;
     private Line currentLine = null;
@@ -171,7 +169,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     private ArrayList<Marker> markerList = null;
     private ArrayList<Polyline> polyLineList = null;
     private ArrayList<MarkerOptions> markerOptionsList = null;
-
 
     private LinearLayout progressBar =null;
 
@@ -216,23 +213,16 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     Log.d(TAG, "handleMessage: msg start");
                     break;
                 case MSG_GET_ALL_POINT_END:
-                    if(pointList != null){
-                        if(pointList.size() > 0){
-                            showAllPoint();
-                        }
+                    if(pointList != null && pointList.size() > 0){
+                        showAllPoint();
                     }
                     break;
                 case MSG_GET_ALL_LINE_END:
-                    if(lineList != null){
-                        if(lineList.size() <= 0){
-                            return;
-                        }else{
-                            showAllLine();
-                        }
+                    if(lineList != null && lineList.size()>0){
+                        showAllLine();
                     }
                     break;
                 case MSG_SAVE_SINGLE_POINT_END:
-
                     int id = (int) msg.obj;
                     Toast.makeText(getActivity(),"保存成功！",Toast.LENGTH_LONG).show();
                     getSinglePoint(id+"");
@@ -257,9 +247,9 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                         DataBaseUtils.getInstance().updatePoint(currentPoint);
                     }
 
-                    if (isAdd){
-                        pointList.add(currentPoint);
-                    }
+//                    if (isAdd){
+//                        pointList.add(currentPoint);
+//                    }
 
                     addMarker(currentPoint);
                     if(isMarkerClick){
@@ -268,7 +258,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                         currentMarker.setSnippet(currentPoint.getTypeStr());
                         isMarkerClick = false;
                     }
-
                     break;
                 case MSG_MSG_ERROR:
                     String message = (String) msg.obj;
@@ -309,6 +298,8 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
                         String path = currentLine.getPath();
 
+                        Log.d(TAG, "singleline  handleMessage: path is:" + path);
+
                         String[] group =  path.split(";");
 
                         for(int i = 0;i<group.length;i++){
@@ -320,7 +311,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                         currentPolyLine = aMap.addPolyline(new PolylineOptions().
                                 addAll(latLngs).setDottedLine(true).width(20).color(Color.parseColor(currentLine.getStatusIconColor())));
                         currentPolyLine.setVisible(true);
-//                        showLineBottomDialog();
                     }else {
                         Toast.makeText(getActivity(),"当前线路信息异常，请重新刷新！",Toast.LENGTH_LONG).show();
                     }
@@ -341,7 +331,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
      *
      * @return A new instance of fragment MainFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static MainFragment newInstance(int userId) {
         MainFragment fragment = new MainFragment();
         Bundle args = new Bundle();
@@ -582,6 +571,8 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         Common.getInstance().methodEnd("getDataFromServer");
     }
 
+    private boolean isUpdate = false;
+
     /**
      * 获取所有点的信息
      */
@@ -618,46 +609,31 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     if (currentData.getResult() == Constants.RESULT_OK){
                         Common.getInstance().methodStart("getALLPoint请求结束，数据处理开始1");
                         PreferencesUtils.putLong(getActivity(),Constants.POINT_FLAG,currentData.getTime());
-                        Log.d(TAG, ",时间戳是:"+currentData.getTime());
                         List<Point> currentPointList = currentData.getList();
-                        for (Point item:
-                             currentPointList) {
 
-                            if (item == null){
-                                continue;
-                            }
+                        if(currentPointList.size() > 0){
+                            isUpdate = true;
+                            for (Point item:
+                                    currentPointList) {
 
-                            Point cur = DataBaseUtils.getInstance().findPoint(item.getId());
-                            if(cur == null){
-                                DataBaseUtils.getInstance().insertPoint(item);
-                                if(pointAllList != null && pointAllList.size()>0){
-                                    pointAllList.add(item);
-                                }
-                            }else{
-
-                                if(pointAllList != null && pointAllList.size()>0){
-                                    Point selectedPoint = null;
-                                    for (Point detail:pointAllList){
-                                        if(detail.getId() == item.getId()){
-                                            selectedPoint = detail;
-                                            break;
-                                        }
-                                    }
-                                    if(selectedPoint != null){
-                                      pointAllList.remove(selectedPoint);
-                                      pointAllList.add(item);
-                                    }
+                                if (item == null){
+                                    continue;
                                 }
 
-                                DataBaseUtils.getInstance().updatePoint(item);
+                                Point cur = DataBaseUtils.getInstance().findPoint(item.getId());
+                                if(cur == null){
+                                    DataBaseUtils.getInstance().insertPoint(item);
+                                }else if(cur.getActType() == 3){
+                                    DataBaseUtils.getInstance().deletePoint(item);
+                                }else{
+                                    DataBaseUtils.getInstance().updatePoint(item);
+                                }
                             }
                         }
-                        Log.d(TAG, "getALLPoint 收到消息为："+ result);
+
+                        Log.d(TAG, "getALLPoint 接收数据是：" + result);
+
                         Log.d(TAG, "getALLPoint 更新标记点的数量是：" + currentPointList.size());
-
-                        if(pointAllList == null || pointAllList.size() < 1){
-                            pointAllList = DataBaseUtils.getInstance().findAllPoint();
-                        }
 
                         Common.getInstance().methodStart("getALLPoint请求结束，数据处理开始2");
                         getCurrentPointList();
@@ -681,6 +657,10 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             pointList = new ArrayList<>();
         }else{
             pointList.clear();
+        }
+
+        if (pointAllList == null){
+            pointAllList = new ArrayList<>();
         }
 
         final String url = Constants.WEB_URL + Constants.TAG_GET_USER_POINT;
@@ -712,26 +692,30 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
                     if (currentData.getResult() == Constants.RESULT_OK){
                         List<Integer> idList = currentData.getList();
-                        String[]
-                        Integer[] ids = (Integer[])idList.toArray();
 
-                        Common.getInstance().methodStart("getCurrentPointList数据前");
-                        for (Integer id:idList){
-
-                            for (Point item: pointAllList){
-                                if (item.getId() == id){
-                                    pointList.add(item);
-                                    break;
+                        pointAllList = DataBaseUtils.getInstance().findAllPoint();
+                        new Thread(){
+                            @Override
+                            public void run() {
+                                super.run();
+                                synchronized (pointList){
+                                    for (Integer item:
+                                            idList) {
+                                        for (Point cur:
+                                                pointAllList) {
+                                            if (cur.getId() == item){
+                                                pointList.add(cur);
+                                                break;
+                                            }
+                                        }
+                                    }
                                 }
-                            }
 
-//                            Point item = DataBaseUtils.getInstance().findPoint(id);
-//                            pointList.add(item);
-                        }
-                        Log.d(TAG, "getCurrentPointList 收到消息为："+ result);
-                        Log.d(TAG, "getCurrentPointList 当前标记点数量是：" + pointList.size());
-                        Common.getInstance().methodStart("getCurrentPointList数据后");
-                        mHandler.sendEmptyMessage(MSG_GET_ALL_POINT_END);
+                                Log.d(TAG, "getCurrentPointList 当前标记点数量是：" + pointList.size());
+                                Common.getInstance().methodStart("getCurrentPointList数据后");
+                                mHandler.sendEmptyMessage(MSG_GET_ALL_POINT_END);
+                            }
+                        }.start();
                     }
                 }catch (Exception e){
                     sendErrorMsg(e);
@@ -791,12 +775,15 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                             Line cur = DataBaseUtils.getInstance().findLine(item.getId());
                             if(cur == null){
                                 DataBaseUtils.getInstance().insertLine(item);
+                            }else if(cur.getActType() == 3){
+                                DataBaseUtils.getInstance().deleteLine(item);
                             }else{
                                 DataBaseUtils.getInstance().updateLine(item);
                             }
                         }
 
-                        Log.d(TAG, "getALLLine 收到消息为："+ result+"\n 当前线数量是：" + currentLineList.size());
+                        Log.d(TAG, "getALLLine 收到消息为："+ result);
+                        Log.d(TAG, "getALLLine 当前线数量是："+ currentLineList.size());
                         getCurrentLineList();
                     }
                 }catch (Exception e){
@@ -817,6 +804,10 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             lineList = new ArrayList<>();
         }else{
             lineList.clear();
+        }
+
+        if(lineAllList == null){
+            lineAllList = new ArrayList<>();
         }
 
         final String url = Constants.WEB_URL + Constants.TAG_GET_USER_LINE;
@@ -848,11 +839,20 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
                     if (currentData.getResult() == Constants.RESULT_OK){
                         List<Integer> idList = currentData.getList();
+
+                        lineAllList = DataBaseUtils.getInstance().findAllLine();
+
                         for (Integer id:idList){
-                            Line item = DataBaseUtils.getInstance().findLine(id);
-                            lineList.add(item);
+                            for (Line cur:
+                                    lineAllList) {
+                                if (cur.getId() == id){
+                                    lineList.add(cur);
+                                    break;
+                                }
+                            }
                         }
-                        Log.d(TAG, "getCurrentLineList 收到消息为："+ result+"/n 当前线路数量是：" + lineList.size());
+                        Log.d(TAG, "getCurrentLineList 收到消息为："+ result);
+                        Log.d(TAG,"当前线路数量是：" + lineList.size());
                         mHandler.sendEmptyMessage(MSG_GET_ALL_LINE_END);
                     }
                 }catch (Exception e){
@@ -1272,8 +1272,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
                 isMarkerClick = true;
                 getSinglePoint(currentPoint.getId()+"");
-
-
 //                getSinglePoint(currentPoint.getId()+"");
 //                currentMarker.showInfoWindow();
                 return false;
@@ -1343,6 +1341,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
 
     private boolean isFirst = true;
+    private boolean isFragmentExist = false;
 
     private void locate(){
 
@@ -1395,7 +1394,10 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         super.onResume();
         //在activity执行onResume时执行mMapView.onResume ()，重新绘制加载地图
         mMapView.onResume();
-//        getALLPoint();
+        if(isFragmentExist){
+//            getALLPoint();
+        }
+        isFragmentExist = true;
     }
     @Override
     public void onPause() {
@@ -2077,7 +2079,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             public void success(Response responseMapBean) {
                 try{
                     String result = responseMapBean.body().string();
-                    Log.d(TAG, "success: point is: " + result);
                     Type type = new TypeToken<ResponseBean<Point>>(){}.getType();
                     ResponseBean<Point> currentData = new Gson().fromJson(result,type);
 
@@ -2113,8 +2114,17 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
     private void showAllLine(){
 
+        if(polyLineList == null){
+            polyLineList = new ArrayList<>();
+        }else{
+            for (Polyline line:
+                 polyLineList) {
+                line.remove();
+            }
+            polyLineList.clear();
+        }
+
         for (Line current:lineList) {
-            Log.d(TAG, "showAllLine: called");
             List<LatLng> latLngs = new ArrayList<>();
 
             if(current.getPath() == null){
@@ -2131,11 +2141,10 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                 latLngs.add(cur);
             }
 
-
-            Polyline line2 = aMap.addPolyline(new PolylineOptions().
+            Polyline line = aMap.addPolyline(new PolylineOptions().
                     addAll(latLngs).setDottedLine(true).width(20).color(Color.parseColor(current.getStatusIconColor())));
-            line2.setVisible(true);
-
+            line.setVisible(true);
+            polyLineList.add(line);
         }
     }
 
@@ -2172,7 +2181,16 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     if(currentData.getResult() == Constants.RESULT_OK){
 
                         currentLine = currentData.getObject();
-                        Log.d(TAG, "收到消息为："+ result);
+                        Log.d(TAG, "getSingleLine 收到消息为："+ result);
+
+                        String path = "";
+                        if (currentLine.getCheckPoints() != null && currentLine.getCheckPoints().size()> 0){
+                            for (Point pp:
+                                    currentLine.getCheckPoints()) {
+                                path += pp.getLocation_lat()+","+pp.getLocation_long()+";";
+                            }
+                        }
+                        currentLine.setPath(path);
                         mHandler.sendEmptyMessage(MSG_GET_SINGLE_LINE_END);
                     }
                 }catch (Exception e){
@@ -2193,7 +2211,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         if(markerList == null){
             markerList = new ArrayList<>();
         }else{
-
             if (markerList.size() > 0){
                 //如果重新刷新
                 for (Marker item:
@@ -2219,9 +2236,11 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             searchDataMarkerMap.clear();
         }
 
+        Log.d(TAG, "showAllPoint: point size is:" + pointList.size());
+
         synchronized (pointList) {
 
-            for (final Point current: pointList) {
+            for (Point current: pointList) {
 
                 if(current == null){
                     continue;
@@ -2235,9 +2254,33 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     continue;
                 }
 
+                if(current.getType() == 101){
+                    int id = current.getLineId();
+                    boolean isLineNotExist = false;
+
+                    for (Line line:
+                            lineAllList) {
+                        if(line.getId() == id){
+
+                            if(line.getActType() == 3){
+                                isLineNotExist = true;
+                            }else{
+                                isLineNotExist = false;
+                            }
+                            break;
+                        }
+
+                        isLineNotExist = true;
+                    }
+                    //此时线已删除
+                    if (isLineNotExist){
+                        Log.d(TAG, "showAllPoint 没有查找到对应线的id，线的id是：" + id+"，名称是："+current.getLineName()+",点名称是:"+current.getName());
+                        continue;
+                    }
+                }
+
                 String cur = current.getName() + "," +current.getId();
                 searchData.add(cur);
-    //            Log.d(TAG, "showAllPoint: "+current.getLocation_lat()+","+current.getLocation_long());
                 if(current.getLocation_lat() == 0.0 || current.getLocation_long() == 0.0){
                     continue;
                 }
@@ -2315,7 +2358,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                                 .decodeResource(getResources(),R.mipmap.mark_repair_1)));
                         break;
                 }
-
                 markerOptionsList.add(markerOption);
             }
 
@@ -2332,20 +2374,12 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     }
                 }
 
-                Animation animation = new AlphaAnimation(0,1);
-                long duration = 1000L;
-                animation.setDuration(duration);
-                animation.setInterpolator(new LinearInterpolator());
-
-                marker.setAnimation(animation);
-                marker.startAnimation();
                 if (!"".equals(cur)){
                     searchDataMarkerMap.put(cur,marker);
                 }
+
             }
-
         }
-
 
         String[] sData = new String[searchData.size()];
 
@@ -2568,7 +2602,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             btnBottomHistory.setOnClickListener(this);
             btnCreateAssistantPoint.setOnClickListener(this);
             btnCreateMaintenancePoint.setOnClickListener(this);
-
         }
 
         if(isPoint){
@@ -3208,16 +3241,15 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
     @Override
     public void onHiddenChanged(boolean hidden) {
+        Log.d(TAG, "onHiddenChanged: called");
         super.onHiddenChanged(hidden);
         if(!hidden){
-            Log.d(TAG, "onHiddenChanged: click 1");
 
             if(isShow){
                 return;
             }
 
             if(Common.getInstance().isFastClick()){
-                Log.d(TAG, "onHiddenChanged: click 2");
                 getALLPoint();
                 getALLLine();
             }
@@ -3596,20 +3628,17 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                 case Constants.REQUEST_CODE:
                     int pointId = data.getIntExtra("pointId",-1);
                     Log.d(TAG, "REQUEST_CODE onActivityResult: id:" + pointId);
+                    getALLPoint();
                     if(pointId != -1){
                         getSinglePoint(pointId+"");
                     }
                     break;
                 case REQUEST_CODE_POINT_DETAIL:
                     int pointDetailId = data.getIntExtra("id",-1);
-                    int pointLineId = data.getIntExtra("lineId",-1);
                     Log.d(TAG, "REQUEST_CODE_POINT_DETAIL onActivityResult: id:" + pointDetailId);
                     getALLPoint();
-//                    if(pointDetailId != -1){
-//                        getSinglePoint(pointDetailId+"");
-//                    }
-                    if(pointLineId != -1){
-                        getSingleLine(pointLineId+"");
+                    if(pointDetailId != -1){
+                        getSinglePoint(pointDetailId+"");
                     }
                     break;
                 case Constants.REQUEST_LINE_CODE:

@@ -13,8 +13,8 @@ android {
         applicationId "map.test.testmap"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 16
-        versionName "4.5"
+        versionCode 19
+        versionName "5.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk {
             //设置支持的SO库架构（开发者可以根据需要，选择一个或多个平台的so）

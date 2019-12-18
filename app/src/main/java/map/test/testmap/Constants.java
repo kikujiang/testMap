@@ -43,9 +43,9 @@ public class Constants {
 //    public static final String TEST_SPLITTER = "";
 //    public static final String WEB_URL = "http://172.17.4.5:8080";
 //    public static final String WEB_URL = "http://172.18.110.65:8080";
-    public static final String WEB_URL = "http://10.206.2.164:8081";
+//    public static final String WEB_URL = "http://10.206.2.164:8081";
     //正式环境
-//    public static final String WEB_URL = "http://119.3.71.206";
+    public static final String WEB_URL = "http://119.3.71.206";
 //    private static final String SPLITTER = "/app/";
     private static final String SPLITTER= "/app/";
     private static final String SPLITTER1= "";

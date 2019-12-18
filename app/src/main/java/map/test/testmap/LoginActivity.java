@@ -74,12 +74,10 @@ public class LoginActivity extends BaseActivity {
         String account = PreferencesUtils.getString(LoginActivity.this,"account",null);
         String password = PreferencesUtils.getString(LoginActivity.this,"password_selector",null);
         if(account != null && password != null){
-            Log.d(TAG, "onCreate: 1");
             initWithApiKey();
             loginAuto();
             return;
         }
-        Log.d(TAG, "onCreate: 2");
 
         init();
     }
@@ -87,9 +85,7 @@ public class LoginActivity extends BaseActivity {
     private void init(){
         initWithApiKey();
         setContentView(R.layout.activity_login);
-        // Set up the login form.
         mEmailView = findViewById(R.id.email);
-//        populateAutoComplete();
 
         mPasswordView = findViewById(R.id.password);
         mPassWordCheck = findViewById(R.id.password_check);
@@ -201,7 +197,7 @@ public class LoginActivity extends BaseActivity {
                 if(current.getResult() == Constants.RESULT_OK){
                     int serverVersion = current.getVersionCode() == null?current.getId():Integer.parseInt(current.getVersionCode());
                     int currentVersion = Common.getInstance().getVersionCode(LoginActivity.this);
-
+                    Log.d(TAG, "checkUpdate message is:" + serverVersion);
                     if(currentVersion < serverVersion){
                         String downloadPath = current.getAppPath() == null?current.getDesc():current.getAppPath();
                         download(downloadPath);

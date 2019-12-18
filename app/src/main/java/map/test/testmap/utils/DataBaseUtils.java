@@ -6,6 +6,7 @@ import android.util.Log;
 import org.litepal.LitePal;
 import org.litepal.crud.LitePalSupport;
 
+import java.util.Arrays;
 import java.util.List;
 
 import map.test.testmap.Constants;
@@ -66,12 +67,20 @@ public class DataBaseUtils {
         point.updateAll("pointId = ?", point.getId()+"");
     }
 
+    public void deletePoint(Point point){
+        point.delete();
+    }
+
     public Point findPoint(int id){
         return LitePal.where("pointId = ?",id+"").findFirst(Point.class);
     }
 
     public List<Point> findPointInMap(String[] idList){
-        return LitePal.find();
+        String[] queryList = new String[idList.length+1];
+        queryList[0] = "pointId = ?";
+        System.arraycopy(idList,0,queryList,1,idList.length);
+//        LitePal.in
+        return LitePal.where(queryList).find(Point.class);
     }
 
     public List<Point> findAllPoint(){
@@ -86,7 +95,15 @@ public class DataBaseUtils {
         line.updateAll("lineId = ?", line.getId()+"");
     }
 
+    public void deleteLine(Line line){
+        line.delete();
+    }
+
     public Line findLine(int id){
         return LitePal.where("lineId = ?",id+"").findFirst(Line.class);
+    }
+
+    public List<Line> findAllLine(){
+        return LitePal.order(" lineId desc").find(Line.class);
     }
 }
