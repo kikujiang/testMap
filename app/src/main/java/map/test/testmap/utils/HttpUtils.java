@@ -2,6 +2,9 @@ package map.test.testmap.utils;
 
 import android.util.Log;
 
+import com.tencent.bugly.crashreport.BuglyLog;
+import com.tencent.bugly.crashreport.CrashReport;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -46,7 +49,7 @@ public class HttpUtils {
             @Override
             public void log(String message) {
                 //打印retrofit日志
-                Log.i("http","交互数据为 = "+message);
+                BuglyLog.i(TAG,"交互数据为 = "+message);
             }
         });
 
@@ -171,13 +174,13 @@ public class HttpUtils {
      * @return
      */
     public Response<ResponseBean<User>> getLoginInfo(String account, String password,String mac,String channelId){
-        Log.d(TAG, "getLoginInfo: "+account+","+password+","+mac+","+channelId);
+        BuglyLog.d(TAG, "登录信息为: "+account+","+password+","+mac+","+channelId);
         Call<ResponseBean<User>> login = userBiz.getLoginInfo(account,password,mac,channelId);
         Response<ResponseBean<User>> user = null;
         try{
             user = login.execute();
         }catch (IOException e){
-
+            CrashReport.postCatchedException(e);
         }
         return user;
     }

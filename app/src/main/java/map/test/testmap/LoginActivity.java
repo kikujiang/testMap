@@ -19,7 +19,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -30,7 +29,7 @@ import android.widget.Toast;
 import com.tencent.android.tpush.XGIOperateCallback;
 import com.tencent.android.tpush.XGPushConfig;
 import com.tencent.android.tpush.XGPushManager;
-import com.tencent.bugly.crashreport.CrashReport;
+import com.tencent.bugly.crashreport.BuglyLog;
 
 import map.test.testmap.model.OnResponseListener;
 import map.test.testmap.model.ResponseBean;
@@ -59,7 +58,6 @@ public class LoginActivity extends BaseActivity {
      */
     private UserLoginTask mAuthTask = null;
 
-    // UI references.
     private EditText mEmailView;
     private EditText mPasswordView;
     private View mProgressView;
@@ -127,9 +125,6 @@ public class LoginActivity extends BaseActivity {
 
 
     private void initWithApiKey() {
-//        PushManager.startWork(getApplicationContext(),
-//                PushConstants.LOGIN_TYPE_API_KEY,
-//                Utils.getMetaValue(LoginActivity.this, "api_key"));
         initWithTencent();
     }
 
@@ -391,14 +386,12 @@ public class LoginActivity extends BaseActivity {
             mAccount = account;
             mPassword = password;
             this.flag = f;
-
-            Log.d(TAG, "UserLoginTask: acc:"+mAccount+",pwd:"+mPassword);
         }
 
         @Override
         protected Response<ResponseBean<User>> doInBackground(Void... params) {
             String mac = Common.getInstance().getMacAddress();
-            Log.d(TAG, "doInBackground: mac is:" + mac);
+            BuglyLog.d(TAG, "doInBackground: mac is:" + mac);
 
             if(null == mac || "".equals(mac)){
                 mac = "00:00:00:00:00:00";
@@ -408,7 +401,6 @@ public class LoginActivity extends BaseActivity {
 
         @Override
         protected void onPostExecute(final Response<ResponseBean<User>> response) {
-            Log.d(TAG, "onPostExecute: ");
             mAuthTask = null;
             if(flag == 0){
                 showProgress(false);
@@ -416,7 +408,6 @@ public class LoginActivity extends BaseActivity {
 
             if(response == null){
                 String errMsg = "服务器请求超时！";
-                Log.e(TAG, "onPostExecute: "+ errMsg);
                 Toast.makeText(LoginActivity.this,errMsg,Toast.LENGTH_LONG).show();
 
                 if(flag == 1){
@@ -427,6 +418,7 @@ public class LoginActivity extends BaseActivity {
 
             ResponseBean<User> currentBean = response.body();
 
+            BuglyLog.d(TAG, "登录信息返回数据为: "+currentBean.toString());
             if(currentBean == null){
                 String errMsg = "服务器异常，请稍后再试！";
                 Log.e(TAG, "onPostExecute: "+ errMsg);
@@ -450,7 +442,6 @@ public class LoginActivity extends BaseActivity {
             }
 
             if(currentBean.getResult() == Constants.RESULT_OK){
-                Log.i(TAG, "onPostExecute: success");
                 Constants.isLogin = true;
                 Constants.userId = currentBean.getObject().getId();
                 Constants.userName = currentBean.getObject().getUsername();

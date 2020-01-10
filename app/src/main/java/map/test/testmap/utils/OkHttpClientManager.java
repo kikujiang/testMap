@@ -1,6 +1,6 @@
 package map.test.testmap.utils;
 
-import android.util.Log;
+import com.tencent.bugly.crashreport.BuglyLog;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +31,7 @@ public class OkHttpClientManager {
         @Override
         public void log(String message) {
             //打印retrofit日志
-            Log.i("http","交互数据为 = "+message);
+            BuglyLog.i(TAG,"交互数据为 = "+message);
         }
     });
 

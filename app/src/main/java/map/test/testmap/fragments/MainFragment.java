@@ -66,6 +66,8 @@ import com.example.qrcode.ScannerActivity;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
+import com.tencent.bugly.crashreport.BuglyLog;
+import com.tencent.bugly.crashreport.CrashReport;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -482,6 +484,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
             @Override
             public void fail(Throwable e) {
+                CrashReport.postCatchedException(e);
                 sendFailureMsg(e.getMessage());
             }
         });
@@ -639,12 +642,14 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                         getCurrentPointList();
                     }
                 }catch (Exception e){
+                    CrashReport.postCatchedException(e);
                     sendErrorMsg(e);
                 }
             }
 
             @Override
             public void fail(Exception e) {
+                CrashReport.postCatchedException(e);
                 sendErrorMsg(e);
             }
         });
@@ -718,12 +723,14 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                         }.start();
                     }
                 }catch (Exception e){
+                    CrashReport.postCatchedException(e);
                     sendErrorMsg(e);
                 }
             }
 
             @Override
             public void fail(Exception e) {
+                CrashReport.postCatchedException(e);
                 sendErrorMsg(e);
             }
         });
@@ -787,6 +794,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                         getCurrentLineList();
                     }
                 }catch (Exception e){
+                    CrashReport.postCatchedException(e);
                     sendErrorMsg(e);
                 }
                 Log.d(TAG,"success: "+responseMapBean.body().toString());
@@ -794,6 +802,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
             @Override
             public void fail(Exception e) {
+                CrashReport.postCatchedException(e);
                 sendErrorMsg(e);
             }
         });
@@ -856,12 +865,14 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                         mHandler.sendEmptyMessage(MSG_GET_ALL_LINE_END);
                     }
                 }catch (Exception e){
+                    CrashReport.postCatchedException(e);
                     sendErrorMsg(e);
                 }
             }
 
             @Override
             public void fail(Exception e) {
+                CrashReport.postCatchedException(e);
                 sendErrorMsg(e);
             }
         });
@@ -900,12 +911,14 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     }
 
                 }catch (Exception e){
+                    CrashReport.postCatchedException(e);
                     sendErrorMsg(e);
                 }
             }
 
             @Override
             public void fail(Exception e) {
+                CrashReport.postCatchedException(e);
                 sendErrorMsg(e);
             }
         });
@@ -943,12 +956,14 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                         Log.d(TAG, "收到消息为："+ result+"\n 当前标记点终端类型数量是：" + Constants.pointTerminalTypeList.size());
                     }
                 }catch (Exception e){
+                    CrashReport.postCatchedException(e);
                     sendErrorMsg(e);
                 }
             }
 
             @Override
             public void fail(Exception e) {
+                CrashReport.postCatchedException(e);
                 sendErrorMsg(e);
             }
         });
@@ -986,12 +1001,14 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                         Log.d(TAG, "收到消息为："+ result+"\n 当前标记点光缆类型数量是：" + Constants.pointLineTypeList.size());
                     }
                 }catch (Exception e){
+                    CrashReport.postCatchedException(e);
                     sendErrorMsg(e);
                 }
             }
 
             @Override
             public void fail(Exception e) {
+                CrashReport.postCatchedException(e);
                 sendErrorMsg(e);
             }
         });
@@ -1029,12 +1046,14 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                         Log.d(TAG, "收到消息为："+ result+"\n 当前标记点设备类型数量是：" + Constants.pointDeviceTypeList.size());
                     }
                 }catch (Exception e){
+                    CrashReport.postCatchedException(e);
                     sendErrorMsg(e);
                 }
             }
 
             @Override
             public void fail(Exception e) {
+                CrashReport.postCatchedException(e);
                 sendErrorMsg(e);
             }
         });
@@ -2055,12 +2074,14 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                     }
 
                 }catch (Exception e){
+                    CrashReport.postCatchedException(e);
                     sendErrorMsg(e);
                 }
             }
 
             @Override
             public void fail(Exception e) {
+                CrashReport.postCatchedException(e);
                 sendErrorMsg(e);
             }
         });
@@ -2073,7 +2094,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         Log.d(TAG, "请求获取某个点接口" + url);
         final Map<String,String> data = new HashMap<>();
         data.put("id",pointId);
-        Log.d(TAG, "getSinglePoint data is:" + data.toString());
+        BuglyLog.d(TAG, "getSinglePoint data is:" + data.toString());
         OkHttpClientManager.getInstance().post(url, data, new OnInfoListener() {
             @Override
             public void success(Response responseMapBean) {
@@ -2097,16 +2118,18 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
                     if(currentData.getResult() == Constants.RESULT_OK){
                         currentPoint = currentData.getObject();
-                        Log.d(TAG, "getSinglePoint 收到消息为："+ result);
+                        BuglyLog.d(TAG, "getSinglePoint 收到消息为："+ result);
                         mHandler.sendEmptyMessage(MSG_GET_SINGLE_POINT_END);
                     }
                 }catch (Exception e){
+                    CrashReport.postCatchedException(e);
                     sendErrorMsg(e);
                 }
             }
 
             @Override
             public void fail(Exception e) {
+                CrashReport.postCatchedException(e);
                 sendErrorMsg(e);
             }
         });
@@ -2194,12 +2217,14 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                         mHandler.sendEmptyMessage(MSG_GET_SINGLE_LINE_END);
                     }
                 }catch (Exception e){
+                    CrashReport.postCatchedException(e);
                     sendErrorMsg(e);
                 }
             }
 
             @Override
             public void fail(Exception e) {
+                CrashReport.postCatchedException(e);
                 sendErrorMsg(e);
             }
         });
@@ -2419,75 +2444,58 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         markerOption.setFlat(true);//设置marker平贴地图效果
         currentMarker = aMap.addMarker(markerOption);
 
-//        if(current.getStatusIconUrl_APP() != null && !"".equals(current.getStatusIconUrl_APP())){
-//
-//                new Thread(){
-//                    @Override
-//                    public void run() {
-//                        super.run();
-//                        try {
-//                            Bitmap bitmap = Glide.with(getActivity()).applyDefaultRequestOptions(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.DATA)).asBitmap().load(current.getStatusIconUrl_APP()).submit().get();
-//                            currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
-//                        }catch (Exception e){
-//                            Log.d(TAG, "addMarker exception msg: "+e.getMessage());
-//                        }
-//                    }
-//                }.start();
-//
-//        }else{
-            switch (current.getCheckStatus()){
-                case 0:
-                case 1:
+        switch (current.getCheckStatus()){
+            case 0:
+            case 1:
 
-                    String pointType = current.getTypeStr();
+                String pointType = current.getTypeStr();
 
-                    if(pointType == null){
-                        currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.mark_bs)));
-                        break;
-                    }
+                if(pointType == null){
+                    currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                            .decodeResource(getResources(),R.mipmap.mark_bs)));
+                    break;
+                }
 
-                    if(pointType.equals("变电所")){
-                        currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.bds)));
-                    }else if(pointType.equals("环网柜")){
-                        currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.hwg)));
-                    }else if(pointType.equals("柱上开关")){
-                        currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.zskg)));
-                    }else if(pointType.equals("配电房")){
-                        currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.pdf)));
-                    }else if(pointType.equals("柱上变压器")){
-                        currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.zzbyq)));
-                    }else if(pointType.equals("开闭所")){
-                        currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.kbs)));
-                    }else if(pointType.equals("变压器")){
-                        currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.byq)));
-                    }else{
-                        currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                                .decodeResource(getResources(),R.mipmap.mark_bs)));
-                    }
-                    break;
-                case 2:
+                if(pointType.equals("变电所")){
                     currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                            .decodeResource(getResources(),R.mipmap.mark_repair_1)));
-                    break;
-                case 5:
-                case 3:
+                            .decodeResource(getResources(),R.mipmap.bds)));
+                }else if(pointType.equals("环网柜")){
                     currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                            .decodeResource(getResources(),R.mipmap.mark_repair_2)));
-                    break;
-                case 4:
+                            .decodeResource(getResources(),R.mipmap.hwg)));
+                }else if(pointType.equals("柱上开关")){
                     currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
-                            .decodeResource(getResources(),R.mipmap.mark_repair_1)));
-                    break;
-            }
-//        }
+                            .decodeResource(getResources(),R.mipmap.zskg)));
+                }else if(pointType.equals("配电房")){
+                    currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                            .decodeResource(getResources(),R.mipmap.pdf)));
+                }else if(pointType.equals("柱上变压器")){
+                    currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                            .decodeResource(getResources(),R.mipmap.zzbyq)));
+                }else if(pointType.equals("开闭所")){
+                    currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                            .decodeResource(getResources(),R.mipmap.kbs)));
+                }else if(pointType.equals("变压器")){
+                    currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                            .decodeResource(getResources(),R.mipmap.byq)));
+                }else{
+                    currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                            .decodeResource(getResources(),R.mipmap.mark_bs)));
+                }
+                break;
+            case 2:
+                currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                        .decodeResource(getResources(),R.mipmap.mark_repair_1)));
+                break;
+            case 5:
+            case 3:
+                currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                        .decodeResource(getResources(),R.mipmap.mark_repair_2)));
+                break;
+            case 4:
+                currentMarker.setIcon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                        .decodeResource(getResources(),R.mipmap.mark_repair_1)));
+                break;
+        }
         currentMarker.showInfoWindow();
         Log.d(TAG, "current point is:" + current.getLocation_long()+" and "+current.getLocation_lat());
         if(aMap.getMaxZoomLevel() >= 20){
@@ -2711,7 +2719,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                                 }
                             }
                         }
-
                         currentDeviceType = Common.getInstance().combine(result);
                         Log.d(TAG, "selectedStrings: "+currentDeviceType);
                     }
@@ -2930,14 +2937,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         }
     }
 
-//    private EditText etLineName;
-//    private EditText etLineType;
-//    private EditText etLineType2;
-//    private EditText etLineNum;
-//    private EditText etLineBelong;
-//    private EditText etLineRemark;
-//    private EditText etLineLocation;
-//    private EditText etLineIsUpload;
     private Button btnLineConfirm;
     private Button btnLineState;
     private Button btnLineCreatePoint;
@@ -2953,28 +2952,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             lineDialog.setContentView(view);
             lineDialog.setCancelable(false);
             lineDialog.setCanceledOnTouchOutside(false);
-//
-//            etLineName = view.findViewById(R.id.et_line_name);
-//            etLineNum = view.findViewById(R.id.et_line_num);
-//            etLineType = view.findViewById(R.id.et_line_type);
-//            etLineType2 = view.findViewById(R.id.et_line_type2);
-//
-//            etLineBelong = view.findViewById(R.id.et_line_belong);
-////            etLongitude = view.findViewById(R.id.edit_longitude);
-//            etLineRemark = view.findViewById(R.id.et_line_remark);
-//            etLineLocation = view.findViewById(R.id.et_line_location);
-//            etLineIsUpload = view.findViewById(R.id.et_line_upload);
-//
-//            Common.getInstance().setEditTextFalse(etLineName);
-//            Common.getInstance().setEditTextFalse(etLineType);
-//            Common.getInstance().setEditTextFalse(etLineType2);
-//            Common.getInstance().setEditTextFalse(etLineNum);
-//            Common.getInstance().setEditTextFalse(etLineBelong);
-//            Common.getInstance().setEditTextFalse(etLineRemark);
-//            Common.getInstance().setEditTextFalse(etLineLocation);
-//            Common.getInstance().setEditTextFalse(etLineIsUpload);
-
-//            spinnerLineType = view.findViewById(R.id.spinner_line_type);
             btnLineConfirm = view.findViewById(R.id.btn_ok);
             btnLineState = view.findViewById(R.id.line_state);
             btnLineCreatePoint = view.findViewById(R.id.line_create_point);
@@ -2988,11 +2965,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             btnLineCreateAssistPoint.setOnClickListener(this);
             btnLineHistory.setOnClickListener(this);
         }
-//        etLineName.setText(currentLine.getName());
-//        etLineNum.setText(currentLine.getLineCount()+"");
-//        etLineRemark.setText(currentLine.getRemark());
-//        etLineType.setText(currentLine.getTypeStr());
-//        etLineType2.setText(currentLine.getPosTypeStr());
 
         if(isLineCheckAdd){
             btnLineCreatePoint.setVisibility(View.VISIBLE);
@@ -3387,7 +3359,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
                     String content = data.getStringExtra(Constant.EXTRA_RESULT_CONTENT);
 
-                    Log.d(TAG, "onActivityResult: content:" + content);
+                    BuglyLog.d(TAG, "onActivityResult: content:" + content);
 
                     try{
                         final String loginSign = content.split("loginSign=")[1];
