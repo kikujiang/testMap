@@ -65,7 +65,6 @@ import com.example.qrcode.Constant;
 import com.example.qrcode.ScannerActivity;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import com.tencent.bugly.crashreport.BuglyLog;
 import com.tencent.bugly.crashreport.CrashReport;
 
@@ -105,6 +104,7 @@ import map.test.testmap.utils.MyViewPagerAdapter;
 import map.test.testmap.utils.OkHttpClientManager;
 import map.test.testmap.utils.PreferencesUtils;
 import map.test.testmap.view.MultiSelectionSpinner;
+import map.test.testmap.view.search.MaterialSearchView;
 import okhttp3.Response;
 
 
